@@ -115,7 +115,15 @@ export async function authenticatedFetch(
 ): Promise<Response> {
 	const { skipAuthRedirect = false, ...fetchOptions } = options || {};
 
-	const headers = getAuthHeaders(fetchOptions.headers as Record<string, string>);
+	// Convert Headers object to plain object if needed
+	const existingHeaders =
+		fetchOptions.headers instanceof Headers
+			? Object.fromEntries(fetchOptions.headers.entries())
+			: (fetchOptions.headers as Record<string, string>) || {};
+
+	const headers = getAuthHeaders(existingHeaders);
+	
+	console.log("authenticatedFetch headers being sent:", headers);
 
 	const response = await fetch(url, {
 		...fetchOptions,

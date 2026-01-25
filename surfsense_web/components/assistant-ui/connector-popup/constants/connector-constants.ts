@@ -86,6 +86,28 @@ export const OAUTH_CONNECTORS = [
 		connectorType: EnumConnectorName.CLICKUP_CONNECTOR,
 		authEndpoint: "/api/v1/auth/clickup/connector/add/",
 	},
+	// Financial Connectors
+	{
+		id: "chase-bank-connector",
+		title: "Chase Bank",
+		description: "Connect your Chase accounts",
+		connectorType: EnumConnectorName.CHASE_BANK,
+		authEndpoint: "/api/v1/plaid/link-token",
+	},
+	{
+		id: "fidelity-connector",
+		title: "Fidelity Investments",
+		description: "Connect your Fidelity accounts",
+		connectorType: EnumConnectorName.FIDELITY_INVESTMENTS,
+		authEndpoint: "/api/v1/plaid/link-token",
+	},
+	{
+		id: "bank-of-america-connector",
+		title: "Bank of America",
+		description: "Connect your BoA accounts",
+		connectorType: EnumConnectorName.BANK_OF_AMERICA,
+		authEndpoint: "/api/v1/plaid/link-token",
+	},
 ] as const;
 
 // Content Sources (tools that extract and import content from external sources)

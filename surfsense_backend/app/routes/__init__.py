@@ -29,6 +29,7 @@ from .new_llm_config_routes import router as new_llm_config_router
 from .notes_routes import router as notes_router
 from .notifications_routes import router as notifications_router
 from .notion_add_connector_route import router as notion_add_connector_router
+from .plaid_routes import router as plaid_router
 from .podcasts_routes import router as podcasts_router
 from .rbac_routes import router as rbac_router
 from .search_source_connectors_routes import router as search_source_connectors_router
@@ -67,3 +68,4 @@ router.include_router(circleback_webhook_router)  # Circleback meeting webhooks
 router.include_router(surfsense_docs_router)  # Surfsense documentation for citations
 router.include_router(notifications_router)  # Notifications with Electric SQL sync
 router.include_router(composio_router)  # Composio OAuth and toolkit management
+router.include_router(plaid_router)  # Plaid financial connector OAuth

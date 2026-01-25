@@ -9,6 +9,7 @@ import {
 	Sparkles,
 	Telescope,
 	Webhook,
+	Landmark,
 } from "lucide-react";
 import Image from "next/image";
 import { EnumConnectorName } from "./connector";
@@ -70,6 +71,17 @@ export const getConnectorIcon = (connectorType: EnumConnectorName | string, clas
 			return <Image src="/connectors/obsidian.svg" alt="Obsidian" {...imgProps} />;
 		case EnumConnectorName.COMPOSIO_CONNECTOR:
 			return <Image src="/connectors/composio.svg" alt="Composio" {...imgProps} />;
+		// Financial Connectors
+		case EnumConnectorName.CHASE_BANK:
+			return <Landmark {...iconProps} />;
+		case EnumConnectorName.FIDELITY_INVESTMENTS:
+			return <Landmark {...iconProps} />;
+		case EnumConnectorName.BANK_OF_AMERICA:
+			return <Landmark {...iconProps} />;
+		case EnumConnectorName.WELLS_FARGO:
+			return <Landmark {...iconProps} />;
+		case "PLAID_CONNECTOR":
+			return <Landmark {...iconProps} />;
 		// Additional cases for non-enum connector types
 		case "YOUTUBE_CONNECTOR":
 			return <Image src="/connectors/youtube.svg" alt="YouTube" {...imgProps} />;

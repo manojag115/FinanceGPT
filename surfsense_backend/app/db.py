@@ -56,6 +56,12 @@ class DocumentType(str, Enum):
     OBSIDIAN_CONNECTOR = "OBSIDIAN_CONNECTOR"
     NOTE = "NOTE"
     COMPOSIO_CONNECTOR = "COMPOSIO_CONNECTOR"  # Generic Composio integration
+    # Financial Document Types
+    BANK_TRANSACTION = "BANK_TRANSACTION"  # Banking transactions (Chase, BoA, etc.)
+    CREDIT_CARD_TRANSACTION = "CREDIT_CARD_TRANSACTION"  # Credit card transactions (Discover, Chase, etc.)
+    INVESTMENT_HOLDING = "INVESTMENT_HOLDING"  # Investment holdings (Fidelity, Vanguard, etc.)
+    INVESTMENT_TRANSACTION = "INVESTMENT_TRANSACTION"  # Investment buy/sell transactions
+    ACCOUNT_BALANCE = "ACCOUNT_BALANCE"  # Account balance snapshots
 
 
 class SearchSourceConnectorType(str, Enum):
@@ -89,6 +95,20 @@ class SearchSourceConnectorType(str, Enum):
     COMPOSIO_CONNECTOR = (
         "COMPOSIO_CONNECTOR"  # Generic Composio integration (Google, Slack, etc.)
     )
+    # Financial Connectors - CSV/OFX upload based
+    CHASE_BANK = "CHASE_BANK"  # Chase Bank - checking/savings CSV upload
+    CHASE_CREDIT = "CHASE_CREDIT"  # Chase Credit Cards - CSV upload
+    FIDELITY_INVESTMENTS = "FIDELITY_INVESTMENTS"  # Fidelity brokerage/401k - CSV/OFX upload
+    DISCOVER_CREDIT = "DISCOVER_CREDIT"  # Discover Credit Cards - CSV upload
+    BANK_OF_AMERICA = "BANK_OF_AMERICA"  # Bank of America - CSV/OFX upload
+    WELLS_FARGO = "WELLS_FARGO"  # Wells Fargo - CSV/OFX upload
+    VANGUARD = "VANGUARD"  # Vanguard investments - CSV/OFX upload
+    SCHWAB = "SCHWAB"  # Charles Schwab - CSV/OFX upload
+    CAPITAL_ONE = "CAPITAL_ONE"  # Capital One - CSV upload
+    AMERICAN_EXPRESS = "AMERICAN_EXPRESS"  # American Express - CSV upload
+    GENERIC_BANK_CSV = "GENERIC_BANK_CSV"  # Generic bank CSV with standard columns
+    GENERIC_INVESTMENT_CSV = "GENERIC_INVESTMENT_CSV"  # Generic investment CSV
+    OFX_UPLOAD = "OFX_UPLOAD"  # Generic OFX/QFX file upload (works with most banks)
 
 
 class LiteLLMProvider(str, Enum):
@@ -279,7 +299,7 @@ class Base(DeclarativeBase):
 
 class TimestampMixin:
     @declared_attr
-    def created_at(cls):  # noqa: N805
+    def created_at(cls):  # noqa: N805  # pyright: ignore[reportSelfClsParameterName]
         return Column(
             TIMESTAMP(timezone=True),
             nullable=False,

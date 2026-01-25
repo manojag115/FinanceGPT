@@ -148,6 +148,12 @@ class Config:
     COMPOSIO_ENABLED = os.getenv("COMPOSIO_ENABLED", "FALSE").upper() == "TRUE"
     COMPOSIO_REDIRECT_URI = os.getenv("COMPOSIO_REDIRECT_URI")
 
+    # Plaid Configuration (for bank account integration)
+    PLAID_CLIENT_ID = os.getenv("PLAID_CLIENT_ID")
+    PLAID_SECRET = os.getenv("PLAID_SECRET")
+    PLAID_ENV = os.getenv("PLAID_ENV", "sandbox")  # sandbox, development, or production
+    PLAID_REDIRECT_URI = os.getenv("PLAID_REDIRECT_URI")
+
     # LLM instances are now managed per-user through the LLMConfig system
     # Legacy environment variables removed in favor of user-specific configurations
 

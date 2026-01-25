@@ -36,6 +36,9 @@ from .base import (
 )
 from .markdown_processor import add_received_markdown_file_document
 
+# Logger
+logger = logging.getLogger(__name__)
+
 # Constants for LlamaCloud retry configuration
 LLAMACLOUD_MAX_RETRIES = 3
 LLAMACLOUD_BASE_DELAY = 5  # Base delay in seconds for exponential backoff
@@ -770,6 +773,167 @@ async def _update_document_from_connector(
         await session.commit()
 
 
+async def _process_financial_data(
+    session: AsyncSession,
+    filename: str,
+    financial_data: dict,
+    search_space_id: int,
+    user_id: str,
+    file_path: str,
+    task_logger: TaskLoggingService,
+    log_entry: Log,
+) -> Document:
+    """Process parsed financial data and create document."""
+    import json
+    
+    # Build markdown content from financial data
+    markdown_parts = []
+    metadata = financial_data.get("metadata", {})
+    
+    markdown_parts.append(f"# Financial Statement: {filename}\n")
+    markdown_parts.append(f"**Institution:** {metadata.get('institution', 'Unknown')}\n")
+    markdown_parts.append(f"**Format:** {metadata.get('format', 'Unknown')}\n")
+    markdown_parts.append(f"**Parsed:** {metadata.get('parsed_at', '')}\n\n")
+    
+    # Add transactions
+    transactions = financial_data.get("transactions", [])
+    if transactions:
+        markdown_parts.append(f"## Transactions ({len(transactions)} total)\n\n")
+        for trans in transactions:
+            date = trans.date.strftime("%Y-%m-%d") if hasattr(trans, 'date') else str(trans.get('date', ''))
+            description = trans.description if hasattr(trans, 'description') else trans.get('description', '')
+            amount = trans.amount if hasattr(trans, 'amount') else trans.get('amount', 0)
+            trans_type = trans.transaction_type if hasattr(trans, 'transaction_type') else trans.get('transaction_type', '')
+            
+            markdown_parts.append(f"- **{date}** - {description}: ${amount:.2f} ({trans_type})\n")
+    
+    # Add holdings
+    holdings = financial_data.get("holdings", [])
+    if holdings:
+        markdown_parts.append(f"\n## Investment Holdings ({len(holdings)} total)\n\n")
+        for holding in holdings:
+            symbol = holding.symbol if hasattr(holding, 'symbol') else holding.get('symbol', '')
+            quantity = holding.quantity if hasattr(holding, 'quantity') else holding.get('quantity', 0)
+            value = holding.value if hasattr(holding, 'value') else holding.get('value', 0)
+            
+            markdown_parts.append(f"- **{symbol}**: {quantity} shares @ ${value:.2f}\n")
+    
+    # Add balances
+    balances = financial_data.get("balances", [])
+    if balances:
+        markdown_parts.append("\n## Account Balances\n\n")
+        for balance in balances:
+            account_type = balance.account_type if hasattr(balance, 'account_type') else balance.get('account_type', '')
+            amount = balance.amount if hasattr(balance, 'amount') else balance.get('amount', 0)
+            
+            markdown_parts.append(f"- **{account_type}**: ${amount:.2f}\n")
+    
+    markdown_content = "".join(markdown_parts)
+    
+    # Store raw financial data as JSON metadata
+    raw_financial_json = json.dumps({
+        "transactions": [
+            {
+                "date": t.date.isoformat() if hasattr(t, 'date') else str(t.get('date', '')),
+                "description": t.description if hasattr(t, 'description') else t.get('description', ''),
+                "amount": float(t.amount) if hasattr(t, 'amount') else float(t.get('amount', 0)),
+                "transaction_type": str(t.transaction_type) if hasattr(t, 'transaction_type') else str(t.get('transaction_type', '')),
+                "balance": float(t.balance) if hasattr(t, 'balance') and t.balance else None,
+                "category": t.category if hasattr(t, 'category') else t.get('category'),
+                "merchant": t.merchant if hasattr(t, 'merchant') else t.get('merchant'),
+            }
+            for t in transactions
+        ],
+        "holdings": [
+            {
+                "symbol": h.symbol if hasattr(h, 'symbol') else h.get('symbol', ''),
+                "quantity": float(h.quantity) if hasattr(h, 'quantity') else float(h.get('quantity', 0)),
+                "value": float(h.value) if hasattr(h, 'value') else float(h.get('value', 0)),
+            }
+            for h in holdings
+        ],
+        "metadata": metadata,
+    }, indent=2)
+    
+    # Generate content hash from the markdown content
+    content_hash = generate_content_hash(markdown_content, search_space_id)
+    
+    # For financial documents, use content_hash as unique identifier
+    # This means: same transactions = same document (no duplicates)
+    # but different statements = different documents
+    unique_identifier_hash = generate_unique_identifier_hash(
+        DocumentType.BANK_TRANSACTION, content_hash, search_space_id
+    )
+    
+    # Check for duplicates based on content
+    existing_doc = await check_duplicate_document(session, content_hash)
+    
+    if existing_doc:
+        # Document with same content already exists - this is truly a duplicate
+        await task_logger.log_task_success(
+            log_entry,
+            f"Financial document with same transactions already exists: {filename}",
+            {"duplicate_detected": True, "document_id": existing_doc.id, "existing_filename": existing_doc.file_name},
+        )
+        return existing_doc
+    
+    # Create new document with embeddings and chunks for search
+    
+    # Get user's LLM for summary generation
+    user_llm = await get_user_long_context_llm(session, user_id, search_space_id)
+    
+    # Generate summary embedding for the document
+    _, summary_embedding = await generate_document_summary(
+        markdown_content,
+        user_llm,
+        {
+            "institution": metadata.get("institution"),
+            "transaction_count": len(transactions),
+            "format": metadata.get("format"),
+        }
+    )
+    
+    # Create chunks for retrieval
+    chunks = await create_document_chunks(markdown_content)
+    
+    new_doc = Document(
+        search_space_id=search_space_id,
+        title=filename,
+        document_type=DocumentType.FILE,  # Use FILE type so it's searchable via knowledge base
+        document_metadata={
+            "FILE_NAME": filename,
+            "financial_data": raw_financial_json,
+            "institution": metadata.get("institution"),
+            "format": metadata.get("format"),
+            "transaction_count": len(transactions),
+            "holdings_count": len(holdings),
+            "is_financial_document": True,  # Flag to identify as financial data
+        },
+        content=markdown_content,
+        content_hash=content_hash,
+        unique_identifier_hash=unique_identifier_hash,
+        embedding=summary_embedding,
+        chunks=chunks,
+        updated_at=get_current_timestamp(),
+    )
+    
+    session.add(new_doc)
+    await session.commit()
+    await session.refresh(new_doc)
+    
+    await task_logger.log_task_success(
+        log_entry,
+        f"Successfully processed financial document: {filename}",
+        {
+            "document_id": new_doc.id,
+            "transaction_count": len(transactions),
+            "holdings_count": len(holdings),
+        },
+    )
+    
+    return new_doc
+
+
 async def process_file_in_background(
     file_path: str,
     filename: str,
@@ -784,6 +948,97 @@ async def process_file_in_background(
     | None = None,  # Optional notification for progress updates
 ) -> Document | None:
     try:
+        # Check if the file is a financial statement (PDF, CSV, OFX)
+        if filename.lower().endswith((".csv", ".ofx", ".qfx", ".pdf")):
+            from app.parsers.parser_factory import ParserFactory
+            
+            # Read file content
+            with open(file_path, "rb") as f:
+                file_content = f.read()
+            
+            # Try to detect if this is a financial file
+            detected_format = ParserFactory.detect_format(file_content, filename)
+            
+            # Handle PDF specially - need to check if it's a bank statement
+            if filename.lower().endswith(".pdf"):
+                try:
+                    await task_logger.log_task_progress(
+                        log_entry,
+                        f"Checking if PDF is a bank statement: {filename}",
+                        {"file_type": "pdf", "processing_stage": "financial_detection"},
+                    )
+                    
+                    # Try to parse as financial PDF
+                    financial_data = await ParserFactory.parse_pdf_statement(file_content, filename)
+                    
+                    if financial_data and financial_data.get("transactions"):
+                        # This is a financial statement PDF!
+                        await task_logger.log_task_progress(
+                            log_entry,
+                            f"PDF detected as bank statement with {len(financial_data['transactions'])} transactions",
+                            {"file_type": "bank_statement_pdf", "transaction_count": len(financial_data['transactions'])},
+                        )
+                        
+                        # Process as financial document
+                        result = await _process_financial_data(
+                            session, filename, financial_data, search_space_id, user_id, file_path, task_logger, log_entry
+                        )
+                        
+                        # Clean up temp file
+                        import os
+                        with contextlib.suppress(Exception):
+                            os.unlink(file_path)
+                        
+                        return result
+                    else:
+                        # Not a financial PDF - log why
+                        institution = financial_data.get("metadata", {}).get("institution", "Unknown") if financial_data else "Unknown"
+                        await task_logger.log_task_progress(
+                            log_entry,
+                            f"PDF is not a bank statement (institution: {institution}, transactions: {len(financial_data.get('transactions', [])) if financial_data else 0})",
+                            {"file_type": "pdf", "processing_stage": "standard_processing", "institution": institution},
+                        )
+                        logger.info(f"PDF not recognized as bank statement: {filename}. Institution: {institution}. Please download CSV from your bank or try a different PDF.")
+                except Exception as e:
+                    # Failed to parse as financial PDF, fall through to normal processing
+                    logger.warning(f"Failed to parse PDF as bank statement: {e}, processing as normal PDF")
+                    await task_logger.log_task_progress(
+                        log_entry,
+                        f"Error checking PDF for transactions: {str(e)[:100]}",
+                        {"file_type": "pdf", "processing_stage": "error", "error": str(e)[:200]},
+                    )
+            
+            # Handle CSV/OFX financial files
+            elif detected_format:
+                await task_logger.log_task_progress(
+                    log_entry,
+                    f"Processing financial file: {filename} ({detected_format})",
+                    {"file_type": "financial", "format": str(detected_format)},
+                )
+                
+                try:
+                    parser = ParserFactory.get_parser(detected_format)
+                    financial_data = await parser.parse_file(file_content, filename)
+                    
+                    result = await _process_financial_data(
+                        session, filename, financial_data, search_space_id, user_id, file_path, task_logger, log_entry
+                    )
+                    
+                    # Clean up temp file
+                    import os
+                    with contextlib.suppress(Exception):
+                        os.unlink(file_path)
+                    
+                    return result
+                except Exception as e:
+                    await task_logger.log_task_failure(
+                        log_entry,
+                        f"Error parsing financial file: {filename}",
+                        str(e),
+                        {"file_type": "financial", "error": str(e)},
+                    )
+                    raise
+        
         # Check if the file is a markdown or text file
         if filename.lower().endswith((".md", ".markdown", ".txt")):
             # Update notification: parsing stage

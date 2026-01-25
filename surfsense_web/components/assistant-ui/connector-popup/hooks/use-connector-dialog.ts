@@ -427,6 +427,52 @@ export const useConnectorDialog = () => {
 		[searchSpaceId]
 	);
 
+	// Handle Plaid Link connection
+	const handleConnectPlaid = useCallback(
+		async (publicToken: string, connectorType: EnumConnectorName, metadata: any) => {
+			if (!searchSpaceId) return;
+
+			try {
+				const response = await authenticatedFetch(
+					`${process.env.NEXT_PUBLIC_FASTAPI_BACKEND_URL}/api/v1/plaid/exchange-token`,
+					{
+						method: "POST",
+						headers: {
+							"Content-Type": "application/json",
+						},
+						body: JSON.stringify({
+							public_token: publicToken,
+							connector_type: connectorType,
+							search_space_id: searchSpaceId,
+						}),
+					}
+				);
+
+				if (!response.ok) {
+					throw new Error("Failed to exchange Plaid token");
+				}
+
+				const data = await response.json();
+
+				// Track connector connected
+				trackConnectorConnected(searchSpaceId, connectorType, data.connector_id);
+
+				toast.success(`${data.institution_name} connected successfully`);
+
+				// Refetch connectors to show the new one
+				await refetchAllConnectors();
+
+				// Clear connecting state
+				setConnectingId(null);
+			} catch (error) {
+				console.error("Error exchanging Plaid token:", error);
+				toast.error("Failed to complete bank connection");
+				setConnectingId(null);
+			}
+		},
+		[searchSpaceId, refetchAllConnectors]
+	);
+
 	// Handle creating YouTube crawler (not a connector, shows view in popup)
 	const handleCreateYouTubeCrawler = useCallback(() => {
 		if (!searchSpaceId) return;
@@ -1593,6 +1639,7 @@ export const useConnectorDialog = () => {
 		handleTabChange,
 		handleScroll,
 		handleConnectOAuth,
+		handleConnectPlaid,
 		handleConnectNonOAuth,
 		handleCreateWebcrawler,
 		handleCreateYouTubeCrawler,

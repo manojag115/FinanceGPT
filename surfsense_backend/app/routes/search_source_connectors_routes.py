@@ -900,6 +900,21 @@ async def index_connector_content(
             )
             response_message = "Composio connector indexing started in the background."
 
+        elif connector.connector_type in (
+            SearchSourceConnectorType.CHASE_BANK,
+            SearchSourceConnectorType.FIDELITY_INVESTMENTS,
+            SearchSourceConnectorType.BANK_OF_AMERICA,
+        ):
+            from app.tasks.celery_tasks.connector_tasks import (
+                index_plaid_transactions_task,
+            )
+
+            logger.info(
+                f"Triggering Plaid transactions indexing for connector {connector_id} into search space {search_space_id}"
+            )
+            index_plaid_transactions_task.delay(connector_id)
+            response_message = "Bank transactions indexing started in the background."
+
         else:
             raise HTTPException(
                 status_code=400,

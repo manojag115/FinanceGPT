@@ -67,6 +67,7 @@ export const ConnectorIndicator: FC = () => {
 		handleTabChange,
 		handleScroll,
 		handleConnectOAuth,
+		handleConnectPlaid,
 		handleConnectNonOAuth,
 		handleCreateWebcrawler,
 		handleCreateYouTubeCrawler,
@@ -326,6 +327,10 @@ export const ConnectorIndicator: FC = () => {
 											documentTypeCounts={documentTypeCounts}
 											indexingConnectorIds={indexingConnectorIds}
 											onConnectOAuth={handleConnectOAuth}
+											onConnectPlaid={handleConnectPlaid}
+											onSetConnecting={(id) => {
+												// Update connecting state in parent
+											}}
 											onConnectNonOAuth={handleConnectNonOAuth}
 											onCreateWebcrawler={handleCreateWebcrawler}
 											onCreateYouTubeCrawler={handleCreateYouTubeCrawler}

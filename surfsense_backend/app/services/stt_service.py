@@ -4,7 +4,12 @@ import os
 import tempfile
 from pathlib import Path
 
-from faster_whisper import WhisperModel
+try:
+    from faster_whisper import WhisperModel
+    FASTER_WHISPER_AVAILABLE = True
+except ImportError:
+    FASTER_WHISPER_AVAILABLE = False
+    WhisperModel = None
 
 from app.config import config
 
@@ -14,6 +19,12 @@ class STTService:
 
     def __init__(self):
         """Initialize STT service with model from STT_SERVICE config."""
+        if not FASTER_WHISPER_AVAILABLE:
+            raise ImportError(
+                "faster-whisper is not installed. Install it with: pip install faster-whisper>=1.1.0\n"
+                "Note: faster-whisper requires Python <=3.13 on macOS ARM64. "
+                "Use an external STT service (e.g., OpenAI Whisper) instead by setting STT_SERVICE to 'whisper-1'."
+            )
         # Parse model from STT_SERVICE (e.g., "local/base" or "local/tiny")
         stt_service = config.STT_SERVICE or "local/base"
         if stt_service.startswith("local/"):

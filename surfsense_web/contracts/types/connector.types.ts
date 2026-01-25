@@ -29,6 +29,12 @@ export const searchSourceConnectorTypeEnum = z.enum([
 	"MCP_CONNECTOR",
 	"OBSIDIAN_CONNECTOR",
 	"COMPOSIO_CONNECTOR",
+	// Financial Connectors
+	"CHASE_BANK",
+	"FIDELITY_INVESTMENTS",
+	"BANK_OF_AMERICA",
+	"WELLS_FARGO",
+	"PLAID_CONNECTOR",
 ]);
 
 export const searchSourceConnector = z.object({

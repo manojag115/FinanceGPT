@@ -1,11 +1,13 @@
 "use client";
 
 import type { FC } from "react";
+import type { PlaidLinkOnSuccessMetadata } from "react-plaid-link";
 import { EnumConnectorName } from "@/contracts/enums/connector";
 import type { SearchSourceConnector } from "@/contracts/types/connector.types";
 import { isSelfHosted } from "@/lib/env-config";
 import { ComposioConnectorCard } from "../components/composio-connector-card";
 import { ConnectorCard } from "../components/connector-card";
+import { PlaidConnectorCard } from "../components/plaid-connector-card";
 import {
 	COMPOSIO_CONNECTORS,
 	CRAWLERS,
@@ -27,6 +29,13 @@ export function getConnectorDisplayName(fullName: string): string {
 	return fullName;
 }
 
+// Plaid-powered connectors
+const PLAID_CONNECTOR_TYPES = new Set([
+	EnumConnectorName.CHASE_BANK,
+	EnumConnectorName.FIDELITY_INVESTMENTS,
+	EnumConnectorName.BANK_OF_AMERICA,
+]);
+
 interface AllConnectorsTabProps {
 	searchQuery: string;
 	searchSpaceId: string;
@@ -36,6 +45,8 @@ interface AllConnectorsTabProps {
 	documentTypeCounts?: Record<string, number>;
 	indexingConnectorIds?: Set<number>;
 	onConnectOAuth: (connector: (typeof OAUTH_CONNECTORS)[number]) => void;
+	onConnectPlaid: (publicToken: string, connectorType: EnumConnectorName, metadata: PlaidLinkOnSuccessMetadata) => void;
+	onSetConnecting: (id: string | null) => void;
 	onConnectNonOAuth?: (connectorType: string) => void;
 	onCreateWebcrawler?: () => void;
 	onCreateYouTubeCrawler?: () => void;
@@ -46,12 +57,15 @@ interface AllConnectorsTabProps {
 
 export const AllConnectorsTab: FC<AllConnectorsTabProps> = ({
 	searchQuery,
+	searchSpaceId,
 	connectedTypes,
 	connectingId,
 	allConnectors,
 	documentTypeCounts,
 	indexingConnectorIds,
 	onConnectOAuth,
+	onConnectPlaid,
+	onSetConnecting,
 	onConnectNonOAuth,
 	onCreateWebcrawler,
 	onCreateYouTubeCrawler,
@@ -142,6 +156,26 @@ export const AllConnectorsTab: FC<AllConnectorsTabProps> = ({
 
 							// Check if any account is currently indexing
 							const isIndexing = typeConnectors.some((c) => indexingConnectorIds?.has(c.id));
+
+							// Check if this is a Plaid connector
+							const isPlaidConnector = PLAID_CONNECTOR_TYPES.has(connector.connectorType);
+
+						if (isPlaidConnector) {
+								return (
+									<PlaidConnectorCard
+										key={connector.id}
+										id={connector.id}
+										title={connector.title}
+										description={connector.description}
+										connectorType={connector.connectorType}
+										searchSpaceId={Number(searchSpaceId)}
+										isConnected={isConnected}
+										isConnecting={isConnecting}
+										onSuccess={onConnectPlaid}
+										onSetConnecting={onSetConnecting}
+									/>
+								);
+							}
 
 							return (
 								<ConnectorCard

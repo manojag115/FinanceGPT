@@ -28,6 +28,13 @@ export const CONNECTOR_TO_DOCUMENT_TYPE: Record<string, string> = {
 	CIRCLEBACK_CONNECTOR: "CIRCLEBACK",
 	OBSIDIAN_CONNECTOR: "OBSIDIAN_CONNECTOR",
 
+	// Financial Connectors (all map to FILE document type for searchability)
+	CHASE_BANK: "FILE",
+	FIDELITY_INVESTMENTS: "FILE",
+	BANK_OF_AMERICA: "FILE",
+	WELLS_FARGO: "FILE",
+	PLAID_CONNECTOR: "FILE",
+
 	// Special mappings (connector type differs from document type)
 	GOOGLE_DRIVE_CONNECTOR: "GOOGLE_DRIVE_FILE",
 	WEBCRAWLER_CONNECTOR: "CRAWLED_URL",

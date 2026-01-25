@@ -28,6 +28,10 @@ BASE_NAME_FOR_TYPE = {
     SearchSourceConnectorType.CONFLUENCE_CONNECTOR: "Confluence",
     SearchSourceConnectorType.AIRTABLE_CONNECTOR: "Airtable",
     SearchSourceConnectorType.MCP_CONNECTOR: "Model Context Protocol (MCP)",
+    # Financial Connectors
+    SearchSourceConnectorType.CHASE_BANK: "Chase Bank",
+    SearchSourceConnectorType.FIDELITY_INVESTMENTS: "Fidelity Investments",
+    SearchSourceConnectorType.BANK_OF_AMERICA: "Bank of America",
 }
 
 

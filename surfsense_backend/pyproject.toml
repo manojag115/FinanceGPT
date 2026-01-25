@@ -14,7 +14,7 @@ dependencies = [
     "github3.py==4.0.1",
     "google-api-python-client>=2.156.0",
     "google-auth-oauthlib>=1.2.1",
-    "kokoro>=0.9.4",
+    # "kokoro>=0.7.16",  # Commented: requires misaki>=0.7.16 which doesn't exist yet. Only 0.7.4 available. Use external TTS service instead.
     "linkup-sdk>=0.2.4",
     "llama-cloud-services>=0.6.25",
     "markdownify>=0.14.1",
@@ -38,7 +38,7 @@ dependencies = [
     "validators>=0.34.0",
     "youtube-transcript-api>=1.0.3",
     "elasticsearch>=9.1.1",
-    "faster-whisper>=1.1.0",
+    # "faster-whisper>=1.1.0",  # Commented: requires onnxruntime which doesn't support Python 3.14 on macOS ARM64 yet. Use external STT_SERVICE instead (e.g., OpenAI Whisper).
     "celery[redis]>=5.5.3",
     "flower>=2.0.1",
     "redis>=5.2.1",
@@ -48,6 +48,9 @@ dependencies = [
     "langchain-unstructured>=1.0.0",
     "litellm>=1.80.10",
     "langchain-litellm>=0.3.5",
+    "ofxparse>=0.21",
+    "pdfplumber>=0.11.0",
+    "plaid-python>=28.0.0",
     "fake-useragent>=2.2.0",
     "trafilatura>=2.0.0",
     "fastapi-users[oauth,sqlalchemy]>=15.0.3",
@@ -62,6 +65,7 @@ dependencies = [
     "deepagents>=0.3.8",
     "langchain>=1.2.6",
     "langgraph>=1.0.5",
+    "ofxparse>=0.21",
 ]
 
 [dependency-groups]

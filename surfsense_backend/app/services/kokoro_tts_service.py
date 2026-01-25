@@ -3,7 +3,13 @@ from pathlib import Path
 
 import soundfile as sf
 import torch
-from kokoro import KPipeline
+
+try:
+    from kokoro import KPipeline
+    KOKORO_AVAILABLE = True
+except ImportError:
+    KOKORO_AVAILABLE = False
+    KPipeline = None
 
 
 class KokoroTTSService:
@@ -25,6 +31,12 @@ class KokoroTTSService:
                 'p' => Brazilian Portuguese
                 'z' => Mandarin Chinese
         """
+        if not KOKORO_AVAILABLE:
+            raise ImportError(
+                "kokoro is not installed. Install it manually if needed.\n"
+                "Note: kokoro requires misaki>=0.7.16 which is not yet available (only 0.7.4 exists).\n"
+                "Use an external TTS service instead."
+            )
         self.lang_code = lang_code
         self.pipeline = None
         self._initialize_pipeline()
