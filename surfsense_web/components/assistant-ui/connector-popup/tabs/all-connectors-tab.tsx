@@ -161,35 +161,18 @@ export const AllConnectorsTab: FC<AllConnectorsTabProps> = ({
 							const isPlaidConnector = PLAID_CONNECTOR_TYPES.has(connector.connectorType);
 
 						if (isPlaidConnector) {
-								return (
-									<PlaidConnectorCard
-										key={connector.id}
-										id={connector.id}
-										title={connector.title}
-										description={connector.description}
-										connectorType={connector.connectorType}
-										searchSpaceId={Number(searchSpaceId)}
-										isConnected={isConnected}
-										isConnecting={isConnecting}
-										onSuccess={onConnectPlaid}
-										onSetConnecting={onSetConnecting}
-									/>
-								);
-							}
-
 							return (
-								<ConnectorCard
+								<PlaidConnectorCard
 									key={connector.id}
 									id={connector.id}
 									title={connector.title}
 									description={connector.description}
 									connectorType={connector.connectorType}
+									searchSpaceId={Number(searchSpaceId)}
 									isConnected={isConnected}
 									isConnecting={isConnecting}
-									documentCount={documentCount}
-									accountCount={accountCount}
-									isIndexing={isIndexing}
-									onConnect={() => onConnectOAuth(connector)}
+									onSuccess={onConnectPlaid}
+									onSetConnecting={onSetConnecting}
 									onManage={
 										isConnected && onViewAccountsList
 											? () => onViewAccountsList(connector.connectorType, connector.title)
@@ -197,36 +180,34 @@ export const AllConnectorsTab: FC<AllConnectorsTabProps> = ({
 									}
 								/>
 							);
-						})}
-					</div>
-				</section>
-			)}
+						}
 
-			{/* Composio Integrations */}
-			{/* {filteredComposio.length > 0 && onOpenComposio && (
-				<section>
-					<div className="flex items-center gap-2 mb-4">
-						<h3 className="text-sm font-semibold text-muted-foreground">Managed OAuth</h3>
-						<span className="text-[10px] px-1.5 py-0.5 rounded-full bg-violet-500/10 text-violet-600 dark:text-violet-400 border border-violet-500/20 font-medium">
-							No verification needed
-						</span>
-					</div>
-					<div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
-						{filteredComposio.map((connector) => (
-							<ComposioConnectorCard
+						return (
+							<ConnectorCard
 								key={connector.id}
 								id={connector.id}
 								title={connector.title}
 								description={connector.description}
-								connectorCount={composioConnectorCount}
-								onConnect={onOpenComposio}
-							/>
-						))}
-					</div>
-				</section>
-			)} */}
+								connectorType={connector.connectorType}
+								isConnected={isConnected}
+								isConnecting={isConnecting}
+							documentCount={documentCount}
+							accountCount={accountCount}
+							isIndexing={isIndexing}
+							onConnect={() => onConnectOAuth(connector)}
+							onManage={
+								isConnected && onViewAccountsList
+									? () => onViewAccountsList(connector.connectorType, connector.title)
+									: undefined
+							}
+						/>
+					);
+				})}
+			</div>
+		</section>
+	)}
 
-			{/* More Integrations */}
+	{/* More Integrations */}
 			{filteredOther.length > 0 && (
 				<section>
 					<div className="flex items-center gap-2 mb-4">

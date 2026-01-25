@@ -16,6 +16,7 @@ interface PlaidConnectorCardProps {
 	isConnecting: boolean;
 	onSuccess: (publicToken: string, connectorType: EnumConnectorName, metadata: PlaidLinkOnSuccessMetadata) => void;
 	onSetConnecting: (id: string | null) => void;
+	onManage?: () => void;
 }
 
 /**
@@ -32,6 +33,7 @@ export function PlaidConnectorCard({
 	isConnecting,
 	onSuccess,
 	onSetConnecting,
+	onManage,
 }: PlaidConnectorCardProps) {
 	const handlePlaidSuccess = useCallback(
 		(publicToken: string, metadata: PlaidLinkOnSuccessMetadata) => {
@@ -65,6 +67,7 @@ export function PlaidConnectorCard({
 			isConnected={isConnected}
 			isConnecting={isConnecting || isLoading}
 			onConnect={handleConnect}
+			onManage={onManage}
 		/>
 	);
 }

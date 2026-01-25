@@ -159,17 +159,6 @@ export const useConnectorDialog = () => {
 					setViewingMCPList(true);
 				}
 
-				// Clear Composio view if view is not "composio" anymore
-				if (params.view !== "composio" && viewingComposio) {
-					setViewingComposio(false);
-					setConnectingComposioToolkit(null);
-				}
-
-				// Handle Composio view
-				if (params.view === "composio" && !viewingComposio) {
-					setViewingComposio(true);
-				}
-
 				// Handle connect view
 				if (params.view === "connect" && params.connectorType && !connectingConnectorType) {
 					setConnectingConnectorType(params.connectorType);
@@ -1661,9 +1650,6 @@ export const useConnectorDialog = () => {
 		connectorConfig,
 		setConnectorConfig,
 		setIndexingConnectorConfig,
-
-		// Composio
-		viewingComposio,
 		connectingComposioToolkit,
 		handleOpenComposio,
 		handleBackFromComposio,
