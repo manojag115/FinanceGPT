@@ -47,8 +47,6 @@ from .display_image import create_display_image_tool
 from .knowledge_base import create_search_knowledge_base_tool
 from .link_preview import create_link_preview_tool
 from .mcp_tool import load_mcp_tools
-from .podcast import create_generate_podcast_tool
-from .scrape_webpage import create_scrape_webpage_tool
 from .search_surfsense_docs import create_search_surfsense_docs_tool
 from .user_memory import create_recall_memory_tool, create_save_memory_tool
 
@@ -95,16 +93,6 @@ BUILTIN_TOOLS: list[ToolDefinition] = [
         ),
         requires=["search_space_id", "db_session", "connector_service"],
     ),
-    # Podcast generation tool
-    ToolDefinition(
-        name="generate_podcast",
-        description="Generate an audio podcast from provided content",
-        factory=lambda deps: create_generate_podcast_tool(
-            search_space_id=deps["search_space_id"],
-            db_session=deps["db_session"],
-        ),
-        requires=["search_space_id", "db_session"],
-    ),
     # Link preview tool - fetches Open Graph metadata for URLs
     ToolDefinition(
         name="link_preview",
@@ -118,15 +106,6 @@ BUILTIN_TOOLS: list[ToolDefinition] = [
         description="Display an image in the chat with metadata",
         factory=lambda deps: create_display_image_tool(),
         requires=[],
-    ),
-    # Web scraping tool - extracts content from webpages
-    ToolDefinition(
-        name="scrape_webpage",
-        description="Scrape and extract the main content from a webpage",
-        factory=lambda deps: create_scrape_webpage_tool(
-            firecrawl_api_key=deps.get("firecrawl_api_key"),
-        ),
-        requires=[],  # firecrawl_api_key is optional
     ),
     # Note: write_todos is now provided by TodoListMiddleware from deepagents
     # Surfsense documentation search tool
@@ -226,9 +205,6 @@ def build_tools(
 
         # Use only specific tools
         tools = build_tools(deps, enabled_tools=["search_knowledge_base", "link_preview"])
-
-        # Use defaults but disable podcast
-        tools = build_tools(deps, disabled_tools=["generate_podcast"])
 
         # Add custom tools
         tools = build_tools(deps, additional_tools=[my_custom_tool])

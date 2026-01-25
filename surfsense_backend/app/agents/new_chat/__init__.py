@@ -38,9 +38,7 @@ from .tools import (
     ToolDefinition,
     build_tools,
     create_display_image_tool,
-    create_generate_podcast_tool,
     create_link_preview_tool,
-    create_scrape_webpage_tool,
     create_search_knowledge_base_tool,
     format_documents_for_context,
     get_all_tool_names,
@@ -64,9 +62,7 @@ __all__ = [
     "create_chat_litellm_from_config",
     # Tool factories
     "create_display_image_tool",
-    "create_generate_podcast_tool",
     "create_link_preview_tool",
-    "create_scrape_webpage_tool",
     "create_search_knowledge_base_tool",
     # Agent factory
     "create_surfsense_deep_agent",

@@ -12,7 +12,6 @@ from .documents import (
     ExtensionDocumentMetadata,
     PaginatedResponse,
 )
-from .google_drive import DriveItem, GoogleDriveIndexingOptions, GoogleDriveIndexRequest
 from .logs import LogBase, LogCreate, LogFilter, LogRead, LogUpdate
 from .new_chat import (
     ChatMessage,
@@ -38,7 +37,6 @@ from .new_llm_config import (
     NewLLMConfigRead,
     NewLLMConfigUpdate,
 )
-from .podcasts import PodcastBase, PodcastCreate, PodcastRead, PodcastUpdate
 from .rbac_schemas import (
     InviteAcceptRequest,
     InviteAcceptResponse,
@@ -92,13 +90,9 @@ __all__ = [
     "DocumentUpdate",
     "DocumentWithChunksRead",
     "DocumentsCreate",
-    # Google Drive schemas
-    "DriveItem",
     "ExtensionDocumentContent",
     "ExtensionDocumentMetadata",
     "GlobalNewLLMConfigRead",
-    "GoogleDriveIndexRequest",
-    "GoogleDriveIndexingOptions",
     # Base schemas
     "IDModel",
     # RBAC schemas
@@ -141,11 +135,6 @@ __all__ = [
     "PaginatedResponse",
     "PermissionInfo",
     "PermissionsListResponse",
-    # Podcast schemas
-    "PodcastBase",
-    "PodcastCreate",
-    "PodcastRead",
-    "PodcastUpdate",
     "RoleCreate",
     "RoleRead",
     "RoleUpdate",

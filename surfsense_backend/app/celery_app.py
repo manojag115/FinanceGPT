@@ -55,12 +55,11 @@ schedule_params = parse_schedule_interval(SCHEDULE_CHECKER_INTERVAL)
 
 # Create Celery app
 celery_app = Celery(
-    "surfsense",
+    "financegpt",
     broker=CELERY_BROKER_URL,
     backend=CELERY_RESULT_BACKEND,
     include=[
         "app.tasks.celery_tasks.document_tasks",
-        "app.tasks.celery_tasks.podcast_tasks",
         "app.tasks.celery_tasks.connector_tasks",
         "app.tasks.celery_tasks.schedule_checker_task",
         "app.tasks.celery_tasks.blocknote_migration_tasks",
