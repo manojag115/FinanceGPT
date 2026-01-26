@@ -1,5 +1,5 @@
 """
-LLM configuration utilities for SurfSense agents.
+LLM configuration utilities for FinanceGPT agents.
 
 This module provides functions for loading LLM configurations from:
 1. YAML files (global configs with negative IDs)
@@ -55,7 +55,7 @@ PROVIDER_MAP = {
 @dataclass
 class AgentConfig:
     """
-    Complete configuration for the SurfSense agent.
+    Complete configuration for the FinanceGPT agent.
 
     This combines LLM settings with prompt configuration from NewLLMConfig.
     """

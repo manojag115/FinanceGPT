@@ -3,7 +3,7 @@ import posthog from "posthog-js";
 /**
  * PostHog Analytics Event Definitions
  *
- * This file defines all custom analytics events tracked in SurfSense.
+ * This file defines all custom analytics events tracked in FinanceGPT.
  * Events follow a consistent naming convention: category_action
  *
  * Categories:

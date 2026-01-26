@@ -2,8 +2,8 @@
  * Authentication utilities for handling token expiration and redirects
  */
 
-const REDIRECT_PATH_KEY = "surfsense_redirect_path";
-const BEARER_TOKEN_KEY = "surfsense_bearer_token";
+const REDIRECT_PATH_KEY = "financegpt_redirect_path";
+const BEARER_TOKEN_KEY = "financegpt_bearer_token";
 
 /**
  * Saves the current path and redirects to login page

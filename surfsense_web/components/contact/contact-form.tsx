@@ -84,18 +84,18 @@ export function ContactFormGridWithDetails() {
 
 				<div className="mt-10 hidden flex-col items-center gap-4 md:flex-row lg:flex">
 					<Link
-						href="mailto:rohan@surfsense.com"
+						href="mailto:rohan@financegpt.com"
 						className="text-sm text-neutral-500 dark:text-neutral-400"
 					>
-						rohan@surfsense.com
+						rohan@financegpt.com
 					</Link>
 					<div className="h-1 w-1 rounded-full bg-neutral-500 dark:bg-neutral-400" />
 
 					<Link
-						href="https://cal.com/mod-surfsense"
+						href="https://cal.com/mod-financegpt"
 						className="text-sm text-neutral-500 dark:text-neutral-400"
 					>
-						https://cal.com/mod-surfsense
+						https://cal.com/mod-financegpt
 					</Link>
 				</div>
 				<div className="div relative mt-20 flex w-[600px] flex-shrink-0 -translate-x-10 items-center justify-center [perspective:800px] [transform-style:preserve-3d] sm:-translate-x-0 lg:-translate-x-32">

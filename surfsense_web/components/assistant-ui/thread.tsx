@@ -259,7 +259,7 @@ const Composer: FC = () => {
 	// Sync mentioned document IDs to atom for inclusion in chat request payload
 	useEffect(() => {
 		setMentionedDocumentIds({
-			surfsense_doc_ids: mentionedDocuments
+			financegpt_doc_ids: mentionedDocuments
 				.filter((doc) => doc.document_type === "SURFSENSE_DOCS")
 				.map((doc) => doc.id),
 			document_ids: mentionedDocuments
@@ -330,7 +330,7 @@ const Composer: FC = () => {
 			editorRef.current?.clear();
 			setMentionedDocuments([]);
 			setMentionedDocumentIds({
-				surfsense_doc_ids: [],
+				financegpt_doc_ids: [],
 				document_ids: [],
 			});
 		}
@@ -349,7 +349,7 @@ const Composer: FC = () => {
 			setMentionedDocuments((prev) => {
 				const updated = prev.filter((doc) => !(doc.id === docId && doc.document_type === docType));
 				setMentionedDocumentIds({
-					surfsense_doc_ids: updated
+					financegpt_doc_ids: updated
 						.filter((doc) => doc.document_type === "SURFSENSE_DOCS")
 						.map((doc) => doc.id),
 					document_ids: updated
@@ -381,7 +381,7 @@ const Composer: FC = () => {
 				);
 				const updated = [...prev, ...uniqueNewDocs];
 				setMentionedDocumentIds({
-					surfsense_doc_ids: updated
+					financegpt_doc_ids: updated
 						.filter((doc) => doc.document_type === "SURFSENSE_DOCS")
 						.map((doc) => doc.id),
 					document_ids: updated
@@ -410,7 +410,7 @@ const Composer: FC = () => {
 				<div ref={editorContainerRef} className="aui-composer-input-wrapper px-3 pt-3 pb-6">
 					<InlineMentionEditor
 						ref={editorRef}
-						placeholder="Ask SurfSense or @mention docs"
+						placeholder="Ask FinanceGPT or @mention docs"
 						onMentionTrigger={handleMentionTrigger}
 						onMentionClose={handleMentionClose}
 						onChange={handleEditorChange}

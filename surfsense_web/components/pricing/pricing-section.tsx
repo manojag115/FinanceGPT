@@ -47,7 +47,7 @@ const demoPlans = [
 
 function PricingBasic() {
 	return (
-		<Pricing plans={demoPlans} title="SurfSense Pricing" description="Choose that works for you" />
+		<Pricing plans={demoPlans} title="FinanceGPT Pricing" description="Choose that works for you" />
 	);
 }
 

@@ -18,12 +18,12 @@ interface TokenHandlerProps {
  *
  * @param redirectPath - Default path to redirect after storing token (default: '/dashboard')
  * @param tokenParamName - Name of the URL parameter containing the token (default: 'token')
- * @param storageKey - Key to use when storing in localStorage (default: 'surfsense_bearer_token')
+ * @param storageKey - Key to use when storing in localStorage (default: 'financegpt_bearer_token')
  */
 const TokenHandler = ({
 	redirectPath = "/dashboard",
 	tokenParamName = "token",
-	storageKey = "surfsense_bearer_token",
+	storageKey = "financegpt_bearer_token",
 }: TokenHandlerProps) => {
 	const searchParams = useSearchParams();
 

@@ -149,7 +149,7 @@ jobs:
         with:
           filters: |
             backend:
-              - 'surfsense_backend/**'
+              - 'financegpt_backend/**'
 
       - name: Cache dependencies
         if: steps.backend-changes.outputs.backend == 'true'
@@ -157,12 +157,12 @@ jobs:
         with:
           path: |
             ~/.cache/uv
-            surfsense_backend/.venv
-          key: python-deps-${{ hashFiles('surfsense_backend/uv.lock') }}
+            financegpt_backend/.venv
+          key: python-deps-${{ hashFiles('financegpt_backend/uv.lock') }}
 
       - name: Install dependencies
         if: steps.backend-changes.outputs.backend == 'true'
-        working-directory: surfsense_backend
+        working-directory: financegpt_backend
         run: uv sync
 
       - name: Install pre-commit for backend checks
@@ -236,18 +236,18 @@ jobs:
         with:
           filters: |
             web:
-              - 'surfsense_web/**'
+              - 'financegpt_web/**'
             extension:
-              - 'surfsense_browser_extension/**'
+              - 'financegpt_browser_extension/**'
 
       - name: Install dependencies for web
         if: steps.frontend-changes.outputs.web == 'true'
-        working-directory: surfsense_web
+        working-directory: financegpt_web
         run: pnpm install --frozen-lockfile
 
       - name: Install dependencies for extension
         if: steps.frontend-changes.outputs.extension == 'true'
-        working-directory: surfsense_browser_extension
+        working-directory: financegpt_browser_extension
         run: pnpm install --frozen-lockfile
 
       - name: Install pre-commit

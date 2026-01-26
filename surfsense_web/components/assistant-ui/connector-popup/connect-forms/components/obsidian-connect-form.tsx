@@ -114,7 +114,7 @@ export const ObsidianConnectForm: FC<ConnectFormProps> = ({ onSubmit, isSubmitti
 					<AlertTitle className="text-xs sm:text-sm">Self-Hosted Only</AlertTitle>
 					<AlertDescription className="text-[10px] sm:text-xs pl-0!">
 						This connector requires direct file system access and only works with self-hosted
-						SurfSense installations.
+						FinanceGPT installations.
 					</AlertDescription>
 				</div>
 			</Alert>
@@ -164,7 +164,7 @@ export const ObsidianConnectForm: FC<ConnectFormProps> = ({ onSubmit, isSubmitti
 									</FormControl>
 									<FormDescription className="text-[10px] sm:text-xs">
 										The absolute path to your Obsidian vault on the server. This must be accessible
-										from the SurfSense backend.
+										from the FinanceGPT backend.
 									</FormDescription>
 									<FormMessage />
 								</FormItem>
@@ -362,7 +362,7 @@ export const ObsidianConnectForm: FC<ConnectFormProps> = ({ onSubmit, isSubmitti
 										File System Access Required
 									</AlertTitle>
 									<AlertDescription className="text-[9px] sm:text-[10px]">
-										The SurfSense backend must have read access to your Obsidian vault directory.
+										The FinanceGPT backend must have read access to your Obsidian vault directory.
 										For Docker deployments, mount your vault as a volume.
 									</AlertDescription>
 								</Alert>

@@ -1,4 +1,4 @@
-<a href="https://www.surfsense.com/"><img width="1584" height="396" alt="readme_banner" src="https://github.com/user-attachments/assets/9361ef58-1753-4b6e-b275-5020d8847261" /></a>
+<a href="https://www.financegpt.com/"><img width="1584" height="396" alt="readme_banner" src="https://github.com/user-attachments/assets/9361ef58-1753-4b6e-b275-5020d8847261" /></a>
 
 
 
@@ -6,8 +6,8 @@
 <a href="https://discord.gg/ejRNvftDp9">
 <img src="https://img.shields.io/discord/1359368468260192417" alt="Discord">
 </a>
-<a href="https://www.reddit.com/r/SurfSense/">
-<img src="https://img.shields.io/reddit/subreddit-subscribers/SurfSense?style=social" alt="Reddit">
+<a href="https://www.reddit.com/r/FinanceGPT/">
+<img src="https://img.shields.io/reddit/subreddit-subscribers/FinanceGPT?style=social" alt="Reddit">
 </a>
 </div>
 
@@ -17,13 +17,13 @@
 
 </div>
 
-# SurfSense
+# FinanceGPT
 Connect any LLM to your internal knowledge sources and chat with it in real time alongside your team. OSS alternative to NotebookLM, Perplexity, and Glean.
 
-SurfSense is a highly customizable AI research agent, connected to external sources such as Search Engines (SearxNG, Tavily, LinkUp), Google Drive, Slack, Microsoft Teams, Linear, Jira, ClickUp, Confluence, BookStack, Gmail, Notion, YouTube, GitHub, Discord, Airtable, Google Calendar, Luma, Circleback, Elasticsearch, Obsidian and more to come.
+FinanceGPT is a highly customizable AI research agent, connected to external sources such as Search Engines (SearxNG, Tavily, LinkUp), Google Drive, Slack, Microsoft Teams, Linear, Jira, ClickUp, Confluence, BookStack, Gmail, Notion, YouTube, GitHub, Discord, Airtable, Google Calendar, Luma, Circleback, Elasticsearch, Obsidian and more to come.
 
 <div align="center">
-<a href="https://trendshift.io/repositories/13606" target="_blank"><img src="https://trendshift.io/api/badge/repositories/13606" alt="MODSetter%2FSurfSense | Trendshift" style="width: 250px; height: 55px;" width="250" height="55"/></a>
+<a href="https://trendshift.io/repositories/13606" target="_blank"><img src="https://trendshift.io/api/badge/repositories/13606" alt="MODSetter%2FFinanceGPT | Trendshift" style="width: 250px; height: 55px;" width="250" height="55"/></a>
 </div>
 
 
@@ -112,7 +112,7 @@ https://github.com/user-attachments/assets/a0a16566-6967-4374-ac51-9b3e07fbecd7
 **Audio/Video** (via STT Service): `.mp3`, `.wav`, `.mp4`, `.webm`, etc.
 
 ### 🔖 Cross Browser Extension
-- The SurfSense extension can be used to save any webpage you like.
+- The FinanceGPT extension can be used to save any webpage you like.
 - Its main usecase is to save any webpages protected beyond authentication.
 
 
@@ -120,18 +120,18 @@ https://github.com/user-attachments/assets/a0a16566-6967-4374-ac51-9b3e07fbecd7
 ## FEATURE REQUESTS AND FUTURE
 
 
-**SurfSense is actively being developed.** While it's not yet production-ready, you can help us speed up the process.
+**FinanceGPT is actively being developed.** While it's not yet production-ready, you can help us speed up the process.
 
-Join the [SurfSense Discord](https://discord.gg/ejRNvftDp9) and help shape the future of SurfSense!
+Join the [FinanceGPT Discord](https://discord.gg/ejRNvftDp9) and help shape the future of FinanceGPT!
 
 ## 🚀 Roadmap
 
 Stay up to date with our development progress and upcoming features!  
 Check out our public roadmap and contribute your ideas or feedback:
 
-**📋 Roadmap Discussion:** [SurfSense 2025-2026 Roadmap: Deep Agents, Real-Time Collaboration & MCP Servers](https://github.com/MODSetter/SurfSense/discussions/565)
+**📋 Roadmap Discussion:** [FinanceGPT 2025-2026 Roadmap: Deep Agents, Real-Time Collaboration & MCP Servers](https://github.com/MODSetter/FinanceGPT/discussions/565)
 
-**📊 Kanban Board:** [SurfSense Project Board](https://github.com/users/MODSetter/projects/3)
+**📊 Kanban Board:** [FinanceGPT Project Board](https://github.com/users/MODSetter/projects/3)
 
 
 ## How to get started?
@@ -139,26 +139,26 @@ Check out our public roadmap and contribute your ideas or feedback:
 ### Quick Start with Docker 🐳
 
 > [!TIP]
-> For production deployments, use the full [Docker Compose setup](https://www.surfsense.com/docs/docker-installation) which offers more control and scalability.
+> For production deployments, use the full [Docker Compose setup](https://www.financegpt.com/docs/docker-installation) which offers more control and scalability.
 
 **Linux/macOS:**
 
 ```bash
 docker run -d -p 3000:3000 -p 8000:8000 -p 5133:5133 \
-  -v surfsense-data:/data \
-  --name surfsense \
+  -v financegpt-data:/data \
+  --name financegpt \
   --restart unless-stopped \
-  ghcr.io/modsetter/surfsense:latest
+  ghcr.io/modsetter/financegpt:latest
 ```
 
 **Windows (PowerShell):**
 
 ```powershell
 docker run -d -p 3000:3000 -p 8000:8000 -p 5133:5133 `
-  -v surfsense-data:/data `
-  --name surfsense `
+  -v financegpt-data:/data `
+  --name financegpt `
   --restart unless-stopped `
-  ghcr.io/modsetter/surfsense:latest
+  ghcr.io/modsetter/financegpt:latest
 ```
 
 **With Custom Configuration:**
@@ -167,7 +167,7 @@ You can pass any environment variable using `-e` flags:
 
 ```bash
 docker run -d -p 3000:3000 -p 8000:8000 -p 5133:5133 \
-  -v surfsense-data:/data \
+  -v financegpt-data:/data \
   -e EMBEDDING_MODEL=openai://text-embedding-ada-002 \
   -e OPENAI_API_KEY=your_openai_api_key \
   -e AUTH_TYPE=GOOGLE \
@@ -175,15 +175,15 @@ docker run -d -p 3000:3000 -p 8000:8000 -p 5133:5133 \
   -e GOOGLE_OAUTH_CLIENT_SECRET=your_google_client_secret \
   -e ETL_SERVICE=LLAMACLOUD \
   -e LLAMA_CLOUD_API_KEY=your_llama_cloud_key \
-  --name surfsense \
+  --name financegpt \
   --restart unless-stopped \
-  ghcr.io/modsetter/surfsense:latest
+  ghcr.io/modsetter/financegpt:latest
 ```
 
 > [!NOTE]
 > - If deploying behind a reverse proxy with HTTPS, add `-e BACKEND_URL=https://api.yourdomain.com`
 
-After starting, access SurfSense at:
+After starting, access FinanceGPT at:
 - **Frontend**: [http://localhost:3000](http://localhost:3000)
 - **Backend API**: [http://localhost:8000](http://localhost:8000)
 - **API Docs**: [http://localhost:8000/docs](http://localhost:8000/docs)
@@ -192,37 +192,37 @@ After starting, access SurfSense at:
 **Useful Commands:**
 
 ```bash
-docker logs -f surfsense      # View logs
-docker stop surfsense         # Stop
-docker start surfsense        # Start
-docker rm surfsense           # Remove (data preserved in volume)
+docker logs -f financegpt      # View logs
+docker stop financegpt         # Stop
+docker start financegpt        # Start
+docker rm financegpt           # Remove (data preserved in volume)
 ```
 
 ### Installation Options
 
-SurfSense provides multiple options to get started:
+FinanceGPT provides multiple options to get started:
 
-1. **[SurfSense Cloud](https://www.surfsense.com/login)** - The easiest way to try SurfSense without any setup.
+1. **[FinanceGPT Cloud](https://www.financegpt.com/login)** - The easiest way to try FinanceGPT without any setup.
    - No installation required
    - Instant access to all features
    - Perfect for getting started quickly
 
-2. **Quick Start Docker (Above)** - Single command to get SurfSense running locally.
+2. **Quick Start Docker (Above)** - Single command to get FinanceGPT running locally.
    - All-in-one image with PostgreSQL, Redis, and all services bundled
    - Perfect for evaluation, development, and small deployments
    - Data persisted via Docker volume
 
-3. **[Docker Compose (Production)](https://www.surfsense.com/docs/docker-installation)** - Full stack deployment with separate services.
+3. **[Docker Compose (Production)](https://www.financegpt.com/docs/docker-installation)** - Full stack deployment with separate services.
    - Includes pgAdmin for database management through a web UI
    - Supports environment variable customization via `.env` file
    - Flexible deployment options (full stack or core services only)
    - Better for production with separate scaling of services
 
-4. **[Manual Installation](https://www.surfsense.com/docs/manual-installation)** - For users who prefer more control over their setup or need to customize their deployment.
+4. **[Manual Installation](https://www.financegpt.com/docs/manual-installation)** - For users who prefer more control over their setup or need to customize their deployment.
 
 Docker and manual installation guides include detailed OS-specific instructions for Windows, macOS, and Linux.
 
-Before self-hosting installation, make sure to complete the [prerequisite setup steps](https://www.surfsense.com/docs/) including:
+Before self-hosting installation, make sure to complete the [prerequisite setup steps](https://www.financegpt.com/docs/) including:
 - Auth setup (optional - defaults to LOCAL auth)
 - **File Processing ETL Service** (optional - defaults to Docling):
   - Docling (default, local processing, no API key required, supports PDF, Office docs, images, HTML, CSV)
@@ -311,7 +311,7 @@ Fine-tuning the Backend is always desired.
 
 ### Adding New Agent Tools
 
-Want to add a new tool to the SurfSense agent? It's easy:
+Want to add a new tool to the FinanceGPT agent? It's easy:
 
 1. Create your tool file in `surfsense_backend/app/agents/new_chat/tools/my_tool.py`
 2. Register it in `registry.py`:
@@ -332,11 +332,11 @@ For detailed contribution guidelines, please see our [CONTRIBUTING.md](CONTRIBUT
 
 ## Star History
 
-<a href="https://www.star-history.com/#MODSetter/SurfSense&Date">
+<a href="https://www.star-history.com/#MODSetter/FinanceGPT&Date">
  <picture>
-   <source media="(prefers-color-scheme: dark)" srcset="https://api.star-history.com/svg?repos=MODSetter/SurfSense&type=Date&theme=dark" />
-   <source media="(prefers-color-scheme: light)" srcset="https://api.star-history.com/svg?repos=MODSetter/SurfSense&type=Date" />
-   <img alt="Star History Chart" src="https://api.star-history.com/svg?repos=MODSetter/SurfSense&type=Date" />
+   <source media="(prefers-color-scheme: dark)" srcset="https://api.star-history.com/svg?repos=MODSetter/FinanceGPT&type=Date&theme=dark" />
+   <source media="(prefers-color-scheme: light)" srcset="https://api.star-history.com/svg?repos=MODSetter/FinanceGPT&type=Date" />
+   <img alt="Star History Chart" src="https://api.star-history.com/svg?repos=MODSetter/FinanceGPT&type=Date" />
  </picture>
 </a>
 

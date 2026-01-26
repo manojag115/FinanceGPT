@@ -1,8 +1,8 @@
 {
 	"name": "surfsense_browser_extension",
-	"displayName": "Surfsense Browser Extension",
+	"displayName": "FinanceGPT Browser Extension",
 	"version": "0.0.11",
-	"description": "Extension to collect Browsing History for SurfSense.",
+	"description": "Extension to collect Browsing History for FinanceGPT.",
 	"author": "https://github.com/MODSetter",
 	"engines": {
 		"node": ">=18.0.0 <23.0.0",
@@ -59,8 +59,8 @@
 		"host_permissions": [
 			"<all_urls>"
 		],
-		"name": "SurfSense",
-		"description": "Extension to collect Browsing History for SurfSense.",
+		"name": "FinanceGPT",
+		"description": "Extension to collect Browsing History for FinanceGPT.",
 		"version": "0.0.3"
 	},
 	"permissions": [

@@ -1,6 +1,6 @@
-# SurfSense All-in-One Docker Image
+# FinanceGPT All-in-One Docker Image
 # This image bundles PostgreSQL+pgvector, Redis, Electric SQL, Backend, and Frontend
-# Usage: docker run -d -p 3000:3000 -p 8000:8000 -p 5133:5133 -v surfsense-data:/data --name surfsense ghcr.io/modsetter/surfsense:latest
+# Usage: docker run -d -p 3000:3000 -p 8000:8000 -p 5133:5133 -v financegpt-data:/data --name financegpt ghcr.io/modsetter/financegpt:latest
 #
 # Included Services (all run locally by default):
 # - PostgreSQL 14 + pgvector (vector database)
@@ -30,15 +30,15 @@ WORKDIR /app
 RUN corepack enable pnpm
 
 # Copy package files
-COPY surfsense_web/package.json surfsense_web/pnpm-lock.yaml* ./
-COPY surfsense_web/source.config.ts ./
-COPY surfsense_web/content ./content
+COPY financegpt_web/package.json financegpt_web/pnpm-lock.yaml* ./
+COPY financegpt_web/source.config.ts ./
+COPY financegpt_web/content ./content
 
 # Install dependencies (skip postinstall which requires all source files)
 RUN pnpm install --frozen-lockfile --ignore-scripts
 
 # Copy source
-COPY surfsense_web/ ./
+COPY financegpt_web/ ./
 
 # Run fumadocs-mdx postinstall now that source files are available
 RUN pnpm fumadocs-mdx
@@ -160,7 +160,7 @@ RUN cd /tmp \
 RUN update-ca-certificates
 
 # Create data directories
-RUN mkdir -p /data/postgres /data/redis /data/surfsense \
+RUN mkdir -p /data/postgres /data/redis /data/financegpt \
     && chown -R postgres:postgres /data/postgres
 
 # ====================
@@ -173,7 +173,7 @@ COPY --from=frontend-builder /app/.next/standalone ./
 COPY --from=frontend-builder /app/.next/static ./.next/static
 COPY --from=frontend-builder /app/public ./public
 
-COPY surfsense_web/content/docs /app/surfsense_web/content/docs
+COPY financegpt_web/content/docs /app/financegpt_web/content/docs
 
 # ====================
 # Copy Electric SQL Release
@@ -186,7 +186,7 @@ COPY --from=electric-builder /app /app/electric-release
 WORKDIR /app/backend
 
 # Copy backend dependency files
-COPY surfsense_backend/pyproject.toml surfsense_backend/uv.lock ./
+COPY financegpt_backend/pyproject.toml financegpt_backend/uv.lock ./
 
 # Install PyTorch CPU-only (Docling needs it but OCR is disabled, no GPU needed)
 RUN pip install --no-cache-dir torch torchvision --index-url https://download.pytorch.org/whl/cpu
@@ -209,7 +209,7 @@ RUN pip install --no-cache-dir playwright \
     && rm -rf /root/.cache/ms-playwright/ffmpeg* 
 
 # Copy backend source
-COPY surfsense_backend/ ./
+COPY financegpt_backend/ ./
 
 # ====================
 # Configuration
@@ -217,7 +217,7 @@ COPY surfsense_backend/ ./
 WORKDIR /app
 
 # Copy supervisor configuration
-COPY scripts/docker/supervisor-allinone.conf /etc/supervisor/conf.d/surfsense.conf
+COPY scripts/docker/supervisor-allinone.conf /etc/supervisor/conf.d/financegpt.conf
 
 # Copy entrypoint script
 COPY scripts/docker/entrypoint-allinone.sh /app/entrypoint.sh
@@ -233,10 +233,10 @@ RUN apt-get purge -y build-essential postgresql-server-dev-14 git \
     && rm -rf /var/lib/apt/lists/* /tmp/* /var/tmp/*
 
 # Environment variables with defaults
-ENV POSTGRES_USER=surfsense
-ENV POSTGRES_PASSWORD=surfsense
-ENV POSTGRES_DB=surfsense
-ENV DATABASE_URL=postgresql+asyncpg://surfsense:surfsense@localhost:5432/surfsense
+ENV POSTGRES_USER=financegpt
+ENV POSTGRES_PASSWORD=financegpt
+ENV POSTGRES_DB=financegpt
+ENV DATABASE_URL=postgresql+asyncpg://financegpt:financegpt@localhost:5432/financegpt
 ENV CELERY_BROKER_URL=redis://localhost:6379/0
 ENV CELERY_RESULT_BACKEND=redis://localhost:6379/0
 ENV PYTHONPATH=/app/backend

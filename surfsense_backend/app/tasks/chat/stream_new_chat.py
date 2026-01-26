@@ -1,5 +1,5 @@
 """
-Streaming task for the new SurfSense deep agent chat.
+Streaming task for the new FinanceGPT deep agent chat.
 
 This module streams responses from the deep agent using the Vercel AI SDK
 Data Stream Protocol (SSE format).
@@ -74,7 +74,7 @@ def format_mentioned_documents_as_context(documents: list[Document]) -> str:
     return "\n".join(context_parts)
 
 
-def format_mentioned_surfsense_docs_as_context(
+def format_mentioned_financegpt_docs_as_context(
     documents: list[FinanceGPTDocsDocument],
 ) -> str:
     """Format mentioned FinanceGPT documentation as context for the agent."""
@@ -83,7 +83,7 @@ def format_mentioned_surfsense_docs_as_context(
 
     import json
 
-    context_parts = ["<mentioned_surfsense_docs>"]
+    context_parts = ["<mentioned_financegpt_docs>"]
     context_parts.append(
         "The user has explicitly mentioned the following FinanceGPT documentation pages. "
         "These are official documentation about how to use FinanceGPT and should be used to answer questions about the application. "
@@ -120,7 +120,7 @@ def format_mentioned_surfsense_docs_as_context(
         context_parts.append("</document>")
         context_parts.append("")
 
-    context_parts.append("</mentioned_surfsense_docs>")
+    context_parts.append("</mentioned_financegpt_docs>")
 
     return "\n".join(context_parts)
 
@@ -158,11 +158,11 @@ async def stream_new_chat(
     llm_config_id: int = -1,
     attachments: list[ChatAttachment] | None = None,
     mentioned_document_ids: list[int] | None = None,
-    mentioned_surfsense_doc_ids: list[int] | None = None,
+    mentioned_financegpt_doc_ids: list[int] | None = None,
     checkpoint_id: str | None = None,
 ) -> AsyncGenerator[str, None]:
     """
-    Stream chat responses from the new SurfSense deep agent.
+    Stream chat responses from the new FinanceGPT deep agent.
 
     This uses the Vercel AI SDK Data Stream Protocol (SSE format) for streaming.
     The chat_id is used as LangGraph's thread_id for memory/checkpointing.
@@ -177,7 +177,7 @@ async def stream_new_chat(
         llm_config_id: The LLM configuration ID (default: -1 for first global config)
         attachments: Optional attachments with extracted content
         mentioned_document_ids: Optional list of document IDs mentioned with @ in the chat
-        mentioned_surfsense_doc_ids: Optional list of SurfSense doc IDs mentioned with @ in the chat
+        mentioned_financegpt_doc_ids: Optional list of FinanceGPT doc IDs mentioned with @ in the chat
         checkpoint_id: Optional checkpoint ID to rewind/fork from (for edit/reload operations)
 
     Yields:
@@ -273,21 +273,21 @@ async def stream_new_chat(
             )
             mentioned_documents = list(result.scalars().all())
 
-        # Fetch mentioned SurfSense docs if any
-        mentioned_surfsense_docs: list[FinanceGPTDocsDocument] = []
-        if mentioned_surfsense_doc_ids:
+        # Fetch mentioned FinanceGPT docs if any
+        mentioned_financegpt_docs: list[FinanceGPTDocsDocument] = []
+        if mentioned_financegpt_doc_ids:
             from sqlalchemy.orm import selectinload
 
             result = await session.execute(
                 select(FinanceGPTDocsDocument)
                 .options(selectinload(FinanceGPTDocsDocument.chunks))
                 .filter(
-                    FinanceGPTDocsDocument.id.in_(mentioned_surfsense_doc_ids),
+                    FinanceGPTDocsDocument.id.in_(mentioned_financegpt_doc_ids),
                 )
             )
-            mentioned_surfsense_docs = list(result.scalars().all())
+            mentioned_financegpt_docs = list(result.scalars().all())
 
-        # Format the user query with context (attachments + mentioned documents + surfsense docs)
+        # Format the user query with context (attachments + mentioned documents + FinanceGPT docs)
         final_query = user_query
         context_parts = []
 
@@ -299,9 +299,9 @@ async def stream_new_chat(
                 format_mentioned_documents_as_context(mentioned_documents)
             )
 
-        if mentioned_surfsense_docs:
+        if mentioned_financegpt_docs:
             context_parts.append(
-                format_mentioned_surfsense_docs_as_context(mentioned_surfsense_docs)
+                format_mentioned_financegpt_docs_as_context(mentioned_financegpt_docs)
             )
 
         if context_parts:
@@ -383,13 +383,13 @@ async def stream_new_chat(
         last_active_step_id = analyze_step_id
 
         # Determine step title and action verb based on context
-        if attachments and (mentioned_documents or mentioned_surfsense_docs):
+        if attachments and (mentioned_documents or mentioned_financegpt_docs):
             last_active_step_title = "Analyzing your content"
             action_verb = "Reading"
         elif attachments:
             last_active_step_title = "Reading your content"
             action_verb = "Reading"
-        elif mentioned_documents or mentioned_surfsense_docs:
+        elif mentioned_documents or mentioned_financegpt_docs:
             last_active_step_title = "Analyzing referenced content"
             action_verb = "Analyzing"
         else:
@@ -429,10 +429,10 @@ async def stream_new_chat(
             else:
                 processing_parts.append(f"[{len(doc_names)} documents]")
 
-        # Add mentioned SurfSense docs inline
-        if mentioned_surfsense_docs:
+        # Add mentioned FinanceGPT docs inline
+        if mentioned_financegpt_docs:
             doc_names = []
-            for doc in mentioned_surfsense_docs:
+            for doc in mentioned_financegpt_docs:
                 title = doc.title
                 if len(title) > 30:
                     title = title[:27] + "..."
@@ -636,9 +636,9 @@ async def stream_new_chat(
                 #     )
                 elif tool_name == "generate_podcast":
                     podcast_title = (
-                        tool_input.get("podcast_title", "SurfSense Podcast")
+                        tool_input.get("podcast_title", "FinanceGPT Podcast")
                         if isinstance(tool_input, dict)
-                        else "SurfSense Podcast"
+                        else "FinanceGPT Podcast"
                     )
                     # Get content length for context
                     content_len = len(

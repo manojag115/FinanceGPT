@@ -42,14 +42,14 @@ export function UserDropdown({
 			}
 
 			if (typeof window !== "undefined") {
-				localStorage.removeItem("surfsense_bearer_token");
+				localStorage.removeItem("financegpt_bearer_token");
 				window.location.href = "/";
 			}
 		} catch (error) {
 			console.error("Error during logout:", error);
 			// Optionally, provide user feedback
 			if (typeof window !== "undefined") {
-				localStorage.removeItem("surfsense_bearer_token");
+				localStorage.removeItem("financegpt_bearer_token");
 				window.location.href = "/";
 			}
 		}

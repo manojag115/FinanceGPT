@@ -2,7 +2,7 @@
 
 ## ✅ What's Been Built
 
-I've transformed SurfSense into **FinanceGPT** with these components:
+I've transformed FinanceGPT into **FinanceGPT** with these components:
 
 ### Core Features:
 - ✅ **Chase Parser** - Checking, savings & credit card CSV

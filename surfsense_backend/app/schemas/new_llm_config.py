@@ -44,7 +44,7 @@ class NewLLMConfigBase(BaseModel):
     # Prompt Configuration
     system_instructions: str = Field(
         default="",
-        description="Custom system instructions. Empty string uses default SURFSENSE_SYSTEM_INSTRUCTIONS.",
+        description="Custom system instructions. Empty string uses default FINANCEGPT_SYSTEM_INSTRUCTIONS.",
     )
     use_default_system_instructions: bool = Field(
         default=True,

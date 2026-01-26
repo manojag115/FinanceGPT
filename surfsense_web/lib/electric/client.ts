@@ -2,7 +2,7 @@
  * Electric SQL client setup for ElectricSQL 1.x with PGlite
  *
  * USER-SPECIFIC DATABASE ARCHITECTURE:
- * - Each user gets their own IndexedDB database: idb://surfsense-{userId}-v{version}
+ * - Each user gets their own IndexedDB database: idb://financegpt-{userId}-v{version}
  * - On login: cleanup databases from other users, then initialize current user's DB
  * - On logout: best-effort cleanup (not relied upon)
  *
@@ -57,8 +57,8 @@ const pendingSyncs = new Map<string, Promise<SyncHandle>>();
 // v3: consistent cutoff date for sync+queries, visibility refresh support
 const SYNC_VERSION = 3;
 
-// Database name prefix for identifying SurfSense databases
-const DB_PREFIX = "surfsense-";
+// Database name prefix for identifying FinanceGPT databases
+const DB_PREFIX = "financegpt-";
 
 // Get Electric URL from environment
 function getElectricUrl(): string {
@@ -93,8 +93,8 @@ async function cleanupOtherUserDatabases(currentUserId: string): Promise<void> {
 				const dbName = dbInfo.name;
 				if (!dbName) continue;
 
-				// Check if this is a SurfSense database
-				if (dbName.startsWith(DB_PREFIX) || dbName.includes("surfsense")) {
+				// Check if this is a FinanceGPT database
+				if (dbName.startsWith(DB_PREFIX) || dbName.includes("financegpt")) {
 					// Don't delete current user's database
 					if (dbName.includes(currentUserId)) {
 						console.log(`[Electric] Keeping current user's database: ${dbName}`);

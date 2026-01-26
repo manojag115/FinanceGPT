@@ -2,7 +2,7 @@
 set -e
 
 echo "==========================================="
-echo "  🏄 SurfSense All-in-One Container"
+echo "  🏄 FinanceGPT All-in-One Container"
 echo "==========================================="
 
 # Create log directory
@@ -237,5 +237,5 @@ echo ""
 # Start Supervisor (manages all services)
 # ================================================
 echo "🚀 Starting all services..."
-exec /usr/local/bin/supervisord -c /etc/supervisor/conf.d/surfsense.conf
+exec /usr/local/bin/supervisord -c /etc/supervisor/conf.d/financegpt.conf
 

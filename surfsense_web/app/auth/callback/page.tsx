@@ -15,7 +15,7 @@ export default function AuthCallbackPage() {
 				<TokenHandler
 					redirectPath="/dashboard"
 					tokenParamName="token"
-					storageKey="surfsense_bearer_token"
+					storageKey="financegpt_bearer_token"
 				/>
 			</Suspense>
 		</div>

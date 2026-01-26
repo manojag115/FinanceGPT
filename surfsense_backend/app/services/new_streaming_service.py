@@ -427,7 +427,7 @@ class VercelStreamingService:
 
     def format_terminal_info(self, text: str, message_type: str = "info") -> str:
         """
-        Format terminal info as custom data (SurfSense specific).
+        Format terminal info as custom data (FinanceGPT specific).
 
         Args:
             text: The terminal message text
@@ -440,7 +440,7 @@ class VercelStreamingService:
 
     def format_further_questions(self, questions: list[str]) -> str:
         """
-        Format further questions as custom data (SurfSense specific).
+        Format further questions as custom data (FinanceGPT specific).
 
         Args:
             questions: List of suggested follow-up questions
@@ -458,7 +458,7 @@ class VercelStreamingService:
         items: list[str] | None = None,
     ) -> str:
         """
-        Format a thinking step for chain-of-thought display (SurfSense specific).
+        Format a thinking step for chain-of-thought display (FinanceGPT specific).
 
         Args:
             step_id: Unique identifier for the step

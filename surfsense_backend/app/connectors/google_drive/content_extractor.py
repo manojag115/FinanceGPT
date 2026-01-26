@@ -27,7 +27,7 @@ async def download_and_process_file(
     log_entry: Log,
 ) -> tuple[Any, str | None, dict[str, Any] | None]:
     """
-    Download Google Drive file and process using Surfsense file processors.
+    Download Google Drive file and process using FinanceGPT file processors.
 
     Args:
         client: GoogleDriveClient instance
@@ -111,7 +111,7 @@ async def download_and_process_file(
                 "."
             )[-1]
 
-        logger.info(f"Processing {file_name} with Surfsense's file processor")
+        logger.info(f"Processing {file_name} with FinanceGPT's file processor")
         await process_file_in_background(
             file_path=temp_file_path,
             filename=file_name,

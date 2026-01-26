@@ -107,19 +107,19 @@ export default function DocumentsTable() {
 		enabled: !!searchSpaceId && !!debouncedSearch.trim(),
 	});
 
-	// Determine if we should show SurfSense docs (when no type filter or SURFSENSE_DOCS is selected)
-	const showSurfsenseDocs =
+	// Determine if we should show FinanceGPT docs (when no type filter or SURFSENSE_DOCS is selected)
+	const showFinanceGPTDocs =
 		activeTypes.length === 0 || activeTypes.includes("SURFSENSE_DOCS" as DocumentTypeEnum);
 
-	// Use query for fetching SurfSense docs
+	// Use query for fetching FinanceGPT docs
 	const {
-		data: surfsenseDocsResponse,
-		isLoading: isSurfsenseDocsLoading,
-		refetch: refetchSurfsenseDocs,
+		data: financegptDocsResponse,
+		isLoading: isFinanceGPTDocsLoading,
+		refetch: refetchFinanceGPTDocs,
 	} = useQuery({
-		queryKey: ["surfsense-docs", debouncedSearch, pageIndex, pageSize],
+		queryKey: ["financegpt-docs", debouncedSearch, pageIndex, pageSize],
 		queryFn: () =>
-			documentsApiService.getSurfsenseDocs({
+			documentsApiService.getFinanceGPTDocs({
 				queryParams: {
 					page: pageIndex,
 					page_size: pageSize,
@@ -127,13 +127,13 @@ export default function DocumentsTable() {
 				},
 			}),
 		staleTime: 3 * 60 * 1000, // 3 minutes
-		enabled: showSurfsenseDocs,
+		enabled: showFinanceGPTDocs,
 	});
 
-	// Transform SurfSense docs to match the Document type
-	const surfsenseDocsAsDocuments: Document[] = useMemo(() => {
-		if (!surfsenseDocsResponse?.items) return [];
-		return surfsenseDocsResponse.items.map((doc) => ({
+	// Transform FinanceGPT docs to match the Document type
+	const financegptDocsAsDocuments: Document[] = useMemo(() => {
+		if (!financegptDocsResponse?.items) return [];
+		return financegptDocsResponse.items.map((doc) => ({
 			id: doc.id,
 			title: doc.title,
 			document_type: "SURFSENSE_DOCS",
@@ -142,16 +142,16 @@ export default function DocumentsTable() {
 			created_at: new Date().toISOString(),
 			search_space_id: -1, // Special value for global docs
 		}));
-	}, [surfsenseDocsResponse]);
+	}, [financegptDocsResponse]);
 
 	// Merge type counts with SURFSENSE_DOCS count
 	const typeCounts = useMemo(() => {
 		const counts = { ...(rawTypeCounts || {}) };
-		if (surfsenseDocsResponse?.total) {
-			counts.SURFSENSE_DOCS = surfsenseDocsResponse.total;
+		if (financegptDocsResponse?.total) {
+			counts.SURFSENSE_DOCS = financegptDocsResponse.total;
 		}
 		return counts;
-	}, [rawTypeCounts, surfsenseDocsResponse?.total]);
+	}, [rawTypeCounts, financegptDocsResponse?.total]);
 
 	// Extract documents and total based on search state
 	const documents = debouncedSearch.trim()

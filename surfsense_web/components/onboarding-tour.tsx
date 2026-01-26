@@ -489,7 +489,7 @@ export function OnboardingTour() {
 
 		// Check localStorage for CURRENT user ID (not stale cache)
 		// This ensures we check the correct user's tour status
-		const tourKey = `surfsense-tour-${currentUserId}`;
+		const tourKey = `financegpt-tour-${currentUserId}`;
 		const hasSeenTour = localStorage.getItem(tourKey);
 		if (hasSeenTour === "true") {
 			return; // Current user has seen tour, don't show
@@ -628,7 +628,7 @@ export function OnboardingTour() {
 		} else {
 			// Tour completed - save to localStorage
 			if (user?.id) {
-				const tourKey = `surfsense-tour-${user.id}`;
+				const tourKey = `financegpt-tour-${user.id}`;
 				localStorage.setItem(tourKey, "true");
 			}
 			setIsActive(false);
@@ -645,7 +645,7 @@ export function OnboardingTour() {
 	const handleSkip = useCallback(() => {
 		// Tour skipped - save to localStorage
 		if (user?.id) {
-			const tourKey = `surfsense-tour-${user.id}`;
+			const tourKey = `financegpt-tour-${user.id}`;
 			localStorage.setItem(tourKey, "true");
 		}
 		setIsActive(false);
@@ -655,7 +655,7 @@ export function OnboardingTour() {
 	const handleOverlayClick = useCallback(() => {
 		// Tour closed - save to localStorage
 		if (user?.id) {
-			const tourKey = `surfsense-tour-${user.id}`;
+			const tourKey = `financegpt-tour-${user.id}`;
 			localStorage.setItem(tourKey, "true");
 		}
 		setIsActive(false);
@@ -667,7 +667,7 @@ export function OnboardingTour() {
 			if (e.key === "Escape" && isActive) {
 				// Tour closed via escape - save to localStorage
 				if (user?.id) {
-					const tourKey = `surfsense-tour-${user.id}`;
+					const tourKey = `financegpt-tour-${user.id}`;
 					localStorage.setItem(tourKey, "true");
 				}
 				setIsActive(false);

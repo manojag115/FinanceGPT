@@ -2,7 +2,7 @@
 	"name": "surfsense_web",
 	"version": "0.0.11",
 	"private": true,
-	"description": "SurfSense Frontend",
+	"description": "FinanceGPT Frontend",
 	"scripts": {
 		"dev": "next dev --turbopack",
 		"dev:turbo": "next dev --turbopack",

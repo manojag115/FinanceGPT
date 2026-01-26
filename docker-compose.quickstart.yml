@@ -1,4 +1,4 @@
-# SurfSense Quick Start Docker Compose
+# FinanceGPT Quick Start Docker Compose
 # 
 # This is a simplified docker-compose for quick local deployment using pre-built images.
 # For production or customized deployments, use the main docker-compose.yml
@@ -6,7 +6,7 @@
 # Usage:
 #   1. (Optional) Create a .env file with your configuration
 #   2. Run: docker compose -f docker-compose.quickstart.yml up -d
-#   3. Access SurfSense at http://localhost:3000
+#   3. Access FinanceGPT at http://localhost:3000
 #
 # All Environment Variables are Optional:
 #   - SECRET_KEY: JWT secret key (auto-generated and persisted if not set)
@@ -19,15 +19,15 @@
 version: "3.8"
 
 services:
-  # All-in-one SurfSense container
-  surfsense:
-    image: ghcr.io/modsetter/surfsense:latest
-    container_name: surfsense
+  # All-in-one FinanceGPT container
+  financegpt:
+    image: ghcr.io/modsetter/financegpt:latest
+    container_name: financegpt
     ports:
       - "${FRONTEND_PORT:-3000}:3000"
       - "${BACKEND_PORT:-8000}:8000"
     volumes:
-      - surfsense-data:/data
+      - financegpt-data:/data
     environment:
       # Authentication (auto-generated if not set)
       - SECRET_KEY=${SECRET_KEY:-}
@@ -75,6 +75,6 @@ services:
       start_period: 120s
 
 volumes:
-  surfsense-data:
-    name: surfsense-data
+  financegpt-data:
+    name: financegpt-data
 

@@ -173,7 +173,7 @@ export interface RegenerateParams {
 		content: string;
 	}>;
 	mentionedDocumentIds?: number[];
-	mentionedSurfsenseDocIds?: number[];
+	mentionedFinanceGPTDocIds?: number[];
 }
 
 /**

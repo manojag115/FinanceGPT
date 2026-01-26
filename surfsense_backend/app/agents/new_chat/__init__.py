@@ -1,7 +1,7 @@
 """
-SurfSense New Chat Agent Module.
+FinanceGPT New Chat Agent Module.
 
-This module provides the SurfSense deep agent with configurable tools
+This module provides the FinanceGPT deep agent with configurable tools
 for knowledge base search, podcast generation, and more.
 
 Directory Structure:
@@ -18,7 +18,7 @@ Directory Structure:
 from .chat_deepagent import create_financegpt_deep_agent
 
 # Context
-from .context import SurfSenseContextSchema
+from .context import FinanceGPTContextSchema
 
 # LLM config
 from .llm_config import create_chat_litellm_from_config, load_llm_config_from_yaml
@@ -54,7 +54,7 @@ __all__ = [
     "FINANCEGPT_CITATION_INSTRUCTIONS",
     "FINANCEGPT_SYSTEM_PROMPT",
     # Context
-    "SurfSenseContextSchema",
+    "FinanceGPTContextSchema",
     "ToolDefinition",
     "build_financegpt_system_prompt",
     "build_tools",

@@ -6,8 +6,8 @@
 <a href="https://discord.gg/ejRNvftDp9">
 <img src="https://img.shields.io/discord/1359368468260192417" alt="Discord">
 </a>
-<a href="https://www.reddit.com/r/SurfSense/">
-<img src="https://img.shields.io/reddit/subreddit-subscribers/SurfSense?style=social" alt="Reddit">
+<a href="https://www.reddit.com/r/FinanceGPT/">
+<img src="https://img.shields.io/reddit/subreddit-subscribers/FinanceGPT?style=social" alt="Reddit">
 </a>
 </div>
 
@@ -17,14 +17,14 @@
 
 </div>
 
-# SurfSense
+# FinanceGPT
 
 将任何 LLM 连接到您的内部知识源，并与团队成员实时聊天。NotebookLM、Perplexity 和 Glean 的开源替代方案。
 
-SurfSense 是一个高度可定制的 AI 研究助手，可以连接外部数据源，如搜索引擎（SearxNG、Tavily、LinkUp）、Google Drive、Slack、Microsoft Teams、Linear、Jira、ClickUp、Confluence、BookStack、Gmail、Notion、YouTube、GitHub、Discord、Airtable、Google Calendar、Luma、Circleback、Elasticsearch、Obsidian 等，未来还会支持更多。
+FinanceGPT 是一个高度可定制的 AI 研究助手，可以连接外部数据源，如搜索引擎（SearxNG、Tavily、LinkUp）、Google Drive、Slack、Microsoft Teams、Linear、Jira、ClickUp、Confluence、BookStack、Gmail、Notion、YouTube、GitHub、Discord、Airtable、Google Calendar、Luma、Circleback、Elasticsearch、Obsidian 等，未来还会支持更多。
 
 <div align="center">
-<a href="https://trendshift.io/repositories/13606" target="_blank"><img src="https://trendshift.io/api/badge/repositories/13606" alt="MODSetter%2FSurfSense | Trendshift" style="width: 250px; height: 55px;" width="250" height="55"/></a>
+<a href="https://trendshift.io/repositories/13606" target="_blank"><img src="https://trendshift.io/api/badge/repositories/13606" alt="MODSetter%2FFinanceGPT | Trendshift" style="width: 250px; height: 55px;" width="250" height="55"/></a>
 </div>
 
 
@@ -120,25 +120,25 @@ https://github.com/user-attachments/assets/a0a16566-6967-4374-ac51-9b3e07fbecd7
 **音频/视频**（通过 STT 服务）：`.mp3`、`.wav`、`.mp4`、`.webm` 等
 
 ### 🔖 **跨浏览器扩展**
-- SurfSense 扩展可用于保存您喜欢的任何网页
+- FinanceGPT 扩展可用于保存您喜欢的任何网页
 - 主要用途是保存需要身份验证的受保护网页
 
 
 
 ## 功能请求与未来规划
 
-**SurfSense 正在积极开发中。** 虽然它还未达到生产就绪状态，但您可以帮助我们加快进度。
+**FinanceGPT 正在积极开发中。** 虽然它还未达到生产就绪状态，但您可以帮助我们加快进度。
 
-加入 [SurfSense Discord](https://discord.gg/ejRNvftDp9) 一起塑造 SurfSense 的未来！
+加入 [FinanceGPT Discord](https://discord.gg/ejRNvftDp9) 一起塑造 FinanceGPT 的未来！
 
 ## 🚀 路线图
 
 随时了解我们的开发进度和即将推出的功能！  
 查看我们的公开路线图并贡献您的想法或反馈：
 
-**📋 路线图讨论：** [SurfSense 2025-2026 路线图：深度代理、实时协作与 MCP 服务器](https://github.com/MODSetter/SurfSense/discussions/565)
+**📋 路线图讨论：** [FinanceGPT 2025-2026 路线图：深度代理、实时协作与 MCP 服务器](https://github.com/MODSetter/FinanceGPT/discussions/565)
 
-**📊 看板：** [SurfSense 项目看板](https://github.com/users/MODSetter/projects/3)
+**📊 看板：** [FinanceGPT 项目看板](https://github.com/users/MODSetter/projects/3)
 
 
 ## 如何开始？
@@ -146,26 +146,26 @@ https://github.com/user-attachments/assets/a0a16566-6967-4374-ac51-9b3e07fbecd7
 ### 使用 Docker 快速开始 🐳
 
 > [!TIP]
-> 对于生产部署，请使用完整的 [Docker Compose 设置](https://www.surfsense.com/docs/docker-installation)，它提供更多控制和可扩展性。
+> 对于生产部署，请使用完整的 [Docker Compose 设置](https://www.financegpt.com/docs/docker-installation)，它提供更多控制和可扩展性。
 
 **Linux/macOS:**
 
 ```bash
 docker run -d -p 3000:3000 -p 8000:8000 -p 5133:5133 \
-  -v surfsense-data:/data \
-  --name surfsense \
+  -v financegpt-data:/data \
+  --name financegpt \
   --restart unless-stopped \
-  ghcr.io/modsetter/surfsense:latest
+  ghcr.io/modsetter/financegpt:latest
 ```
 
 **Windows (PowerShell):**
 
 ```powershell
 docker run -d -p 3000:3000 -p 8000:8000 -p 5133:5133 `
-  -v surfsense-data:/data `
-  --name surfsense `
+  -v financegpt-data:/data `
+  --name financegpt `
   --restart unless-stopped `
-  ghcr.io/modsetter/surfsense:latest
+  ghcr.io/modsetter/financegpt:latest
 ```
 
 **使用自定义配置：**
@@ -174,7 +174,7 @@ docker run -d -p 3000:3000 -p 8000:8000 -p 5133:5133 `
 
 ```bash
 docker run -d -p 3000:3000 -p 8000:8000 -p 5133:5133 \
-  -v surfsense-data:/data \
+  -v financegpt-data:/data \
   -e EMBEDDING_MODEL=openai://text-embedding-ada-002 \
   -e OPENAI_API_KEY=your_openai_api_key \
   -e AUTH_TYPE=GOOGLE \
@@ -182,15 +182,15 @@ docker run -d -p 3000:3000 -p 8000:8000 -p 5133:5133 \
   -e GOOGLE_OAUTH_CLIENT_SECRET=your_google_client_secret \
   -e ETL_SERVICE=LLAMACLOUD \
   -e LLAMA_CLOUD_API_KEY=your_llama_cloud_key \
-  --name surfsense \
+  --name financegpt \
   --restart unless-stopped \
-  ghcr.io/modsetter/surfsense:latest
+  ghcr.io/modsetter/financegpt:latest
 ```
 
 > [!NOTE]
 > - 如果部署在带有 HTTPS 的反向代理后面，请添加 `-e BACKEND_URL=https://api.yourdomain.com`
 
-启动后，访问 SurfSense：
+启动后，访问 FinanceGPT：
 - **前端**: [http://localhost:3000](http://localhost:3000)
 - **后端 API**: [http://localhost:8000](http://localhost:8000)
 - **API 文档**: [http://localhost:8000/docs](http://localhost:8000/docs)
@@ -199,37 +199,37 @@ docker run -d -p 3000:3000 -p 8000:8000 -p 5133:5133 \
 **常用命令：**
 
 ```bash
-docker logs -f surfsense      # 查看日志
-docker stop surfsense         # 停止
-docker start surfsense        # 启动
-docker rm surfsense           # 删除（数据保留在卷中）
+docker logs -f financegpt      # 查看日志
+docker stop financegpt         # 停止
+docker start financegpt        # 启动
+docker rm financegpt           # 删除（数据保留在卷中）
 ```
 
 ### 安装选项
 
-SurfSense 提供多种入门方式：
+FinanceGPT 提供多种入门方式：
 
-1. **[SurfSense Cloud](https://www.surfsense.com/login)** - 无需任何设置即可试用 SurfSense 的最简单方法。
+1. **[FinanceGPT Cloud](https://www.financegpt.com/login)** - 无需任何设置即可试用 FinanceGPT 的最简单方法。
    - 无需安装
    - 即时访问所有功能
    - 非常适合快速上手
 
-2. **快速启动 Docker（上述方法）** - 一条命令即可在本地运行 SurfSense。
+2. **快速启动 Docker（上述方法）** - 一条命令即可在本地运行 FinanceGPT。
    - 一体化镜像，捆绑 PostgreSQL、Redis 和所有服务
    - 非常适合评估、开发和小型部署
    - 数据通过 Docker 卷持久化
 
-3. **[Docker Compose（生产环境）](https://www.surfsense.com/docs/docker-installation)** - 使用独立服务进行完整堆栈部署。
+3. **[Docker Compose（生产环境）](https://www.financegpt.com/docs/docker-installation)** - 使用独立服务进行完整堆栈部署。
    - 包含 pgAdmin，通过 Web UI 进行数据库管理
    - 支持通过 `.env` 文件自定义环境变量
    - 灵活的部署选项（完整堆栈或仅核心服务）
    - 更适合生产环境，支持独立扩展服务
 
-4. **[手动安装](https://www.surfsense.com/docs/manual-installation)** - 适合希望对设置有更多控制或需要自定义部署的用户。
+4. **[手动安装](https://www.financegpt.com/docs/manual-installation)** - 适合希望对设置有更多控制或需要自定义部署的用户。
 
 Docker 和手动安装指南都包含适用于 Windows、macOS 和 Linux 的详细操作系统特定说明。
 
-在自托管安装之前，请确保完成[先决条件设置步骤](https://www.surfsense.com/docs/)，包括：
+在自托管安装之前，请确保完成[先决条件设置步骤](https://www.financegpt.com/docs/)，包括：
 - 身份验证设置（可选 - 默认为 LOCAL 身份验证）
 - **文件处理 ETL 服务**（可选 - 默认为 Docling）：
   - Docling（默认，本地处理，无需 API 密钥，支持 PDF、Office 文档、图像、HTML、CSV）
@@ -317,7 +317,7 @@ Docker 和手动安装指南都包含适用于 Windows、macOS 和 Linux 的详�
 
 ### 添加新的代理工具
 
-想要为 SurfSense 代理添加新工具？非常简单：
+想要为 FinanceGPT 代理添加新工具？非常简单：
 
 1. 在 `surfsense_backend/app/agents/new_chat/tools/my_tool.py` 中创建您的工具文件
 2. 在 `registry.py` 中注册：
@@ -338,11 +338,11 @@ ToolDefinition(
 
 ## Star 历史
 
-<a href="https://www.star-history.com/#MODSetter/SurfSense&Date">
+<a href="https://www.star-history.com/#MODSetter/FinanceGPT&Date">
  <picture>
-   <source media="(prefers-color-scheme: dark)" srcset="https://api.star-history.com/svg?repos=MODSetter/SurfSense&type=Date&theme=dark" />
-   <source media="(prefers-color-scheme: light)" srcset="https://api.star-history.com/svg?repos=MODSetter/SurfSense&type=Date" />
-   <img alt="Star History Chart" src="https://api.star-history.com/svg?repos=MODSetter/SurfSense&type=Date" />
+   <source media="(prefers-color-scheme: dark)" srcset="https://api.star-history.com/svg?repos=MODSetter/FinanceGPT&type=Date&theme=dark" />
+   <source media="(prefers-color-scheme: light)" srcset="https://api.star-history.com/svg?repos=MODSetter/FinanceGPT&type=Date" />
+   <img alt="Star History Chart" src="https://api.star-history.com/svg?repos=MODSetter/FinanceGPT&type=Date" />
  </picture>
 </a>
 

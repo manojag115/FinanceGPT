@@ -126,7 +126,7 @@ export default function InviteAcceptPage() {
 		// Store the invite code to redirect back after login
 		localStorage.setItem("pending_invite_code", inviteCode);
 		// Save the current invite page URL so we can return after authentication
-		localStorage.setItem("surfsense_redirect_path", `/invite/${inviteCode}`);
+		localStorage.setItem("financegpt_redirect_path", `/invite/${inviteCode}`);
 		// Redirect to login (we manually set the path above since invite pages need special handling)
 		window.location.href = "/login";
 	};
@@ -379,8 +379,8 @@ export default function InviteAcceptPage() {
 						href="/"
 						className="inline-flex items-center gap-2 text-muted-foreground hover:text-foreground transition-colors"
 					>
-						<Image src="/icon-128.svg" alt="SurfSense" width={24} height={24} className="rounded" />
-						<span className="text-sm font-medium">SurfSense</span>
+						<Image src="/icon-128.svg" alt="FinanceGPT" width={24} height={24} className="rounded" />
+						<span className="text-sm font-medium">FinanceGPT</span>
 					</Link>
 				</motion.div>
 			</motion.div>

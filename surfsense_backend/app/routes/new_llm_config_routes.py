@@ -193,7 +193,7 @@ async def get_default_system_instructions_endpoint(
     user: User = Depends(current_active_user),
 ):
     """
-    Get the default SURFSENSE_SYSTEM_INSTRUCTIONS template.
+    Get the default FINANCEGPT_SYSTEM_INSTRUCTIONS template.
     Useful for pre-populating the UI when creating a new configuration.
     """
     return DefaultSystemInstructionsResponse(

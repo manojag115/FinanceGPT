@@ -188,7 +188,7 @@ export const IndexingConfigurationView: FC<IndexingConfigurationViewProps> = ({
 								<div className="text-xs sm:text-sm">
 									<p className="font-medium text-xs sm:text-sm">Indexing runs in the background</p>
 									<p className="text-muted-foreground mt-1 text-[10px] sm:text-sm">
-										You can continue using SurfSense while we sync your data. Check the Active tab
+										You can continue using FinanceGPT while we sync your data. Check the Active tab
 										to see progress.
 									</p>
 								</div>

@@ -123,9 +123,9 @@ export const DocumentMentionPicker = forwardRef<
 		});
 
 		queryClient.prefetchQuery({
-			queryKey: ["surfsense-docs-mention", "", false],
+			queryKey: ["financegpt-docs-mention", "", false],
 			queryFn: () =>
-				documentsApiService.getSurfsenseDocs({
+				documentsApiService.getFinanceGPTDocs({
 					queryParams: { page: 0, page_size: PAGE_SIZE },
 				}),
 			staleTime: 3 * 60 * 1000,
@@ -152,7 +152,7 @@ export const DocumentMentionPicker = forwardRef<
 		[searchSpaceId, debouncedSearch, isSearchValid]
 	);
 
-	const surfsenseDocsQueryParams = useMemo(() => {
+	const financegptDocsQueryParams = useMemo(() => {
 		const params: { page: number; page_size: number; title?: string } = {
 			page: 0,
 			page_size: PAGE_SIZE,
@@ -179,14 +179,14 @@ export const DocumentMentionPicker = forwardRef<
 	});
 
 	/**
-	 * TanStack Query for SurfSense documentation.
+	 * TanStack Query for FinanceGPT documentation.
 	 * - Uses AbortSignal for automatic request cancellation
 	 * - placeholderData: keepPreviousData prevents UI flicker during refetches
 	 */
-	const { data: surfsenseDocs, isLoading: isSurfsenseDocsLoading } = useQuery({
-		queryKey: ["surfsense-docs-mention", debouncedSearch, isSearchValid],
+	const { data: financegptDocs, isLoading: isFinanceGPTDocsLoading } = useQuery({
+		queryKey: ["financegpt-docs-mention", debouncedSearch, isSearchValid],
 		queryFn: ({ signal }) =>
-			documentsApiService.getSurfsenseDocs({ queryParams: surfsenseDocsQueryParams }, signal),
+			documentsApiService.getFinanceGPTDocs({ queryParams: financegptDocsQueryParams }, signal),
 		staleTime: 3 * 60 * 1000,
 		enabled: !shouldSearch || isSearchValid,
 		placeholderData: keepPreviousData,
@@ -207,9 +207,9 @@ export const DocumentMentionPicker = forwardRef<
 		if (currentPage === 0) {
 			const combinedDocs: Pick<Document, "id" | "title" | "document_type">[] = [];
 
-			// SurfSense docs displayed first in the list
-			if (surfsenseDocs?.items) {
-				for (const doc of surfsenseDocs.items) {
+			// FinanceGPT docs displayed first in the list
+			if (financegptDocs?.items) {
+				for (const doc of financegptDocs.items) {
 					combinedDocs.push({
 						id: doc.id,
 						title: doc.title,
@@ -225,7 +225,7 @@ export const DocumentMentionPicker = forwardRef<
 
 			setAccumulatedDocuments(filterBySearchTerm(combinedDocs));
 		}
-	}, [titleSearchResults, surfsenseDocs, currentPage, filterBySearchTerm]);
+	}, [titleSearchResults, financegptDocs, currentPage, filterBySearchTerm]);
 
 	// Load next page for infinite scroll pagination
 	const loadNextPage = useCallback(async () => {
@@ -283,13 +283,13 @@ export const DocumentMentionPicker = forwardRef<
 	const actualDocuments = isSingleCharSearch ? (clientFilteredDocs ?? []) : accumulatedDocuments;
 	// Only show loading spinner on initial load (no documents yet), not during subsequent searches
 	const actualLoading =
-		(isTitleSearchLoading || isSurfsenseDocsLoading) &&
+		(isTitleSearchLoading || isFinanceGPTDocsLoading) &&
 		currentPage === 0 &&
 		!isSingleCharSearch &&
 		accumulatedDocuments.length === 0;
 	// Partition documents by type for grouped UI rendering
-	const surfsenseDocsList = useMemo(
-		() => actualDocuments.filter((doc) => doc.document_type === "SURFSENSE_DOCS"),
+	const financeGPTDocsList = useMemo(
+		() => actualDocuments.filter((doc) => doc.document_type === "FINANCEGPT_DOCS"),
 		[actualDocuments]
 	);
 	const userDocsList = useMemo(
@@ -444,13 +444,13 @@ export const DocumentMentionPicker = forwardRef<
 					</div>
 				) : actualDocuments.length > 0 ? (
 					<div className="py-1 px-2">
-						{/* SurfSense Documentation */}
-						{surfsenseDocsList.length > 0 && (
+						{/* FinanceGPT Documentation */}
+						{financegptDocsList.length > 0 && (
 							<>
 								<div className="px-3 py-2 text-xs font-bold text-muted-foreground/55">
-									SurfSense Docs
+									FinanceGPT Docs
 								</div>
-								{surfsenseDocsList.map((doc) => {
+								{financegptDocsList.map((doc) => {
 									const docKey = `${doc.document_type}:${doc.id}`;
 									const isAlreadySelected = selectedKeys.has(docKey);
 									const selectableIndex = selectableDocuments.findIndex(

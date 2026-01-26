@@ -9,7 +9,7 @@ import {
 	type GetDocumentRequest,
 	type GetDocumentsRequest,
 	type GetDocumentTypeCountsRequest,
-	type GetSurfsenseDocsRequest,
+	type GetFinanceGPTDocsRequest,
 	getDocumentByChunkRequest,
 	getDocumentByChunkResponse,
 	getDocumentRequest,
@@ -18,9 +18,9 @@ import {
 	getDocumentsResponse,
 	getDocumentTypeCountsRequest,
 	getDocumentTypeCountsResponse,
-	getSurfsenseDocsByChunkResponse,
-	getSurfsenseDocsRequest,
-	getSurfsenseDocsResponse,
+	getFinanceGPTDocsByChunkResponse,
+	getFinanceGPTDocsRequest,
+	getFinanceGPTDocsResponse,
 	type SearchDocumentsRequest,
 	type SearchDocumentTitlesRequest,
 	searchDocumentsRequest,
@@ -249,23 +249,23 @@ class DocumentsApiService {
 	};
 
 	/**
-	 * Get Surfsense documentation by chunk ID
+	 * Get FinanceGPT documentation by chunk ID
 	 * Used for resolving [citation:doc-XXX] citations
 	 */
-	getSurfsenseDocByChunk = async (chunkId: number) => {
+	getFinanceGPTDocByChunk = async (chunkId: number) => {
 		return baseApiService.get(
 				`/api/v1/financegpt-docs/by-chunk/${chunkId}`,
-			getSurfsenseDocsByChunkResponse
+			getFinanceGPTDocsByChunkResponse
 		);
 	};
 
 	/**
-	 * List all Surfsense documentation documents
+	 * List all FinanceGPT documentation documents
 	 * @param request - The request with query params
 	 * @param signal - Optional AbortSignal for request cancellation
 	 */
-	getSurfsenseDocs = async (request: GetSurfsenseDocsRequest, signal?: AbortSignal) => {
-		const parsedRequest = getSurfsenseDocsRequest.safeParse(request);
+	getFinanceGPTDocs = async (request: GetFinanceGPTDocsRequest, signal?: AbortSignal) => {
+		const parsedRequest = getFinanceGPTDocsRequest.safeParse(request);
 
 		if (!parsedRequest.success) {
 			console.error("Invalid request:", parsedRequest.error);
@@ -287,7 +287,7 @@ class DocumentsApiService {
 
 		const url = `/api/v1/financegpt-docs?${queryParams}`;
 
-		return baseApiService.get(url, getSurfsenseDocsResponse, { signal });
+		return baseApiService.get(url, getFinanceGPTDocsResponse, { signal });
 	};
 
 	/**

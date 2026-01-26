@@ -38,17 +38,17 @@ services:
     command: redis-server --appendonly yes
 
   backend:
-    build: ./surfsense_backend
-    # image: ghcr.io/modsetter/surfsense_backend:latest
+    build: ./financegpt_backend
+    # image: ghcr.io/modsetter/financegpt_backend:latest
     ports:
       - "${BACKEND_PORT:-8000}:8000"
     volumes:
-      - ./surfsense_backend/app:/app/app
+      - ./financegpt_backend/app:/app/app
       - shared_temp:/tmp
       # Uncomment and edit the line below to enable Obsidian vault indexing
       # - /path/to/your/obsidian/vault:/obsidian-vault:ro
     env_file:
-      - ./surfsense_backend/.env
+      - ./financegpt_backend/.env
     environment:
       - DATABASE_URL=postgresql+asyncpg://${POSTGRES_USER:-postgres}:${POSTGRES_PASSWORD:-postgres}@db:5432/${POSTGRES_DB:-financegpt}
       - CELERY_BROKER_URL=redis://redis:${REDIS_PORT:-6379}/0
@@ -67,16 +67,16 @@ services:
 
   # Run these services separately in production
   # celery_worker:
-  #   build: ./surfsense_backend
-  #   # image: ghcr.io/modsetter/surfsense_backend:latest
+  #   build: ./financegpt_backend
+  #   # image: ghcr.io/modsetter/financegpt_backend:latest
   #   command: celery -A app.celery_app worker --loglevel=info --concurrency=1 --pool=solo
   #   volumes:
-  #     - ./surfsense_backend:/app
+  #     - ./financegpt_backend:/app
   #     - shared_temp:/tmp
   #   env_file:
-  #     - ./surfsense_backend/.env
+  #     - ./financegpt_backend/.env
   #   environment:
-  #     - DATABASE_URL=postgresql+asyncpg://${POSTGRES_USER:-postgres}:${POSTGRES_PASSWORD:-postgres}@db:5432/${POSTGRES_DB:-surfsense}
+  #     - DATABASE_URL=postgresql+asyncpg://${POSTGRES_USER:-postgres}:${POSTGRES_PASSWORD:-postgres}@db:5432/${POSTGRES_DB:-financegpt}
   #     - CELERY_BROKER_URL=redis://redis:${REDIS_PORT:-6379}/0
   #     - CELERY_RESULT_BACKEND=redis://redis:${REDIS_PORT:-6379}/0
   #     - PYTHONPATH=/app
@@ -86,16 +86,16 @@ services:
   #     - backend
 
   # celery_beat:
-  #   build: ./surfsense_backend
-  #   # image: ghcr.io/modsetter/surfsense_backend:latest
+  #   build: ./financegpt_backend
+  #   # image: ghcr.io/modsetter/financegpt_backend:latest
   #   command: celery -A app.celery_app beat --loglevel=info
   #   volumes:
-  #     - ./surfsense_backend:/app
+  #     - ./financegpt_backend:/app
   #     - shared_temp:/tmp
   #   env_file:
-  #     - ./surfsense_backend/.env
+  #     - ./financegpt_backend/.env
   #   environment:
-  #     - DATABASE_URL=postgresql+asyncpg://${POSTGRES_USER:-postgres}:${POSTGRES_PASSWORD:-postgres}@db:5432/${POSTGRES_DB:-surfsense}
+  #     - DATABASE_URL=postgresql+asyncpg://${POSTGRES_USER:-postgres}:${POSTGRES_PASSWORD:-postgres}@db:5432/${POSTGRES_DB:-financegpt}
   #     - CELERY_BROKER_URL=redis://redis:${REDIS_PORT:-6379}/0
   #     - CELERY_RESULT_BACKEND=redis://redis:${REDIS_PORT:-6379}/0
   #     - PYTHONPATH=/app
@@ -105,13 +105,13 @@ services:
   #     - celery_worker
 
   # flower:
-  #   build: ./surfsense_backend
-  #   # image: ghcr.io/modsetter/surfsense_backend:latest
+  #   build: ./financegpt_backend
+  #   # image: ghcr.io/modsetter/financegpt_backend:latest
   #   command: celery -A app.celery_app flower --port=5555
   #   ports:
   #     - "${FLOWER_PORT:-5555}:5555"
   #   env_file:
-  #     - ./surfsense_backend/.env
+  #     - ./financegpt_backend/.env
   #   environment:
   #     - CELERY_BROKER_URL=redis://redis:${REDIS_PORT:-6379}/0
   #     - CELERY_RESULT_BACKEND=redis://redis:${REDIS_PORT:-6379}/0
@@ -139,8 +139,8 @@ services:
 
   frontend:
     build:
-      context: ./surfsense_web
-      # image: ghcr.io/modsetter/surfsense_ui:latest
+      context: ./financegpt_web
+      # image: ghcr.io/modsetter/financegpt_ui:latest
       args:
         NEXT_PUBLIC_FASTAPI_BACKEND_URL: ${NEXT_PUBLIC_FASTAPI_BACKEND_URL:-http://localhost:8000}
         NEXT_PUBLIC_FASTAPI_BACKEND_AUTH_TYPE: ${NEXT_PUBLIC_FASTAPI_BACKEND_AUTH_TYPE:-LOCAL}
@@ -148,7 +148,7 @@ services:
     ports:
       - "${FRONTEND_PORT:-3000}:3000"
     env_file:
-      - ./surfsense_web/.env
+      - ./financegpt_web/.env
     environment:
       - NEXT_PUBLIC_ELECTRIC_URL=${NEXT_PUBLIC_ELECTRIC_URL:-http://localhost:5133}
       - NEXT_PUBLIC_ELECTRIC_AUTH_MODE=insecure

@@ -1,5 +1,5 @@
 """
-Knowledge base search tool for the SurfSense agent.
+Knowledge base search tool for the FinanceGPT agent.
 
 This module provides:
 - Connector constants and normalization
@@ -581,9 +581,9 @@ def create_search_knowledge_base_tool(
 
         ## Available connector enums for `connectors_to_search`
 
-        - EXTENSION: "Web content saved via SurfSense browser extension" (personal browsing history)
+        - EXTENSION: "Web content saved via FinanceGPT browser extension" (personal browsing history)
         - FILE: "User-uploaded documents (PDFs, Word, etc.)" (personal files)
-        - NOTE: "SurfSense Notes" (notes created inside SurfSense)
+        - NOTE: "FinanceGPT Notes" (notes created inside FinanceGPT)
         - SLACK_CONNECTOR: "Slack conversations and shared content" (personal workspace communications)
         - TEAMS_CONNECTOR: "Microsoft Teams messages and conversations" (personal Teams communications)
         - NOTION_CONNECTOR: "Notion workspace pages and databases" (personal knowledge management)
@@ -604,7 +604,7 @@ def create_search_knowledge_base_tool(
         - LINKUP_API: "Linkup search API results" (personalized search results)
         - BAIDU_SEARCH_API: "Baidu search API results" (personalized search results)
         - LUMA_CONNECTOR: "Luma events"
-        - WEBCRAWLER_CONNECTOR: "Webpages indexed by SurfSense" (personally selected websites)
+        - WEBCRAWLER_CONNECTOR: "Webpages indexed by FinanceGPT" (personally selected websites)
         - BOOKSTACK_CONNECTOR: "BookStack pages" (personal documentation)
         - CIRCLEBACK: "Circleback meeting notes, transcripts, and action items" (personal meeting records)
         - OBSIDIAN_CONNECTOR: "Obsidian vault notes and markdown files" (personal notes and knowledge management)

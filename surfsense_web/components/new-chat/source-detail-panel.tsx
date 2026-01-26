@@ -22,13 +22,13 @@ import { Collapsible, CollapsibleContent, CollapsibleTrigger } from "@/component
 import { ScrollArea } from "@/components/ui/scroll-area";
 import type {
 	GetDocumentByChunkResponse,
-	GetSurfsenseDocsByChunkResponse,
+	GetFinanceGPTDocsByChunkResponse,
 } from "@/contracts/types/document.types";
 import { documentsApiService } from "@/lib/apis/documents-api.service";
 import { cacheKeys } from "@/lib/query-client/cache-keys";
 import { cn } from "@/lib/utils";
 
-type DocumentData = GetDocumentByChunkResponse | GetSurfsenseDocsByChunkResponse;
+type DocumentData = GetDocumentByChunkResponse | GetFinanceGPTDocsByChunkResponse;
 
 interface SourceDetailPanelProps {
 	open: boolean;
@@ -144,7 +144,7 @@ export function SourceDetailPanel({
 			: cacheKeys.documents.byChunk(chunkId.toString()),
 		queryFn: async () => {
 			if (isDocsChunk) {
-				return documentsApiService.getSurfsenseDocByChunk(chunkId);
+				return documentsApiService.getFinanceGPTDocByChunk(chunkId);
 			}
 			return documentsApiService.getDocumentByChunk({ chunk_id: chunkId });
 		},

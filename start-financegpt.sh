@@ -38,7 +38,7 @@ echo "⏳ Waiting for services to be ready..."
 sleep 5
 
 # Check if containers are running
-if docker ps | grep -q surfsense; then
+if docker ps | grep -q financegpt; then
     echo ""
     echo "=================================="
     echo "✅ FinanceGPT is running!"

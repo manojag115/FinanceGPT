@@ -2,7 +2,7 @@
 
 ## ✅ What We've Built
 
-You've successfully transformed SurfSense into **FinanceGPT** with CSV/OFX-based financial tracking! Here's what's ready:
+You've successfully transformed FinanceGPT into **FinanceGPT** with CSV/OFX-based financial tracking! Here's what's ready:
 
 ### Backend Components Created:
 - ✅ **Database Schema** - New financial connector & document types

@@ -13,7 +13,7 @@ interface InlineCitationProps {
 /**
  * Inline citation component for the new chat.
  * Renders a clickable numbered badge that opens the SourceDetailPanel with document chunk details.
- * Supports both regular knowledge base chunks and Surfsense documentation chunks.
+ * Supports both regular knowledge base chunks and FinanceGPT documentation chunks.
  */
 export const InlineCitation: FC<InlineCitationProps> = ({
 	chunkId,
@@ -28,7 +28,7 @@ export const InlineCitation: FC<InlineCitationProps> = ({
 			onOpenChange={setIsOpen}
 			chunkId={chunkId}
 			sourceType={isDocsChunk ? "SURFSENSE_DOCS" : ""}
-			title={isDocsChunk ? "Surfsense Documentation" : "Source"}
+			title={isDocsChunk ? "FinanceGPT Documentation" : "Source"}
 			description=""
 			url=""
 			isDocsChunk={isDocsChunk}

@@ -315,7 +315,7 @@ export function LayoutDataProvider({
 			}
 
 			if (typeof window !== "undefined") {
-				localStorage.removeItem("surfsense_bearer_token");
+				localStorage.removeItem("financegpt_bearer_token");
 				router.push("/");
 			}
 		} catch (error) {

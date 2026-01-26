@@ -20,7 +20,7 @@ def build_graph():
 
     # Compile the workflow into an executable graph
     graph = workflow.compile()
-    graph.name = "Surfsense Podcaster"  # This defines the custom name in LangSmith
+    graph.name = "FinanceGPT Podcaster"  # This defines the custom name in LangSmith
 
     return graph
 

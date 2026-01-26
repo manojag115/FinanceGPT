@@ -12,7 +12,7 @@ export async function getElectricAuthToken(): Promise<string> {
 	// In production, get token from your auth system
 	// This should match your backend auth token
 	if (typeof window !== "undefined") {
-		const token = localStorage.getItem("surfsense_bearer_token");
+		const token = localStorage.getItem("financegpt_bearer_token");
 		return token || "";
 	}
 

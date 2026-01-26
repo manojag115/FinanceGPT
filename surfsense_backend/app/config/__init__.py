@@ -58,7 +58,7 @@ class Config:
         # check if ffmpeg is installed again
         if not is_ffmpeg_installed():
             raise ValueError(
-                "FFmpeg is not installed on the system. Please install it to use the Surfsense Podcaster."
+                "FFmpeg is not installed on the system. Please install it to use the FinanceGPT Podcaster."
             )
 
     # Deployment Mode (self-hosted or cloud)

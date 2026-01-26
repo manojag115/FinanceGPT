@@ -19,11 +19,11 @@ const roboto = Roboto({
 });
 
 export const metadata: Metadata = {
-	title: "SurfSense – Customizable AI Research & Knowledge Management Assistant",
+	title: "FinanceGPT – Customizable AI Research & Knowledge Management Assistant",
 	description:
-		"SurfSense is an AI-powered research assistant that integrates with tools like Notion, GitHub, Slack, and more to help you efficiently manage, search, and chat with your documents. Generate podcasts, perform hybrid search, and unlock insights from your knowledge base.",
+		"FinanceGPT is an AI-powered research assistant that integrates with tools like Notion, GitHub, Slack, and more to help you efficiently manage, search, and chat with your documents. Generate podcasts, perform hybrid search, and unlock insights from your knowledge base.",
 	keywords: [
-		"SurfSense",
+		"FinanceGPT",
 		"AI research assistant",
 		"AI knowledge management",
 		"AI document assistant",
@@ -48,35 +48,35 @@ export const metadata: Metadata = {
 		"AI-powered search assistant",
 	],
 	openGraph: {
-		title: "SurfSense – AI Research & Knowledge Management Assistant",
+		title: "FinanceGPT – AI Research & Knowledge Management Assistant",
 		description:
-			"Connect your documents and tools like Notion, Slack, GitHub, and more to your private AI assistant. SurfSense offers powerful search, document chat, podcast generation, and RAG APIs to enhance your workflow.",
-		url: "https://surfsense.com",
-		siteName: "SurfSense",
+			"Connect your documents and tools like Notion, Slack, GitHub, and more to your private AI assistant. FinanceGPT offers powerful search, document chat, podcast generation, and RAG APIs to enhance your workflow.",
+		url: "https://financegpt.com",
+		siteName: "FinanceGPT",
 		type: "website",
 		images: [
 			{
-				url: "https://surfsense.com/og-image.png",
+				url: "https://financegpt.com/og-image.png",
 				width: 1200,
 				height: 630,
-				alt: "SurfSense AI Research Assistant",
+				alt: "FinanceGPT AI Research Assistant",
 			},
 		],
 		locale: "en_US",
 	},
 	twitter: {
 		card: "summary_large_image",
-		title: "SurfSense – AI Assistant for Research & Knowledge Management",
+		title: "FinanceGPT – AI Assistant for Research & Knowledge Management",
 		description:
-			"Have your own NotebookLM or Perplexity, but better. SurfSense connects external tools, allows chat with your documents, and generates fast, high-quality podcasts.",
-		creator: "https://surfsense.com",
-		site: "https://surfsense.com",
+			"Have your own NotebookLM or Perplexity, but better. FinanceGPT connects external tools, allows chat with your documents, and generates fast, high-quality podcasts.",
+		creator: "https://financegpt.com",
+		site: "https://financegpt.com",
 		images: [
 			{
-				url: "https://surfsense.com/og-image-twitter.png",
+				url: "https://financegpt.com/og-image-twitter.png",
 				width: 1200,
 				height: 630,
-				alt: "SurfSense AI Assistant Preview",
+				alt: "FinanceGPT AI Assistant Preview",
 			},
 		],
 	},

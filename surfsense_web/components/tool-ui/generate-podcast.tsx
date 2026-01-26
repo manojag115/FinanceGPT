@@ -356,7 +356,7 @@ function PodcastTaskPoller({ taskId, title }: { taskId: string; title: string })
 				description={
 					taskStatus.transcript_entries
 						? `${taskStatus.transcript_entries} dialogue entries`
-						: "SurfSense AI-generated podcast"
+						: "FinanceGPT AI-generated podcast"
 				}
 			/>
 		);
@@ -380,7 +380,7 @@ export const GeneratePodcastToolUI = makeAssistantToolUI<
 >({
 	toolName: "generate_podcast",
 	render: function GeneratePodcastUI({ args, result, status }) {
-		const title = args.podcast_title || "SurfSense Podcast";
+		const title = args.podcast_title || "FinanceGPT Podcast";
 
 		// Loading state - tool is still running (agent processing)
 		if (status.type === "running" || status.type === "requires-action") {
@@ -455,7 +455,7 @@ export const GeneratePodcastToolUI = makeAssistantToolUI<
 					description={
 						result.transcript_entries
 							? `${result.transcript_entries} dialogue entries`
-							: "SurfSense AI-generated podcast"
+							: "FinanceGPT AI-generated podcast"
 					}
 				/>
 			);

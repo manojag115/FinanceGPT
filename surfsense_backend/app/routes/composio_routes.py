@@ -136,7 +136,7 @@ async def initiate_composio_auth(
         # Initiate Composio OAuth
         service = ComposioService()
         # Use user.id as the entity ID in Composio (converted to string for Composio)
-        entity_id = f"surfsense_{user.id}"
+        entity_id = f"financegpt_{user.id}"
 
         connection_result = await service.initiate_connection(
             user_id=entity_id,

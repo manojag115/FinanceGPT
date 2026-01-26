@@ -181,8 +181,8 @@ class NewChatRequest(BaseModel):
     mentioned_document_ids: list[int] | None = (
         None  # Optional document IDs mentioned with @ in the chat
     )
-    mentioned_surfsense_doc_ids: list[int] | None = (
-        None  # Optional SurfSense documentation IDs mentioned with @ in the chat
+    mentioned_financegpt_doc_ids: list[int] | None = (
+        None  # Optional FinanceGPT documentation IDs mentioned with @ in the chat
     )
 
 
@@ -203,4 +203,4 @@ class RegenerateRequest(BaseModel):
     )
     attachments: list[ChatAttachment] | None = None
     mentioned_document_ids: list[int] | None = None
-    mentioned_surfsense_doc_ids: list[int] | None = None
+    mentioned_financegpt_doc_ids: list[int] | None = None

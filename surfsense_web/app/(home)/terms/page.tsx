@@ -1,8 +1,8 @@
 import type { Metadata } from "next";
 
 export const metadata: Metadata = {
-	title: "Terms of Service | SurfSense",
-	description: "Terms of Service for SurfSense application",
+	title: "Terms of Service | FinanceGPT",
+	description: "Terms of Service for FinanceGPT application",
 };
 
 export default function TermsOfService() {
@@ -16,8 +16,8 @@ export default function TermsOfService() {
 				<section className="mb-8">
 					<h2 className="text-2xl font-semibold mb-4">1. Introduction</h2>
 					<p>
-						Welcome to SurfSense. These Terms of Service govern your access to and use of the
-						SurfSense website and services. By accessing or using our services, you agree to be
+						Welcome to FinanceGPT. These Terms of Service govern your access to and use of the
+						FinanceGPT website and services. By accessing or using our services, you agree to be
 						bound by these Terms.
 					</p>
 					<p className="mt-4">
@@ -70,7 +70,7 @@ export default function TermsOfService() {
 					<h2 className="text-2xl font-semibold mb-4">4. Privacy and Copyright Protection</h2>
 					<p>
 						Our privacy policies explain how we treat your personal data and protect your privacy
-						when you use our Services. By using our Services, you agree that SurfSense can use such
+						when you use our Services. By using our Services, you agree that FinanceGPT can use such
 						data in accordance with our privacy policies.
 					</p>
 					<p className="mt-4">
@@ -82,15 +82,15 @@ export default function TermsOfService() {
 				<section className="mb-8">
 					<h2 className="text-2xl font-semibold mb-4">5. License and Intellectual Property</h2>
 					<p>
-						SurfSense gives you a personal, worldwide, royalty-free, non-assignable and
+						FinanceGPT gives you a personal, worldwide, royalty-free, non-assignable and
 						non-exclusive license to use the software provided to you as part of the Services. This
 						license is for the sole purpose of enabling you to use and enjoy the benefit of the
-						Services as provided by SurfSense, in the manner permitted by these terms.
+						Services as provided by FinanceGPT, in the manner permitted by these terms.
 					</p>
 					<p className="mt-4">
 						All content included in or made available through our Services—such as text, graphics,
 						logos, button icons, images, audio clips, digital downloads, data compilations, and
-						software—is the property of SurfSense or its content suppliers and is protected by
+						software—is the property of FinanceGPT or its content suppliers and is protected by
 						international copyright, trademark, and other intellectual property laws.
 					</p>
 					<p className="mt-4">
@@ -106,7 +106,7 @@ export default function TermsOfService() {
 					<p>
 						We are constantly changing and improving our Services. We may add or remove
 						functionalities or features, and we may suspend or stop a Service altogether. You can
-						stop using our Services at any time. SurfSense may also stop providing Services to you,
+						stop using our Services at any time. FinanceGPT may also stop providing Services to you,
 						or add or create new limits on our Services at any time.
 					</p>
 					<p className="mt-4">
@@ -165,7 +165,7 @@ export default function TermsOfService() {
 				<section className="mb-8">
 					<h2 className="text-2xl font-semibold mb-4">9. Indemnification</h2>
 					<p>
-						You agree to defend, indemnify, and hold harmless SurfSense, its affiliates, and their
+						You agree to defend, indemnify, and hold harmless FinanceGPT, its affiliates, and their
 						respective officers, directors, employees, and agents from and against any claims,
 						liabilities, damages, judgments, awards, losses, costs, expenses, or fees (including
 						reasonable attorneys' fees) arising out of or relating to your violation of these Terms
@@ -180,7 +180,7 @@ export default function TermsOfService() {
 						Any dispute arising out of or relating to these Terms, including the validity,
 						interpretation, breach, or termination thereof, shall be resolved by arbitration in
 						accordance with the rules of the arbitration authority in the jurisdiction where
-						SurfSense operates. The arbitration shall be conducted by one arbitrator, in the English
+						FinanceGPT operates. The arbitration shall be conducted by one arbitrator, in the English
 						language, and the decision of the arbitrator shall be final and binding on the parties.
 					</p>
 					<p className="mt-4">
@@ -202,7 +202,7 @@ export default function TermsOfService() {
 					<p className="mt-4">
 						If there is a conflict between these terms and the additional terms, the additional
 						terms will control for that conflict. These terms control the relationship between
-						SurfSense and you. They do not create any third-party beneficiary rights.
+						FinanceGPT and you. They do not create any third-party beneficiary rights.
 					</p>
 					<p className="mt-4">
 						If you do not comply with these terms, and we don't take action right away, this doesn't
@@ -216,7 +216,7 @@ export default function TermsOfService() {
 					<h2 className="text-2xl font-semibold mb-4">12. Contact Us</h2>
 					<p>If you have any questions about these Terms, please contact us at:</p>
 					<p className="mt-2">
-						<strong>Email:</strong> rohan@surfsense.com
+						<strong>Email:</strong> rohan@financegpt.com
 					</p>
 				</section>
 			</div>

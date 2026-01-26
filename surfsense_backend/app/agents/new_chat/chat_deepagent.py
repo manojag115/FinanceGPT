@@ -1,7 +1,7 @@
 """
-SurfSense deep agent implementation.
+FinanceGPT deep agent implementation.
 
-This module provides the factory function for creating SurfSense deep agents
+This module provides the factory function for creating FinanceGPT deep agents
 with configurable tools via the tools registry and configurable prompts
 via NewLLMConfig.
 """
@@ -14,7 +14,7 @@ from langchain_litellm import ChatLiteLLM
 from langgraph.types import Checkpointer
 from sqlalchemy.ext.asyncio import AsyncSession
 
-from app.agents.new_chat.context import SurfSenseContextSchema
+from app.agents.new_chat.context import FinanceGPTContextSchema
 from app.agents.new_chat.llm_config import AgentConfig
 from app.agents.new_chat.system_prompt import (
     build_configurable_system_prompt,
@@ -42,7 +42,7 @@ async def create_financegpt_deep_agent(
     firecrawl_api_key: str | None = None,
 ):
     """
-    Create a SurfSense deep agent with configurable tools and prompts.
+    Create a FinanceGPT deep agent with configurable tools and prompts.
 
     The agent comes with built-in tools that can be configured:
     - search_knowledge_base: Search the user's personal knowledge base
@@ -87,7 +87,7 @@ async def create_financegpt_deep_agent(
         agent = create_financegpt_deep_agent(llm, search_space_id, db_session, ...)
 
         # Create agent with custom prompt configuration
-        agent = create_surfsense_deep_agent(
+        agent = create_financegpt_deep_agent(
             llm, search_space_id, db_session, ...,
             agent_config=AgentConfig(
                 provider="OPENAI",
@@ -99,19 +99,19 @@ async def create_financegpt_deep_agent(
         )
 
         # Create agent with only specific tools
-        agent = create_surfsense_deep_agent(
+        agent = create_financegpt_deep_agent(
             llm, search_space_id, db_session, ...,
             enabled_tools=["search_knowledge_base", "link_preview"]
         )
 
         # Create agent without podcast generation
-        agent = create_surfsense_deep_agent(
+        agent = create_financegpt_deep_agent(
             llm, search_space_id, db_session, ...,
             disabled_tools=["generate_podcast"]
         )
 
         # Add custom tools
-        agent = create_surfsense_deep_agent(
+        agent = create_financegpt_deep_agent(
             llm, search_space_id, db_session, ...,
             additional_tools=[my_custom_tool]
         )
@@ -151,7 +151,7 @@ async def create_financegpt_deep_agent(
         model=llm,
         tools=tools,
         system_prompt=system_prompt,
-        context_schema=SurfSenseContextSchema,
+        context_schema=FinanceGPTContextSchema,
         checkpointer=checkpointer,
     )
 

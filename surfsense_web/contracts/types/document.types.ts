@@ -64,23 +64,23 @@ export const documentWithChunks = document.extend({
 });
 
 /**
- * Surfsense documentation schemas
+ * FinanceGPT documentation schemas
  * Follows the same pattern as document/documentWithChunks
  */
-export const surfsenseDocsChunk = z.object({
+export const financegptDocsChunk = z.object({
 	id: z.number(),
 	content: z.string(),
 });
 
-export const surfsenseDocsDocument = z.object({
+export const financegptDocsDocument = z.object({
 	id: z.number(),
 	title: z.string(),
 	source: z.string(),
 	content: z.string(),
 });
 
-export const surfsenseDocsDocumentWithChunks = surfsenseDocsDocument.extend({
-	chunks: z.array(surfsenseDocsChunk),
+export const financegptDocsDocumentWithChunks = financegptDocsDocument.extend({
+	chunks: z.array(financegptDocsChunk),
 });
 
 /**
@@ -202,25 +202,25 @@ export const getDocumentByChunkRequest = z.object({
 export const getDocumentByChunkResponse = documentWithChunks;
 
 /**
- * Get Surfsense docs by chunk
+ * Get FinanceGPT docs by chunk
  */
-export const getSurfsenseDocsByChunkRequest = z.object({
+export const getFinanceGPTDocsByChunkRequest = z.object({
 	chunk_id: z.number(),
 });
 
-export const getSurfsenseDocsByChunkResponse = surfsenseDocsDocumentWithChunks;
+export const getFinanceGPTDocsByChunkResponse = financegptDocsDocumentWithChunks;
 
 /**
- * List Surfsense docs
+ * List FinanceGPT docs
  */
-export const getSurfsenseDocsRequest = z.object({
+export const getFinanceGPTDocsRequest = z.object({
 	queryParams: paginationQueryParams.extend({
 		title: z.string().optional(),
 	}),
 });
 
-export const getSurfsenseDocsResponse = z.object({
-	items: z.array(surfsenseDocsDocument),
+export const getFinanceGPTDocsResponse = z.object({
+	items: z.array(financegptDocsDocument),
 	total: z.number(),
 	page: z.number(),
 	page_size: z.number(),
@@ -269,10 +269,10 @@ export type UpdateDocumentResponse = z.infer<typeof updateDocumentResponse>;
 export type DeleteDocumentRequest = z.infer<typeof deleteDocumentRequest>;
 export type DeleteDocumentResponse = z.infer<typeof deleteDocumentResponse>;
 export type DocumentTypeEnum = z.infer<typeof documentTypeEnum>;
-export type SurfsenseDocsChunk = z.infer<typeof surfsenseDocsChunk>;
-export type SurfsenseDocsDocument = z.infer<typeof surfsenseDocsDocument>;
-export type SurfsenseDocsDocumentWithChunks = z.infer<typeof surfsenseDocsDocumentWithChunks>;
-export type GetSurfsenseDocsByChunkRequest = z.infer<typeof getSurfsenseDocsByChunkRequest>;
-export type GetSurfsenseDocsByChunkResponse = z.infer<typeof getSurfsenseDocsByChunkResponse>;
-export type GetSurfsenseDocsRequest = z.infer<typeof getSurfsenseDocsRequest>;
-export type GetSurfsenseDocsResponse = z.infer<typeof getSurfsenseDocsResponse>;
+export type FinanceGPTDocsChunk = z.infer<typeof financegptDocsChunk>;
+export type FinanceGPTDocsDocument = z.infer<typeof financegptDocsDocument>;
+export type FinanceGPTDocsDocumentWithChunks = z.infer<typeof financegptDocsDocumentWithChunks>;
+export type GetFinanceGPTDocsByChunkRequest = z.infer<typeof getFinanceGPTDocsByChunkRequest>;
+export type GetFinanceGPTDocsByChunkResponse = z.infer<typeof getFinanceGPTDocsByChunkResponse>;
+export type GetFinanceGPTDocsRequest = z.infer<typeof getFinanceGPTDocsRequest>;
+export type GetFinanceGPTDocsResponse = z.infer<typeof getFinanceGPTDocsResponse>;
