@@ -226,45 +226,22 @@ export function PlaidManageAccounts({
 
 			{/* Scrollable Content */}
 			<div className="flex-1 overflow-y-auto px-6 py-4">
-				{/* Accounts List */}
-				<div className="space-y-3 mb-6">
+				{/* Accounts List - Simple Design */}
+				<div className="space-y-2 mb-6">
 					{accounts.map((account) => (
-						<Card key={account.account_id} className="p-4 hover:shadow-md transition-shadow">
-							<div className="flex items-start gap-3">
-								<div className="mt-0.5">{getAccountIcon(account.type)}</div>
-								<div className="flex-1 min-w-0">
-									<div className="flex items-baseline gap-2 mb-1">
-										<h4 className="font-medium text-base truncate">{account.name}</h4>
-										{account.mask && (
-											<span className="text-xs text-muted-foreground shrink-0">
-												••{account.mask}
-											</span>
-										)}
-									</div>
-									<p className="text-xs text-muted-foreground mb-3 capitalize">
-										{formatAccountType(account.type, account.subtype)}
-									</p>
-									{account.balances && (
-										<div className="grid grid-cols-2 gap-2">
-											<div className="bg-muted/50 rounded-lg px-3 py-2">
-												<p className="text-xs text-muted-foreground mb-0.5">Current Balance</p>
-												<p className="font-semibold text-sm">
-													{formatCurrency(account.balances.current)}
-												</p>
-											</div>
-											{account.balances.available !== undefined && (
-												<div className="bg-muted/50 rounded-lg px-3 py-2">
-													<p className="text-xs text-muted-foreground mb-0.5">Available</p>
-													<p className="font-semibold text-sm">
-														{formatCurrency(account.balances.available)}
-													</p>
-												</div>
-											)}
-										</div>
-									)}
-								</div>
-							</div>
-						</Card>
+						<div 
+							key={account.account_id} 
+							className="flex items-center justify-between py-2 px-1 hover:bg-muted/50 rounded transition-colors"
+						>
+							<span className="text-sm capitalize">
+								{formatAccountType(account.type, account.subtype)}
+							</span>
+							{account.mask && (
+								<span className="text-sm text-muted-foreground font-mono">
+									•••• {account.mask}
+								</span>
+							)}
+						</div>
 					))}
 				</div>
 
