@@ -1,0 +1,14 @@
+.env
+.venv
+venv/
+data/
+__pycache__/
+.flashrank_cache
+surf_new_backend.egg-info/
+podcasts/
+temp_audio/
+celerybeat-schedule*
+celerybeat-schedule.*
+celerybeat-schedule.dir
+celerybeat-schedule.bak
+global_llm_config.yaml

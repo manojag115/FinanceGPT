@@ -1,0 +1,65 @@
+[00:01:32.014] Server  ERROR   ⨯ Error: Cannot find module 'next/dist/client/components/builtin/global-not-found'
+Require stack:
+- /Users/manoj.aggarwal/PersonalCode/FinanceGPT/surfsense_web/node_modules/.pnpm/next@16.1.0_@opentelemetry+api@1.9.0_react-dom@19.2.3_react@19.2.3__react@19.2.3/node_modules/next/dist/server/dev/on-demand-entry-handler.js
+- /Users/manoj.aggarwal/PersonalCode/FinanceGPT/surfsense_web/node_modules/.pnpm/next@16.1.0_@opentelemetry+api@1.9.0_react-dom@19.2.3_react@19.2.3__react@19.2.3/node_modules/next/dist/server/dev/hot-reloader-turbopack.js
+- /Users/manoj.aggarwal/PersonalCode/FinanceGPT/surfsense_web/node_modules/.pnpm/next@16.1.0_@opentelemetry+api@1.9.0_react-dom@19.2.3_react@19.2.3__react@19.2.3/node_modules/next/dist/server/lib/router-utils/setup-dev-bundler.js
+- /Users/manoj.aggarwal/PersonalCode/FinanceGPT/surfsense_web/node_modules/.pnpm/next@16.1.0_@opentelemetry+api@1.9.0_react-dom@19.2.3_react@19.2.3__react@19.2.3/node_modules/next/dist/server/lib/router-server.js
+- /Users/manoj.aggarwal/PersonalCode/FinanceGPT/surfsense_web/node_modules/.pnpm/next@16.1.0_@opentelemetry+api@1.9.0_react-dom@19.2.3_react@19.2.3__react@19.2.3/node_modules/next/dist/server/lib/start-server.js
+[00:01:32.030] Server  ERROR   Error: Cannot find module 'next/dist/pages/_error'
+Require stack:
+- /Users/manoj.aggarwal/PersonalCode/FinanceGPT/surfsense_web/node_modules/.pnpm/next@16.1.0_@opentelemetry+api@1.9.0_react-dom@19.2.3_react@19.2.3__react@19.2.3/node_modules/next/dist/server/dev/on-demand-entry-handler.js
+- /Users/manoj.aggarwal/PersonalCode/FinanceGPT/surfsense_web/node_modules/.pnpm/next@16.1.0_@opentelemetry+api@1.9.0_react-dom@19.2.3_react@19.2.3__react@19.2.3/node_modules/next/dist/server/dev/hot-reloader-turbopack.js
+- /Users/manoj.aggarwal/PersonalCode/FinanceGPT/surfsense_web/node_modules/.pnpm/next@16.1.0_@opentelemetry+api@1.9.0_react-dom@19.2.3_react@19.2.3__react@19.2.3/node_modules/next/dist/server/lib/router-utils/setup-dev-bundler.js
+- /Users/manoj.aggarwal/PersonalCode/FinanceGPT/surfsense_web/node_modules/.pnpm/next@16.1.0_@opentelemetry+api@1.9.0_react-dom@19.2.3_react@19.2.3__react@19.2.3/node_modules/next/dist/server/lib/router-server.js
+- /Users/manoj.aggarwal/PersonalCode/FinanceGPT/surfsense_web/node_modules/.pnpm/next@16.1.0_@opentelemetry+api@1.9.0_react-dom@19.2.3_react@19.2.3__react@19.2.3/node_modules/next/dist/server/lib/start-server.js
+[00:01:32.045] Server  ERROR   ⨯ Error: Cannot find module 'next/dist/pages/_error'
+Require stack:
+- /Users/manoj.aggarwal/PersonalCode/FinanceGPT/surfsense_web/node_modules/.pnpm/next@16.1.0_@opentelemetry+api@1.9.0_react-dom@19.2.3_react@19.2.3__react@19.2.3/node_modules/next/dist/server/dev/on-demand-entry-handler.js
+- /Users/manoj.aggarwal/PersonalCode/FinanceGPT/surfsense_web/node_modules/.pnpm/next@16.1.0_@opentelemetry+api@1.9.0_react-dom@19.2.3_react@19.2.3__react@19.2.3/node_modules/next/dist/server/dev/hot-reloader-turbopack.js
+- /Users/manoj.aggarwal/PersonalCode/FinanceGPT/surfsense_web/node_modules/.pnpm/next@16.1.0_@opentelemetry+api@1.9.0_react-dom@19.2.3_react@19.2.3__react@19.2.3/node_modules/next/dist/server/lib/router-utils/setup-dev-bundler.js
+- /Users/manoj.aggarwal/PersonalCode/FinanceGPT/surfsense_web/node_modules/.pnpm/next@16.1.0_@opentelemetry+api@1.9.0_react-dom@19.2.3_react@19.2.3__react@19.2.3/node_modules/next/dist/server/lib/router-server.js
+- /Users/manoj.aggarwal/PersonalCode/FinanceGPT/surfsense_web/node_modules/.pnpm/next@16.1.0_@opentelemetry+api@1.9.0_react-dom@19.2.3_react@19.2.3__react@19.2.3/node_modules/next/dist/server/lib/start-server.js
+[00:01:32.058] Server  ERROR   Error: Cannot find module 'next/dist/pages/_error'
+Require stack:
+- /Users/manoj.aggarwal/PersonalCode/FinanceGPT/surfsense_web/node_modules/.pnpm/next@16.1.0_@opentelemetry+api@1.9.0_react-dom@19.2.3_react@19.2.3__react@19.2.3/node_modules/next/dist/server/dev/on-demand-entry-handler.js
+- /Users/manoj.aggarwal/PersonalCode/FinanceGPT/surfsense_web/node_modules/.pnpm/next@16.1.0_@opentelemetry+api@1.9.0_react-dom@19.2.3_react@19.2.3__react@19.2.3/node_modules/next/dist/server/dev/hot-reloader-turbopack.js
+- /Users/manoj.aggarwal/PersonalCode/FinanceGPT/surfsense_web/node_modules/.pnpm/next@16.1.0_@opentelemetry+api@1.9.0_react-dom@19.2.3_react@19.2.3__react@19.2.3/node_modules/next/dist/server/lib/router-utils/setup-dev-bundler.js
+- /Users/manoj.aggarwal/PersonalCode/FinanceGPT/surfsense_web/node_modules/.pnpm/next@16.1.0_@opentelemetry+api@1.9.0_react-dom@19.2.3_react@19.2.3__react@19.2.3/node_modules/next/dist/server/lib/router-server.js
+- /Users/manoj.aggarwal/PersonalCode/FinanceGPT/surfsense_web/node_modules/.pnpm/next@16.1.0_@opentelemetry+api@1.9.0_react-dom@19.2.3_react@19.2.3__react@19.2.3/node_modules/next/dist/server/lib/start-server.js
+[00:01:32.131] Server  ERROR   ⨯ Error: Cannot find module 'next/dist/client/components/builtin/global-not-found'
+Require stack:
+- /Users/manoj.aggarwal/PersonalCode/FinanceGPT/surfsense_web/node_modules/.pnpm/next@16.1.0_@opentelemetry+api@1.9.0_react-dom@19.2.3_react@19.2.3__react@19.2.3/node_modules/next/dist/server/dev/on-demand-entry-handler.js
+- /Users/manoj.aggarwal/PersonalCode/FinanceGPT/surfsense_web/node_modules/.pnpm/next@16.1.0_@opentelemetry+api@1.9.0_react-dom@19.2.3_react@19.2.3__react@19.2.3/node_modules/next/dist/server/dev/hot-reloader-turbopack.js
+- /Users/manoj.aggarwal/PersonalCode/FinanceGPT/surfsense_web/node_modules/.pnpm/next@16.1.0_@opentelemetry+api@1.9.0_react-dom@19.2.3_react@19.2.3__react@19.2.3/node_modules/next/dist/server/lib/router-utils/setup-dev-bundler.js
+- /Users/manoj.aggarwal/PersonalCode/FinanceGPT/surfsense_web/node_modules/.pnpm/next@16.1.0_@opentelemetry+api@1.9.0_react-dom@19.2.3_react@19.2.3__react@19.2.3/node_modules/next/dist/server/lib/router-server.js
+- /Users/manoj.aggarwal/PersonalCode/FinanceGPT/surfsense_web/node_modules/.pnpm/next@16.1.0_@opentelemetry+api@1.9.0_react-dom@19.2.3_react@19.2.3__react@19.2.3/node_modules/next/dist/server/lib/start-server.js
+[00:01:32.152] Server  ERROR   Error: Cannot find module 'next/dist/pages/_error'
+Require stack:
+- /Users/manoj.aggarwal/PersonalCode/FinanceGPT/surfsense_web/node_modules/.pnpm/next@16.1.0_@opentelemetry+api@1.9.0_react-dom@19.2.3_react@19.2.3__react@19.2.3/node_modules/next/dist/server/dev/on-demand-entry-handler.js
+- /Users/manoj.aggarwal/PersonalCode/FinanceGPT/surfsense_web/node_modules/.pnpm/next@16.1.0_@opentelemetry+api@1.9.0_react-dom@19.2.3_react@19.2.3__react@19.2.3/node_modules/next/dist/server/dev/hot-reloader-turbopack.js
+- /Users/manoj.aggarwal/PersonalCode/FinanceGPT/surfsense_web/node_modules/.pnpm/next@16.1.0_@opentelemetry+api@1.9.0_react-dom@19.2.3_react@19.2.3__react@19.2.3/node_modules/next/dist/server/lib/router-utils/setup-dev-bundler.js
+- /Users/manoj.aggarwal/PersonalCode/FinanceGPT/surfsense_web/node_modules/.pnpm/next@16.1.0_@opentelemetry+api@1.9.0_react-dom@19.2.3_react@19.2.3__react@19.2.3/node_modules/next/dist/server/lib/router-server.js
+- /Users/manoj.aggarwal/PersonalCode/FinanceGPT/surfsense_web/node_modules/.pnpm/next@16.1.0_@opentelemetry+api@1.9.0_react-dom@19.2.3_react@19.2.3__react@19.2.3/node_modules/next/dist/server/lib/start-server.js
+[00:01:32.172] Server  ERROR   ⨯ Error: Cannot find module 'next/dist/pages/_error'
+Require stack:
+- /Users/manoj.aggarwal/PersonalCode/FinanceGPT/surfsense_web/node_modules/.pnpm/next@16.1.0_@opentelemetry+api@1.9.0_react-dom@19.2.3_react@19.2.3__react@19.2.3/node_modules/next/dist/server/dev/on-demand-entry-handler.js
+- /Users/manoj.aggarwal/PersonalCode/FinanceGPT/surfsense_web/node_modules/.pnpm/next@16.1.0_@opentelemetry+api@1.9.0_react-dom@19.2.3_react@19.2.3__react@19.2.3/node_modules/next/dist/server/dev/hot-reloader-turbopack.js
+- /Users/manoj.aggarwal/PersonalCode/FinanceGPT/surfsense_web/node_modules/.pnpm/next@16.1.0_@opentelemetry+api@1.9.0_react-dom@19.2.3_react@19.2.3__react@19.2.3/node_modules/next/dist/server/lib/router-utils/setup-dev-bundler.js
+- /Users/manoj.aggarwal/PersonalCode/FinanceGPT/surfsense_web/node_modules/.pnpm/next@16.1.0_@opentelemetry+api@1.9.0_react-dom@19.2.3_react@19.2.3__react@19.2.3/node_modules/next/dist/server/lib/router-server.js
+- /Users/manoj.aggarwal/PersonalCode/FinanceGPT/surfsense_web/node_modules/.pnpm/next@16.1.0_@opentelemetry+api@1.9.0_react-dom@19.2.3_react@19.2.3__react@19.2.3/node_modules/next/dist/server/lib/start-server.js
+[00:01:32.211] Server  ERROR   Error: Cannot find module 'next/dist/pages/_error'
+Require stack:
+- /Users/manoj.aggarwal/PersonalCode/FinanceGPT/surfsense_web/node_modules/.pnpm/next@16.1.0_@opentelemetry+api@1.9.0_react-dom@19.2.3_react@19.2.3__react@19.2.3/node_modules/next/dist/server/dev/on-demand-entry-handler.js
+- /Users/manoj.aggarwal/PersonalCode/FinanceGPT/surfsense_web/node_modules/.pnpm/next@16.1.0_@opentelemetry+api@1.9.0_react-dom@19.2.3_react@19.2.3__react@19.2.3/node_modules/next/dist/server/dev/hot-reloader-turbopack.js
+- /Users/manoj.aggarwal/PersonalCode/FinanceGPT/surfsense_web/node_modules/.pnpm/next@16.1.0_@opentelemetry+api@1.9.0_react-dom@19.2.3_react@19.2.3__react@19.2.3/node_modules/next/dist/server/lib/router-utils/setup-dev-bundler.js
+- /Users/manoj.aggarwal/PersonalCode/FinanceGPT/surfsense_web/node_modules/.pnpm/next@16.1.0_@opentelemetry+api@1.9.0_react-dom@19.2.3_react@19.2.3__react@19.2.3/node_modules/next/dist/server/lib/router-server.js
+- /Users/manoj.aggarwal/PersonalCode/FinanceGPT/surfsense_web/node_modules/.pnpm/next@16.1.0_@opentelemetry+api@1.9.0_react-dom@19.2.3_react@19.2.3__react@19.2.3/node_modules/next/dist/server/lib/start-server.js
+[00:01:44.321] Server  LOG     [MDX] generated files in 4.639666000002762ms
+[00:01:44.321] Server  LOG     [MDX] generated files in 4.316709000006085ms
+[00:01:44.321] Server  LOG     [MDX] generated files in 10.053375000003143ms
+[00:02:34.598] Server  ERROR   Error: Build failed with 1 error:
+error: The entry point "source.config.ts" cannot be marked as external
+[00:02:34.599] Server  ERROR   ⨯ "unhandledRejection:" Error: Build failed with 1 error:
+error: The entry point "source.config.ts" cannot be marked as external
+[00:02:34.600] Server  ERROR   ⨯ "unhandledRejection: " Error: Build failed with 1 error:
+error: The entry point "source.config.ts" cannot be marked as external
