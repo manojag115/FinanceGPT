@@ -19,6 +19,7 @@ import Image from "next/image";
 import type { EnumConnectorName } from "@/contracts/enums/connector";
 import { getConnectorIcon } from "@/contracts/enums/connectorIcons";
 import { cn } from "@/lib/utils";
+import { PeriodicSyncConfig } from "./periodic-sync-config";
 
 interface PlaidAccount {
 	account_id: string;
@@ -53,6 +54,9 @@ export function PlaidManageAccounts({
 	const [isSyncing, setIsSyncing] = useState(false);
 	const [linkToken, setLinkToken] = useState<string | null>(null);
 	const [lastSynced, setLastSynced] = useState<string | null>(null);
+	const [periodicEnabled, setPeriodicEnabled] = useState(false);
+	const [frequencyMinutes, setFrequencyMinutes] = useState("1440");
+	const [isSavingConfig, setIsSavingConfig] = useState(false);
 
 	// Extract institution name from connector name (remove account names in parentheses)
 	const institutionName = connectorName.replace(/\s*\([^)]*\)\s*$/, "").trim();
@@ -83,10 +87,33 @@ export function PlaidManageAccounts({
 		}
 	}, [connectorId]);
 
-	// Load accounts on mount
+	// Fetch connector config (including periodic sync settings)
+	const fetchConnectorConfig = useCallback(async () => {
+		try {
+			const response = await authenticatedFetch(
+				`${process.env.NEXT_PUBLIC_FASTAPI_BACKEND_URL}/api/v1/search-source-connectors/${connectorId}`,
+				{
+					credentials: "include",
+				}
+			);
+
+			if (!response.ok) {
+				throw new Error("Failed to fetch connector config");
+			}
+
+			const connector = await response.json();
+			setPeriodicEnabled(connector.periodic_indexing_enabled ?? false);
+			setFrequencyMinutes(connector.indexing_frequency_minutes?.toString() ?? "1440");
+		} catch (error) {
+			console.error("Error fetching connector config:", error);
+		}
+	}, [connectorId]);
+
+	// Load accounts and config on mount
 	useEffect(() => {
 		fetchAccounts();
-	}, [fetchAccounts]);
+		fetchConnectorConfig();
+	}, [fetchAccounts, fetchConnectorConfig]);
 
 	// Create update link token
 	const createUpdateLinkToken = useCallback(async () => {
@@ -175,6 +202,38 @@ export function PlaidManageAccounts({
 			setIsSyncing(false);
 		}
 	}, [connectorId]);
+
+	// Save periodic sync configuration
+	const handleSavePeriodicConfig = useCallback(async () => {
+		try {
+			setIsSavingConfig(true);
+			const response = await authenticatedFetch(
+				`${process.env.NEXT_PUBLIC_FASTAPI_BACKEND_URL}/api/v1/search-source-connectors/${connectorId}`,
+				{
+					method: "PUT",
+					credentials: "include",
+					headers: {
+						"Content-Type": "application/json",
+					},
+					body: JSON.stringify({
+						periodic_indexing_enabled: periodicEnabled,
+						indexing_frequency_minutes: periodicEnabled ? parseInt(frequencyMinutes, 10) : null,
+					}),
+				}
+			);
+
+			if (!response.ok) {
+				throw new Error("Failed to update configuration");
+			}
+
+			toast.success("Auto-sync configuration updated");
+		} catch (error) {
+			console.error("Error updating configuration:", error);
+			toast.error("Failed to update configuration");
+		} finally {
+			setIsSavingConfig(false);
+		}
+	}, [connectorId, periodicEnabled, frequencyMinutes]);
 
 	// Format currency
 	const formatCurrency = (amount: number | undefined) => {
@@ -339,20 +398,41 @@ export function PlaidManageAccounts({
 							<div className="h-px flex-1 bg-border/30" />
 						</div>
 					)}
+
+					{/* Periodic Sync Configuration */}
+					<div className="pt-4">
+						<PeriodicSyncConfig
+							enabled={periodicEnabled}
+							frequencyMinutes={frequencyMinutes}
+							onEnabledChange={setPeriodicEnabled}
+							onFrequencyChange={setFrequencyMinutes}
+						/>
+					</div>
 				</div>
 
 			{/* Footer */}
 			<div className="px-4 sm:px-12 py-4 border-t border-border/80 dark:border-white/5 bg-muted/50 backdrop-blur-md space-y-2">
 				{/* Primary Action */}
-				<Button
-					onClick={handleSync}
-					disabled={isSyncing}
-					className="w-full font-medium shadow-sm"
-					size="default"
-				>
-					<RefreshCw className={cn("h-4 w-4 mr-2", isSyncing && "animate-spin")} />
-					{isSyncing ? "Syncing..." : "Sync Now"}
-				</Button>
+				<div className="grid grid-cols-2 gap-2">
+					<Button
+						onClick={handleSync}
+						disabled={isSyncing}
+						className="font-medium shadow-sm"
+						size="default"
+					>
+						<RefreshCw className={cn("h-4 w-4 mr-2", isSyncing && "animate-spin")} />
+						{isSyncing ? "Syncing..." : "Sync Now"}
+					</Button>
+					<Button
+						onClick={handleSavePeriodicConfig}
+						disabled={isSavingConfig}
+						variant="default"
+						className="font-medium shadow-sm"
+						size="default"
+					>
+						{isSavingConfig ? "Saving..." : "Save Config"}
+					</Button>
+				</div>
 
 				{/* Secondary Actions */}
 				<div className="grid grid-cols-2 gap-2">
