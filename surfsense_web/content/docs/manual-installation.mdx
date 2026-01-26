@@ -1,11 +1,11 @@
 ---
 title: Manual Installation
-description: Setting up SurfSense manually for customized deployments (Preferred)
+description: Setting up FinanceGPT manually for customized deployments (Preferred)
 ---
 
 # Manual Installation (Preferred)
 
-This guide provides step-by-step instructions for setting up SurfSense without Docker. This approach gives you more control over the installation process and allows for customization of the environment.
+This guide provides step-by-step instructions for setting up FinanceGPT without Docker. This approach gives you more control over the installation process and allows for customization of the environment.
 
 ## Prerequisites
 
@@ -34,7 +34,7 @@ Complete all the [setup steps](/docs), including:
 
 ## Backend Setup
 
-The backend is the core of SurfSense. Follow these steps to set it up:
+The backend is the core of FinanceGPT. Follow these steps to set it up:
 
 ### 1. Environment Configuration
 
@@ -65,7 +65,7 @@ Edit the `.env` file and set the following variables:
 
 | ENV VARIABLE               | DESCRIPTION                                                                                                                                                                               |
 | -------------------------- | ----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| DATABASE_URL               | PostgreSQL connection string (e.g., `postgresql+asyncpg://postgres:postgres@localhost:5432/surfsense`)                                                                                    |
+| DATABASE_URL               | PostgreSQL connection string (e.g., `postgresql+asyncpg://postgres:postgres@localhost:5432/financegpt`)                                                                                    |
 | SECRET_KEY                 | JWT Secret key for authentication (should be a secure random string)                                                                                                                      |
 | NEXT_FRONTEND_URL          | URL where your frontend application is hosted (e.g., `http://localhost:3000`)                                                                                                             |
 | BACKEND_URL                | (Optional) Public URL of the backend for OAuth callbacks (e.g., `https://api.yourdomain.com`). Required when running behind a reverse proxy with HTTPS. Used to set correct OAuth redirect URLs and secure cookies. |
@@ -138,7 +138,7 @@ Edit the `.env` file and set the following variables:
 | LANGSMITH_TRACING | Enable LangSmith tracing (e.g., `true`) |
 | LANGSMITH_ENDPOINT | LangSmith API endpoint (e.g., `https://api.smith.langchain.com`) |
 | LANGSMITH_API_KEY | Your LangSmith API key |
-| LANGSMITH_PROJECT | LangSmith project name (e.g., `surfsense`) |
+| LANGSMITH_PROJECT | LangSmith project name (e.g., `financegpt`) |
 
 **(Optional) Uvicorn Server Configuration**
 | ENV VARIABLE | DESCRIPTION | DEFAULT VALUE |
@@ -448,7 +448,7 @@ The frontend should now be running at `http://localhost:3000`.
 
 ## Browser Extension Setup (Optional)
 
-The SurfSense browser extension allows you to save any webpage, including those protected behind authentication.
+The FinanceGPT browser extension allows you to save any webpage, including those protected behind authentication.
 
 ### 1. Environment Configuration
 
@@ -477,7 +477,7 @@ Edit the `.env` file:
 
 | ENV VARIABLE              | DESCRIPTION                                           |
 | ------------------------- | ----------------------------------------------------- |
-| PLASMO_PUBLIC_BACKEND_URL | SurfSense Backend URL (e.g., `http://127.0.0.1:8000`) |
+| PLASMO_PUBLIC_BACKEND_URL | FinanceGPT Backend URL (e.g., `http://127.0.0.1:8000`) |
 
 ### 2. Build the Extension
 
@@ -499,7 +499,7 @@ pnpm build --target=edge
 
 ### 3. Load the Extension
 
-Load the extension in your browser's developer mode and configure it with your SurfSense API key.
+Load the extension in your browser's developer mode and configure it with your FinanceGPT API key.
 
 ## Verification
 
@@ -523,7 +523,7 @@ To verify your installation:
 
 ## Next Steps
 
-Now that you have SurfSense running locally, you can explore its features:
+Now that you have FinanceGPT running locally, you can explore its features:
 
 - Create search spaces for organizing your content
 - Upload documents or use the browser extension to save webpages

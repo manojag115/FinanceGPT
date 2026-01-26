@@ -5,9 +5,9 @@
 set -e
 
 PGDATA=${PGDATA:-/data/postgres}
-POSTGRES_USER=${POSTGRES_USER:-surfsense}
-POSTGRES_PASSWORD=${POSTGRES_PASSWORD:-surfsense}
-POSTGRES_DB=${POSTGRES_DB:-surfsense}
+POSTGRES_USER=${POSTGRES_USER:-financegpt}
+POSTGRES_PASSWORD=${POSTGRES_PASSWORD:-financegpt}
+POSTGRES_DB=${POSTGRES_DB:-financegpt}
 
 # Electric SQL user credentials (configurable)
 ELECTRIC_DB_USER=${ELECTRIC_DB_USER:-electric}

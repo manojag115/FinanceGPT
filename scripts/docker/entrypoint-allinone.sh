@@ -48,7 +48,7 @@ fi
 export ELECTRIC_DB_USER="${ELECTRIC_DB_USER:-electric}"
 export ELECTRIC_DB_PASSWORD="${ELECTRIC_DB_PASSWORD:-electric_password}"
 if [ -z "$ELECTRIC_DATABASE_URL" ]; then
-    export ELECTRIC_DATABASE_URL="postgresql://${ELECTRIC_DB_USER}:${ELECTRIC_DB_PASSWORD}@localhost:5432/${POSTGRES_DB:-surfsense}?sslmode=disable"
+    export ELECTRIC_DATABASE_URL="postgresql://${ELECTRIC_DB_USER}:${ELECTRIC_DB_PASSWORD}@localhost:5432/${POSTGRES_DB:-financegpt}?sslmode=disable"
     echo "✅ Electric SQL URL configured dynamically"
 else
     # Ensure sslmode=disable is in the URL if not already present
@@ -97,15 +97,15 @@ if [ ! -f /data/postgres/PG_VERSION ]; then
     sleep 5
     
     # Create user and database
-    su - postgres -c "psql -c \"CREATE USER ${POSTGRES_USER:-surfsense} WITH PASSWORD '${POSTGRES_PASSWORD:-surfsense}' SUPERUSER;\""
-    su - postgres -c "psql -c \"CREATE DATABASE ${POSTGRES_DB:-surfsense} OWNER ${POSTGRES_USER:-surfsense};\""
+    su - postgres -c "psql -c \"CREATE USER ${POSTGRES_USER:-financegpt} WITH PASSWORD '${POSTGRES_PASSWORD:-financegpt}' SUPERUSER;\""
+    su - postgres -c "psql -c \"CREATE DATABASE ${POSTGRES_DB:-financegpt} OWNER ${POSTGRES_USER:-financegpt};\""
     
     # Enable pgvector extension
-    su - postgres -c "psql -d ${POSTGRES_DB:-surfsense} -c 'CREATE EXTENSION IF NOT EXISTS vector;'"
+    su - postgres -c "psql -d ${POSTGRES_DB:-financegpt} -c 'CREATE EXTENSION IF NOT EXISTS vector;'"
     
     # Create Electric SQL replication user (idempotent - uses IF NOT EXISTS)
     echo "📡 Creating Electric SQL replication user..."
-    su - postgres -c "psql -d ${POSTGRES_DB:-surfsense} <<-EOSQL
+    su - postgres -c "psql -d ${POSTGRES_DB:-financegpt} <<-EOSQL
         DO \\\$\\\$
         BEGIN
             IF NOT EXISTS (SELECT FROM pg_user WHERE usename = '${ELECTRIC_DB_USER}') THEN
@@ -114,7 +114,7 @@ if [ ! -f /data/postgres/PG_VERSION ]; then
         END
         \\\$\\\$;
 
-        GRANT CONNECT ON DATABASE ${POSTGRES_DB:-surfsense} TO ${ELECTRIC_DB_USER};
+        GRANT CONNECT ON DATABASE ${POSTGRES_DB:-financegpt} TO ${ELECTRIC_DB_USER};
         GRANT USAGE ON SCHEMA public TO ${ELECTRIC_DB_USER};
         GRANT SELECT ON ALL TABLES IN SCHEMA public TO ${ELECTRIC_DB_USER};
         GRANT SELECT ON ALL SEQUENCES IN SCHEMA public TO ${ELECTRIC_DB_USER};
