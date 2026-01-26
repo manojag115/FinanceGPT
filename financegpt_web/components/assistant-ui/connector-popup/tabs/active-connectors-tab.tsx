@@ -1,340 +1,360 @@
 "use client";
 
-import { ArrowRight, Cable, Loader2 } from "lucide-react";
+import { RefreshCw, SquarePlus, Upload, FileText, Trash2, MoreHorizontal, Eye, Search, X } from "lucide-react";
 import { useRouter } from "next/navigation";
 import type { FC } from "react";
-import { useState } from "react";
-import { getDocumentTypeLabel } from "@/app/dashboard/[search_space_id]/documents/(manage)/components/DocumentTypeIcon";
+import { useCallback, useEffect, useMemo, useState } from "react";
+import { toast } from "sonner";
+import { useQuery } from "@tanstack/react-query";
+import { useAtomValue } from "jotai";
+import { motion, AnimatePresence } from "motion/react";
+import { deleteDocumentMutationAtom } from "@/atoms/documents/document-mutation.atoms";
+import { documentTypeCountsAtom } from "@/atoms/documents/document-query.atoms";
+import { useDocumentUploadDialog } from "@/components/assistant-ui/document-upload-popup";
+import { DocumentViewer } from "@/components/document-viewer";
 import { Button } from "@/components/ui/button";
-import { Switch } from "@/components/ui/switch";
 import { TabsContent } from "@/components/ui/tabs";
-import { getConnectorIcon } from "@/contracts/enums/connectorIcons";
-import type { SearchSourceConnector } from "@/contracts/types/connector.types";
-import type { LogActiveTask, LogSummary } from "@/contracts/types/log.types";
-import { connectorsApiService } from "@/lib/apis/connectors-api.service";
+import { Input } from "@/components/ui/input";
+import {
+	DropdownMenu,
+	DropdownMenuContent,
+	DropdownMenuItem,
+	DropdownMenuTrigger,
+} from "@/components/ui/dropdown-menu";
+import type { DocumentTypeEnum } from "@/contracts/types/document.types";
+import { documentsApiService } from "@/lib/apis/documents-api.service";
+import { cacheKeys } from "@/lib/query-client/cache-keys";
+import { getDocumentTypeIcon, DocumentTypeChip } from "@/app/dashboard/[search_space_id]/documents/(manage)/components/DocumentTypeIcon";
 import { cn } from "@/lib/utils";
-import { OAUTH_CONNECTORS } from "../constants/connector-constants";
-import { getDocumentCountForConnector } from "../utils/connector-document-mapping";
+
+function useDebounced<T>(value: T, delay = 250) {
+	const [debounced, setDebounced] = useState(value);
+	useEffect(() => {
+		const t = setTimeout(() => setDebounced(value), delay);
+		return () => clearTimeout(t);
+	}, [value, delay]);
+	return debounced;
+}
+
+function truncate(text: string, len = 120): string {
+	const plain = text
+		.replace(/[#*_`>\-[\]()]+/g, " ")
+		.replace(/\s+/g, " ")
+		.trim();
+	if (plain.length <= len) return plain;
+	return `${plain.slice(0, len)}...`;
+}
 
 interface ActiveConnectorsTabProps {
 	searchQuery: string;
-	hasSources: boolean;
-	totalSourceCount: number;
-	activeDocumentTypes: Array<[string, number]>;
-	connectors: SearchSourceConnector[];
-	indexingConnectorIds: Set<number>;
 	searchSpaceId: string;
-	onTabChange: (value: string) => void;
-	onManage?: (connector: SearchSourceConnector) => void;
-	onViewAccountsList?: (connectorType: string, connectorTitle: string) => void;
-}
-
-/**
- * Check if a connector type is indexable
- */
-function isIndexableConnector(connectorType: string): boolean {
-	const nonIndexableTypes = ["MCP_CONNECTOR"];
-	return !nonIndexableTypes.includes(connectorType);
 }
 
 export const ActiveConnectorsTab: FC<ActiveConnectorsTabProps> = ({
-	searchQuery,
-	hasSources,
-	activeDocumentTypes,
-	connectors,
-	indexingConnectorIds,
+	searchQuery: _searchQuery,
 	searchSpaceId,
-	onTabChange,
-	onManage,
-	onViewAccountsList,
 }) => {
 	const router = useRouter();
+	const { openDialog: openUploadDialog } = useDocumentUploadDialog();
 
-	const handleViewAllDocuments = () => {
-		router.push(`/dashboard/${searchSpaceId}/documents`);
-	};
+	const handleNewNote = useCallback(() => {
+		router.push(`/dashboard/${searchSpaceId}/editor/new`);
+	}, [router, searchSpaceId]);
 
-	// Convert activeDocumentTypes array to Record for utility function
-	const documentTypeCounts = activeDocumentTypes.reduce(
-		(acc, [docType, count]) => {
-			acc[docType] = count;
-			return acc;
-		},
-		{} as Record<string, number>
+	const [search, setSearch] = useState("");
+	const debouncedSearch = useDebounced(search, 250);
+	const [selectedType, setSelectedType] = useState<DocumentTypeEnum | "all">("all");
+	const { data: rawTypeCounts } = useAtomValue(documentTypeCountsAtom);
+	const { mutateAsync: deleteDocumentMutation } = useAtomValue(deleteDocumentMutationAtom);
+
+	// Build query parameters
+	const queryParams = useMemo(
+		() => ({
+			search_space_id: Number(searchSpaceId),
+			page: 0,
+			page_size: 100,
+			...(selectedType !== "all" && { document_types: [selectedType] }),
+		}),
+		[searchSpaceId, selectedType]
 	);
 
-	// Format document count (e.g., "1.2k docs", "500 docs", "1.5M docs")
-	const formatDocumentCount = (count: number | undefined): string => {
-		if (count === undefined || count === 0) return "0 docs";
-		if (count < 1000) return `${count} docs`;
-		if (count < 1000000) {
-			const k = (count / 1000).toFixed(1);
-			return `${k.replace(/\.0$/, "")}k docs`;
-		}
-		const m = (count / 1000000).toFixed(1);
-		return `${m.replace(/\.0$/, "")}M docs`;
-	};
-
-	// Document types that should be shown as standalone cards (not from connectors)
-	const standaloneDocumentTypes = ["EXTENSION", "FILE", "NOTE", "YOUTUBE_VIDEO", "CRAWLED_URL"];
-
-	// Filter to only show standalone document types that have documents (count > 0)
-	const standaloneDocuments = activeDocumentTypes
-		.filter(([docType, count]) => standaloneDocumentTypes.includes(docType) && count > 0)
-		.map(([docType, count]) => ({
-			type: docType,
-			count,
-			label: getDocumentTypeLabel(docType),
-		}))
-		.filter((doc) => {
-			if (!searchQuery) return true;
-			return doc.label.toLowerCase().includes(searchQuery.toLowerCase());
-		});
-
-	// Get OAuth connector types set for quick lookup
-	const oauthConnectorTypes = new Set<string>(OAUTH_CONNECTORS.map((c) => c.connectorType));
-
-	// Separate OAuth and non-OAuth connectors
-	const oauthConnectors = connectors.filter((c) => oauthConnectorTypes.has(c.connector_type));
-	const nonOauthConnectors = connectors.filter((c) => !oauthConnectorTypes.has(c.connector_type));
-
-	// Group OAuth connectors by type
-	const oauthConnectorsByType = oauthConnectors.reduce(
-		(acc, connector) => {
-			const type = connector.connector_type;
-			if (!acc[type]) {
-				acc[type] = [];
-			}
-			acc[type].push(connector);
-			return acc;
-		},
-		{} as Record<string, SearchSourceConnector[]>
+	// Build search query parameters
+	const searchQueryParams = useMemo(
+		() => ({
+			search_space_id: Number(searchSpaceId),
+			page: 0,
+			page_size: 100,
+			title: debouncedSearch.trim(),
+			...(selectedType !== "all" && { document_types: [selectedType] }),
+		}),
+		[searchSpaceId, selectedType, debouncedSearch]
 	);
 
-	// Get display info for OAuth connector type
-	const getOAuthConnectorTypeInfo = (connectorType: string) => {
-		const oauthConnector = OAUTH_CONNECTORS.find((c) => c.connectorType === connectorType);
-		return {
-			title:
-				oauthConnector?.title ||
-				connectorType
-					.replace(/_/g, " ")
-					.replace(/connector/gi, "")
-					.trim(),
-		};
-	};
-
-	// Filter OAuth connector types based on search query
-	const filteredOAuthConnectorTypes = Object.entries(oauthConnectorsByType).filter(
-		([connectorType]) => {
-			if (!searchQuery) return true;
-			const searchLower = searchQuery.toLowerCase();
-			const { title } = getOAuthConnectorTypeInfo(connectorType);
-			return (
-				title.toLowerCase().includes(searchLower) ||
-				connectorType.toLowerCase().includes(searchLower)
-			);
-		}
-	);
-
-	// Filter non-OAuth connectors based on search query
-	const filteredNonOAuthConnectors = nonOauthConnectors.filter((connector) => {
-		if (!searchQuery) return true;
-		const searchLower = searchQuery.toLowerCase();
-		return (
-			connector.name.toLowerCase().includes(searchLower) ||
-			connector.connector_type.toLowerCase().includes(searchLower)
-		);
+	// Use query for fetching documents
+	const {
+		data: documentsResponse,
+		isLoading: isDocumentsLoading,
+		refetch: refetchDocuments,
+		error: documentsError,
+	} = useQuery({
+		queryKey: cacheKeys.documents.globalQueryParams(queryParams),
+		queryFn: () => documentsApiService.getDocuments({ queryParams }),
+		staleTime: 3 * 60 * 1000,
+		enabled: !!searchSpaceId && !debouncedSearch.trim(),
 	});
 
-	const hasActiveConnectors =
-		filteredOAuthConnectorTypes.length > 0 || filteredNonOAuthConnectors.length > 0;
+	// Use query for searching documents
+	const {
+		data: searchResponse,
+		isLoading: isSearchLoading,
+		refetch: refetchSearch,
+		error: searchError,
+	} = useQuery({
+		queryKey: cacheKeys.documents.globalQueryParams(searchQueryParams),
+		queryFn: () => documentsApiService.searchDocuments({ queryParams: searchQueryParams }),
+		staleTime: 3 * 60 * 1000,
+		enabled: !!searchSpaceId && !!debouncedSearch.trim(),
+	});
+
+	const documents = debouncedSearch.trim()
+		? searchResponse?.items || []
+		: documentsResponse?.items || [];
+	
+	const loading = debouncedSearch.trim() ? isSearchLoading : isDocumentsLoading;
+	const error = debouncedSearch.trim() ? searchError : documentsError;
+
+	const [isRefreshing, setIsRefreshing] = useState(false);
+
+	const refreshCurrentView = useCallback(async () => {
+		if (isRefreshing) return;
+		setIsRefreshing(true);
+		try {
+			if (debouncedSearch.trim()) {
+				await refetchSearch();
+			} else {
+				await refetchDocuments();
+			}
+			toast.success("Documents refreshed");
+		} finally {
+			setIsRefreshing(false);
+		}
+	}, [debouncedSearch, refetchSearch, refetchDocuments, isRefreshing]);
+
+	const handleDelete = useCallback(
+		async (id: number) => {
+			try {
+				await deleteDocumentMutation({ id });
+				toast.success("Document deleted");
+				await refreshCurrentView();
+			} catch (error) {
+				console.error("Failed to delete document:", error);
+				toast.error("Failed to delete document");
+			}
+		},
+		[deleteDocumentMutation, refreshCurrentView]
+	);
+
+	// Get document type counts
+	const typeCounts = rawTypeCounts || {};
+	const availableTypes = Object.entries(typeCounts)
+		.filter(([_, count]) => count > 0)
+		.sort(([a], [b]) => a.localeCompare(b));
 
 	return (
-		<TabsContent value="active" className="m-0">
-			{hasSources ? (
-				<div className="space-y-6">
-					{/* Active Connectors Section */}
-					{hasActiveConnectors && (
-						<div className="space-y-4">
-							<div className="flex items-center gap-2">
-								<h3 className="text-sm font-semibold text-muted-foreground">Active Connectors</h3>
-							</div>
-							<div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
-								{/* OAuth Connectors - Grouped by Type */}
-								{filteredOAuthConnectorTypes.map(([connectorType, typeConnectors]) => {
-									const { title } = getOAuthConnectorTypeInfo(connectorType);
-									const isAnyIndexing = typeConnectors.some((c: SearchSourceConnector) =>
-										indexingConnectorIds.has(c.id)
-									);
-									const documentCount = getDocumentCountForConnector(
-										connectorType,
-										documentTypeCounts
-									);
-									const accountCount = typeConnectors.length;
-
-									const handleManageClick = () => {
-										if (onViewAccountsList) {
-											onViewAccountsList(connectorType, title);
-										} else if (onManage && typeConnectors[0]) {
-											onManage(typeConnectors[0]);
-										}
-									};
-
-									return (
-										<div
-											key={`oauth-type-${connectorType}`}
-											className={cn(
-												"relative flex items-center gap-4 p-4 rounded-xl transition-all",
-												isAnyIndexing
-													? "bg-primary/5 border-0"
-													: "bg-slate-400/5 dark:bg-white/5 hover:bg-slate-400/10 dark:hover:bg-white/10 border border-border"
-											)}
-										>
-											<div
-												className={cn(
-													"flex h-12 w-12 items-center justify-center rounded-lg border shrink-0",
-													isAnyIndexing
-														? "bg-primary/10 border-primary/20"
-														: "bg-slate-400/5 dark:bg-white/5 border-slate-400/5 dark:border-white/5"
-												)}
-											>
-												{getConnectorIcon(connectorType, "size-6")}
-											</div>
-											<div className="flex-1 min-w-0">
-												<p className="text-[14px] font-semibold leading-tight truncate">{title}</p>
-												{isAnyIndexing ? (
-													<p className="text-[11px] text-primary mt-1 flex items-center gap-1.5">
-														<Loader2 className="size-3 animate-spin" />
-														Syncing
-													</p>
-												) : (
-													<p className="text-[10px] text-muted-foreground mt-1 flex items-center gap-1.5">
-														<span>{formatDocumentCount(documentCount)}</span>
-														<span className="text-muted-foreground/50">•</span>
-														<span>
-															{accountCount} {accountCount === 1 ? "Account" : "Accounts"}
-														</span>
-													</p>
-												)}
-											</div>
-											<Button
-												variant="secondary"
-												size="sm"
-												className="h-8 text-[11px] px-3 rounded-lg font-medium bg-white text-slate-700 hover:bg-slate-50 border-0 shadow-xs dark:bg-secondary dark:text-secondary-foreground dark:hover:bg-secondary/80 shrink-0"
-												onClick={handleManageClick}
-											>
-												Manage
-											</Button>
-										</div>
-									);
-								})}
-
-								{/* Non-OAuth Connectors - Individual Cards */}
-								{filteredNonOAuthConnectors.map((connector) => {
-									const isIndexing = indexingConnectorIds.has(connector.id);
-									const documentCount = getDocumentCountForConnector(
-										connector.connector_type,
-										documentTypeCounts
-									);
-									const isMCPConnector = connector.connector_type === "MCP_CONNECTOR";
-									return (
-										<div
-											key={`connector-${connector.id}`}
-											className={cn(
-												"flex items-center gap-4 p-4 rounded-xl transition-all",
-												isIndexing
-													? "bg-primary/5 border-0"
-													: "bg-slate-400/5 dark:bg-white/5 hover:bg-slate-400/10 dark:hover:bg-white/10 border border-border"
-											)}
-										>
-											<div
-												className={cn(
-													"flex h-12 w-12 items-center justify-center rounded-lg border shrink-0",
-													isIndexing
-														? "bg-primary/10 border-primary/20"
-														: "bg-slate-400/5 dark:bg-white/5 border-slate-400/5 dark:border-white/5"
-												)}
-											>
-												{getConnectorIcon(connector.connector_type, "size-6")}
-											</div>
-											<div className="flex-1 min-w-0">
-												<div className="flex items-center gap-2">
-													<p className="text-[14px] font-semibold leading-tight">
-														{connector.name}
-													</p>
-												</div>
-												{isIndexing ? (
-													<p className="text-[11px] text-primary mt-1 flex items-center gap-1.5">
-														<Loader2 className="size-3 animate-spin" />
-														Syncing
-													</p>
-												) : !isMCPConnector ? (
-													<p className="text-[10px] text-muted-foreground mt-1">
-														{formatDocumentCount(documentCount)}
-													</p>
-												) : null}
-											</div>
-											<Button
-												variant="secondary"
-												size="sm"
-												className="h-8 text-[11px] px-3 rounded-lg font-medium bg-white text-slate-700 hover:bg-slate-50 border-0 shadow-xs dark:bg-secondary dark:text-secondary-foreground dark:hover:bg-secondary/80 shrink-0"
-												onClick={onManage ? () => onManage(connector) : undefined}
-											>
-												Manage
-											</Button>
-										</div>
-									);
-								})}
-							</div>
-						</div>
+		<TabsContent value="active" className="m-0 flex flex-col h-full">
+			{/* Search and Filter Bar */}
+			<div className="flex flex-col sm:flex-row gap-2 mb-4">
+				<div className="relative flex-1">
+					<Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-muted-foreground" />
+					<Input
+						placeholder="Search documents..."
+						value={search}
+						onChange={(e) => setSearch(e.target.value)}
+						className="pl-9 h-9"
+					/>
+					{search && (
+						<Button
+							variant="ghost"
+							size="sm"
+							className="absolute right-1 top-1/2 -translate-y-1/2 h-7 w-7 p-0"
+							onClick={() => setSearch("")}
+						>
+							<X className="w-3.5 h-3.5" />
+						</Button>
 					)}
+				</div>
+				<div className="flex gap-2 overflow-x-auto pb-1">
+					<Button
+						variant={selectedType === "all" ? "default" : "outline"}
+						size="sm"
+						className="h-9 whitespace-nowrap"
+						onClick={() => setSelectedType("all")}
+					>
+						All Types
+					</Button>
+					{availableTypes.map(([type, count]) => (
+						<Button
+							key={type}
+							variant={selectedType === type ? "default" : "outline"}
+							size="sm"
+							className="h-9 whitespace-nowrap gap-1.5"
+							onClick={() => setSelectedType(type as DocumentTypeEnum)}
+						>
+							{getDocumentTypeIcon(type)}
+							<span className="text-xs">
+								{type.replace(/_/g, " ").toLowerCase()} ({count})
+							</span>
+						</Button>
+					))}
+				</div>
+			</div>
 
-					{/* Standalone Documents Section */}
-					{standaloneDocuments.length > 0 && (
-						<div className="space-y-4">
-							<div className="flex items-center justify-between">
-								<h3 className="text-sm font-semibold text-muted-foreground">Documents</h3>
-								<Button
-									variant="ghost"
-									size="sm"
-									onClick={handleViewAllDocuments}
-									className="h-7 text-xs text-muted-foreground hover:text-foreground gap-1.5"
-								>
-									View all documents
-									<ArrowRight className="size-3" />
-								</Button>
-							</div>
-							<div className="flex flex-wrap items-center gap-2">
-								{standaloneDocuments.map((doc) => (
-									<div
-										key={doc.type}
-										className="inline-flex items-center gap-2 px-3 py-1.5 rounded-full border border-border bg-slate-400/5 dark:bg-white/5 hover:bg-slate-400/10 dark:hover:bg-white/10 transition-all"
-									>
-										<div className="flex items-center justify-center">
-											{getConnectorIcon(doc.type, "size-3.5")}
-										</div>
-										<span className="text-[12px] font-medium">{doc.label}</span>
-										<span className="text-[11px] text-muted-foreground">
-											{formatDocumentCount(doc.count)}
-										</span>
-									</div>
-								))}
-							</div>
+			{/* Documents Grid */}
+			<div className="flex-1 overflow-auto">
+			{loading ? (
+				<div className="flex items-center justify-center py-20">
+					<div className="flex flex-col items-center gap-3">
+						<RefreshCw className="w-8 h-8 animate-spin text-primary" />
+						<p className="text-sm text-muted-foreground">Loading documents...</p>
+					</div>
+				</div>
+			) : error ? (
+				<div className="flex items-center justify-center py-20">
+					<div className="flex flex-col items-center gap-3">
+						<FileText className="w-12 h-12 text-muted-foreground" />
+						<p className="text-sm text-destructive">Failed to load documents</p>
+						<Button variant="outline" size="sm" onClick={refreshCurrentView}>
+							Retry
+						</Button>
+					</div>
+				</div>
+			) : documents.length === 0 ? (
+				<div className="flex items-center justify-center py-20">
+					<motion.div
+						initial={{ opacity: 0, y: 10 }}
+						animate={{ opacity: 1, y: 0 }}
+						className="flex flex-col items-center gap-4 text-center"
+					>
+						<div className="flex h-16 w-16 items-center justify-center rounded-full bg-muted">
+							<FileText className="w-8 h-8 text-muted-foreground" />
 						</div>
-					)}
+						<div className="space-y-1">
+							<h4 className="font-semibold">No documents found</h4>
+							<p className="text-sm text-muted-foreground">
+								{search ? "Try a different search term" : "Upload your first document to get started"}
+							</p>
+						</div>
+						{!search && (
+							<Button onClick={openUploadDialog} size="sm">
+								<Upload className="w-4 h-4 mr-2" />
+								Upload Documents
+							</Button>
+						)}
+					</motion.div>
 				</div>
 			) : (
-				<div className="flex flex-col items-center justify-center py-20 text-center">
-					<div className="flex h-16 w-16 items-center justify-center rounded-full bg-muted mb-4">
-						<Cable className="size-8 text-muted-foreground" />
-					</div>
-					<h4 className="text-lg font-semibold">No active sources</h4>
-					<p className="text-sm text-muted-foreground mt-1 max-w-[280px]">
-						Connect your first service to start searching across all your data.
-					</p>
+				<div className="grid grid-cols-1 gap-3 pb-4">
+					<AnimatePresence mode="popLayout">
+						{documents.map((doc, index) => (
+							<motion.div
+								key={doc.id}
+								initial={{ opacity: 0, y: 10 }}
+								animate={{ opacity: 1, y: 0 }}
+								exit={{ opacity: 0, scale: 0.95 }}
+								transition={{ delay: index * 0.02 }}
+								className={cn(
+									"group relative flex items-start gap-3 p-3.5 rounded-xl transition-all",
+									"border border-border bg-card/50 hover:bg-card hover:shadow-sm"
+								)}
+							>
+								{/* Icon */}
+								<div className="flex h-9 w-9 items-center justify-center rounded-lg bg-muted shrink-0">
+									{getDocumentTypeIcon(doc.document_type)}
+								</div>
+
+								{/* Content */}
+								<div className="flex-1 min-w-0 space-y-1.5">
+									<div className="flex items-start justify-between gap-2">
+										<h4 className="font-medium text-sm line-clamp-1">{doc.title}</h4>
+										<DocumentTypeChip type={doc.document_type} />
+									</div>
+									
+									{doc.content && (
+										<p className="text-xs text-muted-foreground line-clamp-2">
+											{truncate(doc.content)}
+										</p>
+									)}
+
+									<div className="flex items-center gap-2">
+										<span className="text-[11px] text-muted-foreground">
+											{new Date(doc.created_at).toLocaleDateString("en-US", {
+												month: "short",
+												day: "numeric",
+												year: "numeric",
+											})}
+										</span>
+										<DocumentViewer
+											title={doc.title}
+											content={doc.content}
+											trigger={
+												<Button variant="ghost" size="sm" className="h-6 px-2 text-[11px] gap-1">
+													<Eye className="w-3 h-3" />
+													View
+												</Button>
+											}
+										/>
+									</div>
+								</div>
+
+								{/* Actions */}
+								<DropdownMenu>
+									<DropdownMenuTrigger asChild>
+										<Button
+											variant="ghost"
+											size="sm"
+											className="h-8 w-8 p-0 opacity-0 group-hover:opacity-100 transition-opacity"
+										>
+											<MoreHorizontal className="w-4 h-4" />
+										</Button>
+									</DropdownMenuTrigger>
+									<DropdownMenuContent align="end">
+										<DocumentViewer
+											title={doc.title}
+											content={doc.content}
+											trigger={
+												<DropdownMenuItem onSelect={(e) => e.preventDefault()}>
+													<Eye className="w-4 h-4 mr-2" />
+													View Full
+												</DropdownMenuItem>
+											}
+										/>
+										<DropdownMenuItem
+											className="text-destructive focus:text-destructive"
+											onClick={() => handleDelete(doc.id)}
+										>
+											<Trash2 className="w-4 h-4 mr-2" />
+											Delete
+										</DropdownMenuItem>
+									</DropdownMenuContent>
+								</DropdownMenu>
+							</motion.div>
+						))}
+					</AnimatePresence>
 				</div>
 			)}
+			</div>
+
+			{/* Footer Actions */}
+			<div className="flex items-center justify-end gap-2 pt-4 border-t mt-4">
+				<Button onClick={refreshCurrentView} variant="ghost" size="sm" className="h-9" disabled={isRefreshing}>
+					<RefreshCw className={cn("w-4 h-4 mr-2", isRefreshing && "animate-spin")} />
+					Refresh
+				</Button>
+				<Button onClick={openUploadDialog} variant="default" size="sm" className="h-9">
+					<Upload className="w-4 h-4 mr-2" />
+					Upload
+				</Button>
+			</div>
 		</TabsContent>
 	);
 };

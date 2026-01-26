@@ -9,6 +9,7 @@ import { cn } from "@/lib/utils";
 interface ConnectorDialogHeaderProps {
 	activeTab: string;
 	totalSourceCount: number;
+	totalDocumentCount: number;
 	searchQuery: string;
 	onTabChange: (value: string) => void;
 	onSearchChange: (query: string) => void;
@@ -17,6 +18,7 @@ interface ConnectorDialogHeaderProps {
 
 export const ConnectorDialogHeader: FC<ConnectorDialogHeaderProps> = ({
 	totalSourceCount,
+	totalDocumentCount,
 	searchQuery,
 	onSearchChange,
 	isScrolled,
@@ -50,14 +52,14 @@ export const ConnectorDialogHeader: FC<ConnectorDialogHeaderProps> = ({
 						className="group px-0 pb-3 bg-transparent data-[state=active]:bg-transparent shadow-none data-[state=active]:shadow-none rounded-none border-b-[1.5px] border-transparent transition-all text-base font-medium flex items-center gap-2 text-muted-foreground data-[state=active]:text-foreground relative"
 					>
 						<span className="relative">
-							Active
-							<span className="absolute bottom-[-13.5px] left-1/2 -translate-x-1/2 w-12 h-[1.5px] bg-foreground dark:bg-white opacity-0 group-data-[state=active]:opacity-100 transition-all duration-200" />
+							Documents
+							<span className="absolute bottom-[-13.5px] left-1/2 -translate-x-1/2 w-20 h-[1.5px] bg-foreground dark:bg-white opacity-0 group-data-[state=active]:opacity-100 transition-all duration-200" />
 						</span>
-						{totalSourceCount > 0 && (
-							<span className="px-1.5 py-0.5 rounded-full bg-muted-foreground/15 text-[10px] font-bold">
-								{totalSourceCount}
-							</span>
-						)}
+					{totalDocumentCount > 0 && (
+						<span className="px-1.5 py-0.5 rounded-full bg-muted-foreground/15 text-[10px] font-bold">
+							{totalDocumentCount}
+						</span>
+					)}
 					</TabsTrigger>
 				</TabsList>
 

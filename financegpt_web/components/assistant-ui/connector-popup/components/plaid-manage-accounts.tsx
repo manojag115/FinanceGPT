@@ -228,11 +228,16 @@ export function PlaidManageAccounts({
 	if (isLoading) {
 		return (
 			<div className="flex flex-col h-full">
-				<div className="flex items-center gap-3 px-6 py-4 border-b bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/60">
-					<div className="flex h-10 w-10 items-center justify-center rounded-lg bg-background border border-border/40">
-						{getConnectorIcon(connectorType, "h-6 w-6")}
+				<div className="flex-shrink-0 px-4 sm:px-12 pt-5 sm:pt-10 pb-4 border-b border-border/80 dark:border-white/5">
+					<div className="flex items-center gap-3 mb-4">
+						<Button variant="ghost" size="icon" onClick={onClose} className="h-9 w-9">
+							<ArrowLeft className="h-5 w-5" />
+						</Button>
+						<div className="flex h-10 w-10 items-center justify-center rounded-lg bg-muted border border-border/40">
+							{getConnectorIcon(connectorType, "h-6 w-6")}
+						</div>
 					</div>
-					<h2 className="text-lg font-semibold">Loading...</h2>
+					<h2 className="text-xl sm:text-3xl font-semibold tracking-tight">Loading...</h2>
 				</div>
 				<div className="flex items-center justify-center flex-1">
 					<div className="animate-spin rounded-full h-10 w-10 border-b-2 border-primary" />
@@ -243,26 +248,26 @@ export function PlaidManageAccounts({
 
 	return (
 		<div className="flex flex-col h-full">
-			{/* Header */}
-			<div className="flex items-center gap-3 px-6 py-4 border-b bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/60">
-				<Button variant="ghost" size="icon" onClick={onClose}>
-					<ArrowLeft className="h-5 w-5" />
-				</Button>
-				<div className="flex items-center gap-3 flex-1">
-					<div className="flex h-10 w-10 items-center justify-center rounded-lg bg-background border border-border/40">
+			{/* Header - matching main connector dialog style */}
+			<div className="flex-shrink-0 px-4 sm:px-12 pt-5 sm:pt-10 pb-4 border-b border-border/80 dark:border-white/5">
+				<div className="flex items-center gap-3 mb-4 sm:mb-6">
+					<Button variant="ghost" size="icon" onClick={onClose} className="h-9 w-9">
+						<ArrowLeft className="h-5 w-5" />
+					</Button>
+					<div className="flex h-10 w-10 items-center justify-center rounded-lg bg-muted border border-border/40">
 						{getConnectorIcon(connectorType, "h-6 w-6")}
 					</div>
-					<div>
-						<h2 className="text-lg font-semibold leading-none">{institutionName}</h2>
-						<p className="text-xs text-muted-foreground mt-1">
-							{accounts.length} {accounts.length === 1 ? "account" : "accounts"} connected
-						</p>
-					</div>
+				</div>
+				<div>
+					<h2 className="text-xl sm:text-3xl font-semibold tracking-tight">{institutionName}</h2>
+					<p className="text-xs sm:text-base text-muted-foreground/80 mt-1 sm:mt-1.5">
+						{accounts.length} {accounts.length === 1 ? "account" : "accounts"} connected
+					</p>
 				</div>
 			</div>
 
 			{/* Scrollable Account List */}
-			<div className="flex-1 overflow-y-auto px-6 py-4 space-y-4">
+			<div className="flex-1 overflow-y-auto px-4 sm:px-12 py-4 sm:py-8 pb-12 sm:pb-16 space-y-4">
 					{Object.entries(groupedAccounts).map(([category, categoryAccounts]) => (
 						<div key={category} className="space-y-2">
 							{/* Category Header */}
@@ -337,7 +342,7 @@ export function PlaidManageAccounts({
 				</div>
 
 			{/* Footer */}
-			<div className="px-6 py-4 border-t bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/60 space-y-2">
+			<div className="px-4 sm:px-12 py-4 border-t border-border/80 dark:border-white/5 bg-muted/50 backdrop-blur-md space-y-2">
 				{/* Primary Action */}
 				<Button
 					onClick={handleSync}

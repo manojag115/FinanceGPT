@@ -145,6 +145,11 @@ export const ConnectorIndicator: FC = () => {
 
 	const activeConnectorsCount = connectors.length;
 
+	// Calculate total document count from all document types
+	const totalDocumentCount = documentTypeCounts
+		? Object.values(documentTypeCounts).reduce((sum, count) => sum + count, 0)
+		: 0;
+
 	// Check which connectors are already connected
 	// Using Electric SQL + PGlite for real-time connector updates
 	const connectedTypes = new Set(
@@ -319,6 +324,7 @@ export const ConnectorIndicator: FC = () => {
 						<ConnectorDialogHeader
 							activeTab={activeTab}
 							totalSourceCount={activeConnectorsCount}
+							totalDocumentCount={totalDocumentCount}
 							searchQuery={searchQuery}
 							onTabChange={handleTabChange}
 							onSearchChange={setSearchQuery}
@@ -354,15 +360,7 @@ export const ConnectorIndicator: FC = () => {
 
 									<ActiveConnectorsTab
 										searchQuery={searchQuery}
-										hasSources={hasSources}
-										totalSourceCount={totalSourceCount}
-										activeDocumentTypes={activeDocumentTypes}
-										connectors={connectors as SearchSourceConnector[]}
-										indexingConnectorIds={indexingConnectorIds}
-										searchSpaceId={searchSpaceId}
-										onTabChange={handleTabChange}
-										onManage={handleStartEdit}
-										onViewAccountsList={handleViewAccountsList}
+										searchSpaceId={searchSpaceId?.toString() || ""}
 									/>
 								</div>
 							</div>
