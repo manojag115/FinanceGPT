@@ -75,7 +75,6 @@ class PlaidConnectorResponse(BaseModel):
 async def create_link_token(
     request: CreateLinkTokenRequest,
     user: User = Depends(current_active_user),
-    session: AsyncSession = Depends(get_async_session),
 ) -> CreateLinkTokenResponse:
     """
     Create a Plaid Link token for initiating OAuth flow.
@@ -86,16 +85,14 @@ async def create_link_token(
         plaid_service = PlaidService()
 
         # Get institution ID from connector type
-        indexer_class = CONNECTOR_INDEXERS.get(request.connector_type)
-        if not indexer_class:
+        # Validate connector type
+        if request.connector_type not in CONNECTOR_INDEXERS:
             raise HTTPException(
                 status_code=status.HTTP_400_BAD_REQUEST,
                 detail=f"Unsupported connector type: {request.connector_type}",
             )
 
-        indexer = indexer_class()
         # In sandbox, don't specify institution_id - let user select from all test institutions
-        # In production, you would pass: institution_id=indexer.institution_id
         institution_id = None  # Allow user to select any sandbox institution
 
         # Create link token
@@ -109,11 +106,11 @@ async def create_link_token(
         )
 
     except Exception as e:
-        logger.error(f"Error creating link token: {e}", exc_info=True)
+        logger.error("Error creating link token: %s", e, exc_info=True)
         raise HTTPException(
             status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
-            detail=f"Failed to create link token: {str(e)}",
-        )
+            detail=f"Failed to create link token: {e!s}",
+        ) from e
 
 
 @router.post("/exchange-token", response_model=PlaidConnectorResponse)
@@ -236,11 +233,204 @@ async def exchange_public_token(
         )
 
     except Exception as e:
-        logger.error(f"Error exchanging public token: {e}", exc_info=True)
+        logger.error("Error exchanging public token: %s", e, exc_info=True)
         raise HTTPException(
             status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
-            detail=f"Failed to exchange token: {str(e)}",
+            detail=f"Failed to exchange token: {e!s}",
+        ) from e
+
+
+@router.get("/connectors/{connector_id}/accounts")
+async def get_connector_accounts(
+    connector_id: int,
+    user: User = Depends(current_active_user),
+    session: AsyncSession = Depends(get_async_session),
+) -> dict[str, Any]:
+    """
+    Get all accounts for a Plaid connector.
+    
+    Returns the accounts stored in the connector config along with current balances.
+    """
+    try:
+        # Get connector
+        stmt = select(SearchSourceConnector).where(
+            SearchSourceConnector.id == connector_id,
+            SearchSourceConnector.user_id == user.id,
         )
+        result = await session.execute(stmt)
+        connector = result.scalar_one_or_none()
+
+        if not connector:
+            raise HTTPException(
+                status_code=status.HTTP_404_NOT_FOUND, detail="Connector not found"
+            )
+
+        # Get accounts from config
+        accounts = connector.config.get("accounts", [])
+        access_token = connector.config.get("access_token")
+        
+        # Optionally refresh account balances from Plaid
+        if access_token:
+            try:
+                plaid_service = PlaidService()
+                fresh_accounts = await plaid_service.get_accounts(access_token)
+                
+                # Merge fresh data with stored accounts
+                account_map = {acc["account_id"]: acc for acc in fresh_accounts}
+                for account in accounts:
+                    if account["account_id"] in account_map:
+                        fresh = account_map[account["account_id"]]
+                        account["balances"] = {
+                            "current": fresh["balance"]["current"],
+                            "available": fresh["balance"].get("available"),
+                            "limit": fresh["balance"].get("limit"),
+                        }
+            except Exception as e:  # noqa: BLE001
+                logger.warning("Failed to refresh account balances: %s", e)
+
+        return {
+            "connector_id": connector.id,
+            "connector_name": connector.name,
+            "connector_type": connector.connector_type,
+            "accounts": accounts,
+            "last_indexed_at": connector.last_indexed_at.isoformat() if connector.last_indexed_at else None,
+        }
+
+    except HTTPException:
+        raise
+    except Exception as e:
+        logger.error("Error getting connector accounts: %s", e, exc_info=True)
+        raise HTTPException(
+            status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
+            detail=f"Failed to get accounts: {e!s}",
+        ) from e
+
+
+@router.post("/link-token-update")
+async def create_update_link_token(
+    connector_id: int,
+    user: User = Depends(current_active_user),
+    session: AsyncSession = Depends(get_async_session),
+) -> CreateLinkTokenResponse:
+    """
+    Create a Plaid Link token for updating an existing connection.
+    
+    This allows users to add/remove accounts from an existing institution connection.
+    """
+    try:
+        # Get connector
+        stmt = select(SearchSourceConnector).where(
+            SearchSourceConnector.id == connector_id,
+            SearchSourceConnector.user_id == user.id,
+        )
+        result = await session.execute(stmt)
+        connector = result.scalar_one_or_none()
+
+        if not connector:
+            raise HTTPException(
+                status_code=status.HTTP_404_NOT_FOUND, detail="Connector not found"
+            )
+
+        access_token = connector.config.get("access_token")
+        if not access_token:
+            raise HTTPException(
+                status_code=status.HTTP_400_BAD_REQUEST,
+                detail="No access token found for connector"
+            )
+
+        # Create link token in update mode
+        plaid_service = PlaidService()
+        response = await plaid_service.create_update_link_token(  # type: ignore[attr-defined]
+            user_id=str(user.id),
+            access_token=access_token
+        )
+
+        return CreateLinkTokenResponse(
+            link_token=response["link_token"],
+            expiration=response["expiration"].isoformat() if isinstance(response["expiration"], datetime) else str(response["expiration"])
+        )
+
+    except HTTPException:
+        raise
+    except Exception as e:
+        logger.error("Error creating update link token: %s", e, exc_info=True)
+        raise HTTPException(
+            status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
+            detail=f"Failed to create update link token: {e!s}",
+        ) from e
+
+
+@router.post("/connectors/{connector_id}/accounts/refresh")
+async def refresh_connector_accounts(
+    connector_id: int,
+    user: User = Depends(current_active_user),
+    session: AsyncSession = Depends(get_async_session),
+) -> dict[str, Any]:
+    """
+    Refresh the accounts list for a connector after user updates via Plaid Link.
+    
+    This should be called after a successful Plaid Link update flow.
+    """
+    try:
+        # Get connector
+        stmt = select(SearchSourceConnector).where(
+            SearchSourceConnector.id == connector_id,
+            SearchSourceConnector.user_id == user.id,
+        )
+        result = await session.execute(stmt)
+        connector = result.scalar_one_or_none()
+
+        if not connector:
+            raise HTTPException(
+                status_code=status.HTTP_404_NOT_FOUND, detail="Connector not found"
+            )
+
+        access_token = connector.config.get("access_token")
+        if not access_token:
+            raise HTTPException(
+                status_code=status.HTTP_400_BAD_REQUEST,
+                detail="No access token found"
+            )
+
+        # Fetch fresh accounts from Plaid
+        plaid_service = PlaidService()
+        accounts_data = await plaid_service.get_accounts(access_token)
+        
+        # Convert to our format
+        accounts = [
+            {
+                "account_id": acc["account_id"],
+                "name": acc["name"],
+                "mask": acc.get("mask"),
+                "type": acc["type"].value if hasattr(acc["type"], "value") else str(acc["type"]),
+                "subtype": acc["subtype"].value if acc.get("subtype") and hasattr(acc["subtype"], "value") else str(acc.get("subtype")) if acc.get("subtype") else None,
+                "balances": {
+                    "current": acc["balances"]["current"],
+                    "available": acc["balances"].get("available"),
+                    "limit": acc["balances"].get("limit"),
+                } if acc.get("balances") else None,
+            }
+            for acc in accounts_data
+        ]
+
+        # Update connector config
+        connector.config["accounts"] = accounts
+        await session.commit()
+
+        return {
+            "status": "success",
+            "accounts": accounts,
+            "message": f"Refreshed {len(accounts)} accounts"
+        }
+
+    except HTTPException:
+        raise
+    except Exception as e:
+        logger.error("Error refreshing accounts: %s", e, exc_info=True)
+        raise HTTPException(
+            status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
+            detail=f"Failed to refresh accounts: {e!s}",
+        ) from e
 
 
 @router.post("/connectors/{connector_id}/sync")
@@ -282,8 +472,8 @@ async def sync_connector(
     except HTTPException:
         raise
     except Exception as e:
-        logger.error(f"Error syncing connector: {e}", exc_info=True)
+        logger.error("Error syncing connector: %s", e, exc_info=True)
         raise HTTPException(
             status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
-            detail=f"Failed to sync connector: {str(e)}",
-        )
+            detail=f"Failed to sync connector: {e!s}",
+        ) from e

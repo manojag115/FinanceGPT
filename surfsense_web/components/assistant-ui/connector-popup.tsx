@@ -13,6 +13,7 @@ import { useConnectorsElectric } from "@/hooks/use-connectors-electric";
 import { useDocumentsElectric } from "@/hooks/use-documents-electric";
 import { cn } from "@/lib/utils";
 import { ConnectorDialogHeader } from "./connector-popup/components/connector-dialog-header";
+import { PlaidManageAccounts } from "./connector-popup/components/plaid-manage-accounts";
 import { ConnectorConnectView } from "./connector-popup/connector-configs/views/connector-connect-view";
 import { ConnectorEditView } from "./connector-popup/connector-configs/views/connector-edit-view";
 import { IndexingConfigurationView } from "./connector-popup/connector-configs/views/indexing-configuration-view";
@@ -82,6 +83,8 @@ export const ConnectorIndicator: FC = () => {
 		handleBackFromYouTube,
 		handleViewAccountsList,
 		handleBackFromAccountsList,
+		handleClosePlaidManage,
+		handleDisconnectPlaidConnector,
 		handleBackFromMCPList,
 		handleAddNewMCPFromList,
 		handleQuickIndexConnector,
@@ -89,6 +92,7 @@ export const ConnectorIndicator: FC = () => {
 		setConnectorConfig,
 		setIndexingConnectorConfig,
 		setConnectorName,
+		managingPlaidConnector,
 		// Composio
 		viewingComposio,
 		connectingComposioToolkit,
@@ -206,6 +210,14 @@ export const ConnectorIndicator: FC = () => {
 						onManage={handleStartEdit}
 						onAddAccount={handleAddNewMCPFromList}
 						addButtonText="Add New MCP Server"
+					/>
+				) : managingPlaidConnector ? (
+					<PlaidManageAccounts
+						connectorId={managingPlaidConnector.id}
+						connectorName={managingPlaidConnector.name}
+						connectorType={managingPlaidConnector.connector_type}
+						onClose={handleClosePlaidManage}
+						onDisconnect={handleDisconnectPlaidConnector}
 					/>
 				) : viewingAccountsType ? (
 					<ConnectorAccountsListView

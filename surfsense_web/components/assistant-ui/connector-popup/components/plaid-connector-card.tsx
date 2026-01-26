@@ -14,6 +14,7 @@ interface PlaidConnectorCardProps {
 	searchSpaceId: number;
 	isConnected: boolean;
 	isConnecting: boolean;
+	accountCount?: number;
 	onSuccess: (publicToken: string, connectorType: EnumConnectorName, metadata: PlaidLinkOnSuccessMetadata) => void;
 	onSetConnecting: (id: string | null) => void;
 	onManage?: () => void;
@@ -31,6 +32,7 @@ export function PlaidConnectorCard({
 	searchSpaceId,
 	isConnected,
 	isConnecting,
+	accountCount,
 	onSuccess,
 	onSetConnecting,
 	onManage,
@@ -66,6 +68,7 @@ export function PlaidConnectorCard({
 			connectorType={connectorType}
 			isConnected={isConnected}
 			isConnecting={isConnecting || isLoading}
+			accountCount={accountCount}
 			onConnect={handleConnect}
 			onManage={onManage}
 		/>

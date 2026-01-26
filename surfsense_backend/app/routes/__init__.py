@@ -1,7 +1,6 @@
 from fastapi import APIRouter
 
 from .chat_comments_routes import router as chat_comments_router
-from .circleback_webhook_route import router as circleback_webhook_router
 from .composio_routes import router as composio_router
 from .documents_routes import router as documents_router
 from .editor_routes import router as editor_router
@@ -29,7 +28,6 @@ router.include_router(search_source_connectors_router)
 router.include_router(plaid_router)  # Plaid bank connectors
 router.include_router(new_llm_config_router)  # LLM configs with prompt configuration
 router.include_router(logs_router)
-router.include_router(circleback_webhook_router)  # Circleback meeting webhooks
 router.include_router(surfsense_docs_router)  # Surfsense documentation for citations
 router.include_router(notifications_router)  # Notifications with Electric SQL sync
 router.include_router(composio_router)  # Composio OAuth and toolkit management

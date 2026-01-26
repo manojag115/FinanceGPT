@@ -9,10 +9,9 @@ Available processors:
 - Extension processor: Handle documents from browser extension
 - Markdown processor: Process markdown files
 - File processors: Handle files using different ETL services (Unstructured, LlamaCloud, Docling)
-- YouTube processor: Process YouTube videos and extract transcripts
+- Web URL processor: Process web URLs
 """
 
-# URL crawler
 # Extension processor
 from .extension_processor import add_extension_received_document
 
@@ -26,9 +25,6 @@ from .file_processors import (
 # Markdown processor
 from .markdown_processor import add_received_markdown_file_document
 
-# YouTube processor
-from .youtube_processor import add_youtube_video_document
-
 __all__ = [
     # Extension processing
     "add_extension_received_document",
@@ -38,6 +34,4 @@ __all__ = [
     "add_received_file_document_using_unstructured",
     # Markdown file processing
     "add_received_markdown_file_document",
-    # YouTube video processing
-    "add_youtube_video_document",
 ]

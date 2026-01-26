@@ -135,7 +135,12 @@ export const AllConnectorsTab: FC<AllConnectorsTabProps> = ({
 										)
 									: [];
 
-							const accountCount = typeConnectors.length;
+							// For Plaid connectors, get the actual account count from config
+							// For other connectors, count the number of connector records
+							const isPlaidConnector = PLAID_CONNECTOR_TYPES.has(connector.connectorType);
+							const accountCount = isPlaidConnector && typeConnectors.length > 0
+								? (typeConnectors[0].config?.accounts?.length || 1)
+								: typeConnectors.length;
 
 							// Get the most recent last_indexed_at across all accounts
 							const mostRecentLastIndexed = typeConnectors.reduce<string | undefined>(
@@ -157,9 +162,6 @@ export const AllConnectorsTab: FC<AllConnectorsTabProps> = ({
 							// Check if any account is currently indexing
 							const isIndexing = typeConnectors.some((c) => indexingConnectorIds?.has(c.id));
 
-							// Check if this is a Plaid connector
-							const isPlaidConnector = PLAID_CONNECTOR_TYPES.has(connector.connectorType);
-
 						if (isPlaidConnector) {
 							return (
 								<PlaidConnectorCard
@@ -171,6 +173,7 @@ export const AllConnectorsTab: FC<AllConnectorsTabProps> = ({
 									searchSpaceId={Number(searchSpaceId)}
 									isConnected={isConnected}
 									isConnecting={isConnecting}
+									accountCount={accountCount}
 									onSuccess={onConnectPlaid}
 									onSetConnecting={onSetConnecting}
 									onManage={

@@ -23,6 +23,12 @@ from plaid.model.transactions_get_request import TransactionsGetRequest
 from plaid.model.transactions_get_request_options import (
     TransactionsGetRequestOptions,
 )
+from plaid.model.investments_holdings_get_request import (
+    InvestmentsHoldingsGetRequest,
+)
+from plaid.model.investments_transactions_get_request import (
+    InvestmentsTransactionsGetRequest,
+)
 
 from app.config import config
 
@@ -48,15 +54,12 @@ class PlaidService:
 
     def _get_plaid_environment(self) -> str:
         """Get Plaid environment URL based on config."""
-        env = config.PLAID_ENV.lower()
-        if env == "sandbox":
-            return plaid.Environment.Sandbox
-        elif env == "development":
-            return plaid.Environment.Development
-        elif env == "production":
-            return plaid.Environment.Production
-        else:
-            return plaid.Environment.Sandbox
+        env_map = {
+            "sandbox": plaid.Environment.Sandbox,
+            "development": plaid.Environment.Sandbox,  # Development uses Sandbox
+            "production": plaid.Environment.Production,
+        }
+        return env_map.get(config.PLAID_ENV.lower(), plaid.Environment.Sandbox)
 
     async def create_link_token(
         self, user_id: str, institution_id: str | None = None
@@ -73,7 +76,7 @@ class PlaidService:
         """
         try:
             request = LinkTokenCreateRequest(
-                products=[Products("transactions"), Products("auth")],
+                products=[Products("transactions"), Products("auth"), Products("investments")],
                 client_name="FinanceGPT",
                 country_codes=[CountryCode("US")],
                 language="en",
@@ -87,7 +90,39 @@ class PlaidService:
             return response.to_dict()
 
         except ApiException as e:
-            logger.error(f"Error creating link token: {e}")
+            logger.error("Error creating link token: %s", e)
+            raise
+
+    async def create_update_link_token(
+        self, user_id: str, access_token: str
+    ) -> dict[str, Any]:
+        """
+        Create a Plaid Link token for updating an existing connection.
+        
+        This allows users to add/remove accounts or fix connection issues.
+
+        Args:
+            user_id: User ID for tracking
+            access_token: Existing Plaid access token to update
+
+        Returns:
+            Link token response with token and expiration
+        """
+        try:
+            request = LinkTokenCreateRequest(
+                products=[Products("transactions"), Products("auth"), Products("investments")],
+                client_name="FinanceGPT",
+                country_codes=[CountryCode("US")],
+                language="en",
+                user=LinkTokenCreateRequestUser(client_user_id=str(user_id)),
+                access_token=access_token,  # This enables update mode
+            )
+
+            response = self.client.link_token_create(request)
+            return response.to_dict()
+
+        except ApiException as e:
+            logger.error("Error creating update link token: %s", e)
             raise
 
     async def exchange_public_token(self, public_token: str) -> dict[str, Any]:
@@ -110,7 +145,7 @@ class PlaidService:
             }
 
         except ApiException as e:
-            logger.error(f"Error exchanging public token: {e}")
+            logger.error("Error exchanging public token: %s", e)
             raise
 
     async def get_accounts(self, access_token: str) -> list[dict[str, Any]]:
@@ -134,8 +169,8 @@ class PlaidService:
                         "account_id": account["account_id"],
                         "name": account["name"],
                         "official_name": account.get("official_name"),
-                        "type": account["type"],
-                        "subtype": account["subtype"],
+                        "type": str(account["type"]) if account["type"] else None,
+                        "subtype": str(account["subtype"]) if account["subtype"] else None,
                         "mask": account.get("mask"),
                         "balance": {
                             "current": account["balances"]["current"],
@@ -148,7 +183,7 @@ class PlaidService:
             return accounts
 
         except ApiException as e:
-            logger.error(f"Error getting accounts: {e}")
+            logger.error("Error getting accounts: %s", e)
             raise
 
     async def get_transactions(
@@ -208,7 +243,7 @@ class PlaidService:
             total_transactions = response["total_transactions"]
             if total_transactions > len(transactions):
                 logger.info(
-                    f"Paginating to get all {total_transactions} transactions"
+                    "Paginating to get all %d transactions", total_transactions
                 )
                 # Plaid may require multiple calls for large datasets
                 # For now, we return what we got - implement pagination if needed
@@ -216,7 +251,7 @@ class PlaidService:
             return transactions
 
         except ApiException as e:
-            logger.error(f"Error getting transactions: {e}")
+            logger.error("Error getting transactions: %s", e)
             raise
 
     async def sync_recent_transactions(
@@ -236,3 +271,137 @@ class PlaidService:
         start_date = end_date - timedelta(days=days_back)
 
         return await self.get_transactions(access_token, start_date, end_date)
+
+    async def get_investment_holdings(
+        self, access_token: str
+    ) -> dict[str, Any]:
+        """
+        Get investment holdings (stocks, bonds, funds) for all investment accounts.
+
+        Args:
+            access_token: Plaid access token
+
+        Returns:
+            Dictionary with accounts, holdings, and securities information
+        """
+        try:
+            request = InvestmentsHoldingsGetRequest(access_token=access_token)
+            response = self.client.investments_holdings_get(request)
+
+            # Parse response
+            holdings_data = {
+                "accounts": [],
+                "holdings": [],
+                "securities": [],
+            }
+
+            # Extract accounts
+            for account in response.get("accounts", []):
+                holdings_data["accounts"].append(
+                    {
+                        "account_id": account["account_id"],
+                        "name": account["name"],
+                        "official_name": account.get("official_name"),
+                        "type": account["type"],
+                        "subtype": account["subtype"],
+                        "mask": account.get("mask"),
+                        "balance": {
+                            "current": account["balances"]["current"],
+                            "available": account["balances"].get("available"),
+                            "limit": account["balances"].get("limit"),
+                        },
+                    }
+                )
+
+            # Extract holdings (positions)
+            for holding in response.get("holdings", []):
+                holdings_data["holdings"].append(
+                    {
+                        "account_id": holding["account_id"],
+                        "security_id": holding["security_id"],
+                        "quantity": holding["quantity"],
+                        "institution_price": holding["institution_price"],
+                        "institution_value": holding["institution_value"],
+                        "cost_basis": holding.get("cost_basis"),
+                        "iso_currency_code": holding.get("iso_currency_code"),
+                    }
+                )
+
+            # Extract securities (stock/fund details)
+            for security in response.get("securities", []):
+                holdings_data["securities"].append(
+                    {
+                        "security_id": security["security_id"],
+                        "name": security.get("name"),
+                        "ticker_symbol": security.get("ticker_symbol"),
+                        "type": security.get("type"),
+                        "close_price": security.get("close_price"),
+                        "close_price_as_of": security.get("close_price_as_of"),
+                        "isin": security.get("isin"),
+                        "cusip": security.get("cusip"),
+                    }
+                )
+
+            return holdings_data
+
+        except ApiException as e:
+            # Check if it's a consent/permission issue (common for non-investment accounts)
+            error_code = getattr(e, 'error_code', None) if hasattr(e, 'error_code') else None
+            if error_code == 'ADDITIONAL_CONSENT_REQUIRED':
+                logger.info(
+                    "Investment holdings not available - account doesn't have investment product access (this is normal for checking/savings accounts)"
+                )
+            else:
+                logger.error("Error getting investment holdings: %s", e)
+            # Not all accounts support investments - return empty data
+            return {"accounts": [], "holdings": [], "securities": []}
+
+    async def get_investment_transactions(
+        self,
+        access_token: str,
+        start_date: datetime,
+        end_date: datetime,
+    ) -> list[dict[str, Any]]:
+        """
+        Get investment transactions (buys, sells, dividends, etc.).
+
+        Args:
+            access_token: Plaid access token
+            start_date: Start date
+            end_date: End date
+
+        Returns:
+            List of investment transaction dictionaries
+        """
+        try:
+            request = InvestmentsTransactionsGetRequest(
+                access_token=access_token,
+                start_date=start_date.date(),
+                end_date=end_date.date(),
+            )
+
+            response = self.client.investments_transactions_get(request)
+
+            transactions = []
+            for txn in response.get("investment_transactions", []):
+                transactions.append(
+                    {
+                        "investment_transaction_id": txn["investment_transaction_id"],
+                        "account_id": txn["account_id"],
+                        "security_id": txn.get("security_id"),
+                        "date": txn["date"],
+                        "name": txn["name"],
+                        "amount": txn["amount"],
+                        "quantity": txn["quantity"],
+                        "price": txn["price"],
+                        "type": txn["type"],  # buy, sell, dividend, etc.
+                        "subtype": txn.get("subtype"),
+                        "iso_currency_code": txn.get("iso_currency_code"),
+                    }
+                )
+
+            return transactions
+
+        except ApiException as e:
+            logger.error("Error getting investment transactions: %s", e)
+            return []

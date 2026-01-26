@@ -120,18 +120,12 @@ export const ConnectorCard: FC<ConnectorCardProps> = ({
 							<span>
 								{connectorCount} {connectorCount === 1 ? "server" : "servers"}
 							</span>
+						) : accountCount !== undefined && accountCount > 0 ? (
+							<span>
+								{accountCount} {accountCount === 1 ? "account" : "accounts"}
+							</span>
 						) : (
-							<>
-								<span>{formatDocumentCount(documentCount)}</span>
-								{accountCount !== undefined && accountCount > 0 && (
-									<>
-										<span className="text-muted-foreground/50">•</span>
-										<span>
-											{accountCount} {accountCount === 1 ? "Account" : "Accounts"}
-										</span>
-									</>
-								)}
-							</>
+							<span>{formatDocumentCount(documentCount)}</span>
 						)}
 					</p>
 				) : (

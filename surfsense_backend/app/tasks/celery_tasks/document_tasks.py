@@ -12,7 +12,6 @@ from app.services.notification_service import NotificationService
 from app.services.task_logging_service import TaskLoggingService
 from app.tasks.document_processors import (
     add_extension_received_document,
-    add_youtube_video_document,
 )
 
 logger = logging.getLogger(__name__)
@@ -186,129 +185,6 @@ async def _process_extension_document(
             raise
 
 
-@celery_app.task(name="process_youtube_video", bind=True)
-def process_youtube_video_task(self, url: str, search_space_id: int, user_id: str):
-    """
-    Celery task to process YouTube video.
-
-    Args:
-        url: YouTube video URL
-        search_space_id: ID of the search space
-        user_id: ID of the user
-    """
-    import asyncio
-
-    loop = asyncio.new_event_loop()
-    asyncio.set_event_loop(loop)
-
-    try:
-        loop.run_until_complete(_process_youtube_video(url, search_space_id, user_id))
-    finally:
-        loop.close()
-
-
-async def _process_youtube_video(url: str, search_space_id: int, user_id: str):
-    """Process YouTube video with new session."""
-    async with get_celery_session_maker()() as session:
-        task_logger = TaskLoggingService(session, search_space_id)
-
-        # Extract video title from URL for notification (will be updated later)
-        video_name = url.split("v=")[-1][:11] if "v=" in url else url
-
-        # Create notification for document processing
-        notification = (
-            await NotificationService.document_processing.notify_processing_started(
-                session=session,
-                user_id=UUID(user_id),
-                document_type="YOUTUBE_VIDEO",
-                document_name=f"YouTube: {video_name}",
-                search_space_id=search_space_id,
-            )
-        )
-
-        log_entry = await task_logger.log_task_start(
-            task_name="process_youtube_video",
-            source="document_processor",
-            message=f"Starting YouTube video processing for: {url}",
-            metadata={"document_type": "YOUTUBE_VIDEO", "url": url, "user_id": user_id},
-        )
-
-        try:
-            # Update notification: parsing (fetching transcript)
-            await NotificationService.document_processing.notify_processing_progress(
-                session,
-                notification,
-                stage="parsing",
-                stage_message="Fetching video transcript",
-            )
-
-            result = await add_youtube_video_document(
-                session, url, search_space_id, user_id
-            )
-
-            if result:
-                await task_logger.log_task_success(
-                    log_entry,
-                    f"Successfully processed YouTube video: {result.title}",
-                    {
-                        "document_id": result.id,
-                        "video_id": result.document_metadata.get("video_id"),
-                        "content_hash": result.content_hash,
-                    },
-                )
-
-                # Update notification on success
-                await (
-                    NotificationService.document_processing.notify_processing_completed(
-                        session=session,
-                        notification=notification,
-                        document_id=result.id,
-                        chunks_count=None,
-                    )
-                )
-            else:
-                await task_logger.log_task_success(
-                    log_entry,
-                    f"YouTube video document already exists (duplicate): {url}",
-                    {"duplicate_detected": True},
-                )
-
-                # Update notification for duplicate
-                await (
-                    NotificationService.document_processing.notify_processing_completed(
-                        session=session,
-                        notification=notification,
-                        error_message="Video already exists (duplicate)",
-                    )
-                )
-        except Exception as e:
-            await task_logger.log_task_failure(
-                log_entry,
-                f"Failed to process YouTube video: {url}",
-                str(e),
-                {"error_type": type(e).__name__},
-            )
-
-            # Update notification on failure - wrapped in try-except to ensure it doesn't fail silently
-            try:
-                # Refresh notification to ensure it's not stale after any rollback
-                await session.refresh(notification)
-                await (
-                    NotificationService.document_processing.notify_processing_completed(
-                        session=session,
-                        notification=notification,
-                        error_message=str(e)[:100],
-                    )
-                )
-            except Exception as notif_error:
-                logger.error(
-                    f"Failed to update notification on failure: {notif_error!s}"
-                )
-
-            logger.error(f"Error processing YouTube video: {e!s}")
-            raise
-
-
 @celery_app.task(name="process_file_upload", bind=True)
 def process_file_upload_task(
     self, file_path: str, filename: str, search_space_id: int, user_id: str
@@ -448,24 +324,17 @@ async def _process_file_upload(
             raise
 
 
-@celery_app.task(name="process_circleback_meeting", bind=True)
-def process_circleback_meeting_task(
-    self,
-    meeting_id: int,
-    meeting_name: str,
-    markdown_content: str,
-    metadata: dict,
-    search_space_id: int,
+@celery_app.task(name="process_web_url_document", bind=True)
+def process_web_url_document_task(
+    self, url: str, search_space_id: int, user_id: str
 ):
     """
-    Celery task to process Circleback meeting webhook data.
+    Celery task to process web URL document.
 
     Args:
-        meeting_id: Circleback meeting ID
-        meeting_name: Name of the meeting
-        markdown_content: Meeting content formatted as markdown
-        metadata: Meeting metadata dictionary
+        url: URL to process
         search_space_id: ID of the search space
+        user_id: ID of the user
     """
     import asyncio
 
@@ -474,137 +343,106 @@ def process_circleback_meeting_task(
 
     try:
         loop.run_until_complete(
-            _process_circleback_meeting(
-                meeting_id,
-                meeting_name,
-                markdown_content,
-                metadata,
-                search_space_id,
-            )
+            _process_web_url_document(url, search_space_id, user_id)
         )
     finally:
         loop.close()
 
 
-async def _process_circleback_meeting(
-    meeting_id: int,
-    meeting_name: str,
-    markdown_content: str,
-    metadata: dict,
-    search_space_id: int,
+async def _process_web_url_document(
+    url: str, search_space_id: int, user_id: str
 ):
-    """Process Circleback meeting with new session."""
-    from app.tasks.document_processors.circleback_processor import (
-        add_circleback_meeting_document,
-    )
+    """Process web URL document with new session."""
+    from app.tasks.document_processors.web_url_processor import add_web_url_document
 
     async with get_celery_session_maker()() as session:
         task_logger = TaskLoggingService(session, search_space_id)
 
-        # Get user_id from metadata if available
-        user_id = metadata.get("user_id")
-
-        # Create notification if user_id is available
-        notification = None
-        if user_id:
-            notification = (
-                await NotificationService.document_processing.notify_processing_started(
-                    session=session,
-                    user_id=UUID(user_id),
-                    document_type="CIRCLEBACK",
-                    document_name=f"Meeting: {meeting_name[:40]}",
-                    search_space_id=search_space_id,
-                )
+        # Create notification for document processing
+        notification = (
+            await NotificationService.document_processing.notify_processing_started(
+                session=session,
+                user_id=UUID(user_id),
+                document_type="WEB_URL",
+                document_name=url,
+                search_space_id=search_space_id,
             )
+        )
 
         log_entry = await task_logger.log_task_start(
-            task_name="process_circleback_meeting",
-            source="circleback_webhook",
-            message=f"Starting Circleback meeting processing: {meeting_name}",
+            task_name="process_web_url_document",
+            source="document_processor",
+            message=f"Starting web URL processing for: {url}",
             metadata={
-                "document_type": "CIRCLEBACK",
-                "meeting_id": meeting_id,
-                "meeting_name": meeting_name,
-                **metadata,
+                "document_type": "WEB_URL",
+                "url": url,
+                "user_id": user_id,
             },
         )
 
         try:
-            # Update notification: parsing stage
-            if notification:
-                await (
-                    NotificationService.document_processing.notify_processing_progress(
-                        session,
-                        notification,
-                        stage="parsing",
-                        stage_message="Reading meeting notes",
-                    )
-                )
-
-            result = await add_circleback_meeting_document(
-                session=session,
-                meeting_id=meeting_id,
-                meeting_name=meeting_name,
-                markdown_content=markdown_content,
-                metadata=metadata,
-                search_space_id=search_space_id,
+            result = await add_web_url_document(
+                session,
+                url,
+                search_space_id,
+                user_id,
             )
 
+            # Update notification on success
             if result:
-                await task_logger.log_task_success(
-                    log_entry,
-                    f"Successfully processed Circleback meeting: {meeting_name}",
-                    {
-                        "document_id": result.id,
-                        "meeting_id": meeting_id,
-                        "content_hash": result.content_hash,
-                    },
-                )
-
-                # Update notification on success
-                if notification:
-                    await NotificationService.document_processing.notify_processing_completed(
+                await (
+                    NotificationService.document_processing.notify_processing_completed(
                         session=session,
                         notification=notification,
                         document_id=result.id,
                         chunks_count=None,
                     )
+                )
             else:
-                await task_logger.log_task_success(
-                    log_entry,
-                    f"Circleback meeting document already exists (duplicate): {meeting_name}",
-                    {"duplicate_detected": True, "meeting_id": meeting_id},
+                # Duplicate detected
+                await (
+                    NotificationService.document_processing.notify_processing_completed(
+                        session=session,
+                        notification=notification,
+                        error_message="Document already exists (duplicate)",
+                    )
                 )
 
-                # Update notification for duplicate
-                if notification:
-                    await NotificationService.document_processing.notify_processing_completed(
-                        session=session,
-                        notification=notification,
-                        error_message="Meeting already saved (duplicate)",
-                    )
         except Exception as e:
-            await task_logger.log_task_failure(
-                log_entry,
-                f"Failed to process Circleback meeting: {meeting_name}",
-                str(e),
-                {"error_type": type(e).__name__, "meeting_id": meeting_id},
-            )
+            # Import here to avoid circular dependencies
+            from fastapi import HTTPException
+
+            from app.services.page_limit_service import PageLimitExceededError
+
+            # For page limit errors, use the detailed message from the exception
+            if isinstance(e, PageLimitExceededError):
+                error_message = str(e)
+            elif isinstance(e, HTTPException) and "page limit" in str(e.detail).lower():
+                error_message = str(e.detail)
+            else:
+                error_message = str(e)[:100]
 
             # Update notification on failure - wrapped in try-except to ensure it doesn't fail silently
-            if notification:
-                try:
-                    # Refresh notification to ensure it's not stale after any rollback
-                    await session.refresh(notification)
-                    await NotificationService.document_processing.notify_processing_completed(
+            try:
+                # Refresh notification to ensure it's not stale after any rollback
+                await session.refresh(notification)
+                await (
+                    NotificationService.document_processing.notify_processing_completed(
                         session=session,
                         notification=notification,
-                        error_message=str(e)[:100],
+                        error_message=error_message,
                     )
-                except Exception as notif_error:
-                    logger.error(
-                        f"Failed to update notification on failure: {notif_error!s}"
-                    )
+                )
+            except Exception as notif_error:
+                logger.error(
+                    f"Failed to update notification on failure: {notif_error!s}"
+                )
 
-            logger.error(f"Error processing Circleback meeting: {e!s}")
+            await task_logger.log_task_failure(
+                log_entry,
+                error_message,
+                str(e),
+                {"error_type": type(e).__name__},
+            )
+            logger.error(error_message)
             raise

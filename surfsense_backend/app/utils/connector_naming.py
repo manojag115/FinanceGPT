@@ -5,7 +5,6 @@ Provides functions for generating unique, user-friendly connector names.
 """
 
 from typing import Any
-from urllib.parse import urlparse
 from uuid import UUID
 
 from sqlalchemy import select
@@ -16,19 +15,7 @@ from app.db import SearchSourceConnector, SearchSourceConnectorType
 
 # Friendly display names for connector types
 BASE_NAME_FOR_TYPE = {
-    SearchSourceConnectorType.GOOGLE_GMAIL_CONNECTOR: "Gmail",
-    SearchSourceConnectorType.GOOGLE_DRIVE_CONNECTOR: "Google Drive",
-    SearchSourceConnectorType.GOOGLE_CALENDAR_CONNECTOR: "Google Calendar",
-    SearchSourceConnectorType.SLACK_CONNECTOR: "Slack",
-    SearchSourceConnectorType.TEAMS_CONNECTOR: "Microsoft Teams",
-    SearchSourceConnectorType.NOTION_CONNECTOR: "Notion",
-    SearchSourceConnectorType.LINEAR_CONNECTOR: "Linear",
-    SearchSourceConnectorType.JIRA_CONNECTOR: "Jira",
-    SearchSourceConnectorType.DISCORD_CONNECTOR: "Discord",
-    SearchSourceConnectorType.CONFLUENCE_CONNECTOR: "Confluence",
-    SearchSourceConnectorType.AIRTABLE_CONNECTOR: "Airtable",
-    SearchSourceConnectorType.MCP_CONNECTOR: "Model Context Protocol (MCP)",
-    # Financial Connectors
+    # Financial Connectors (Plaid)
     SearchSourceConnectorType.CHASE_BANK: "Chase Bank",
     SearchSourceConnectorType.FIDELITY_INVESTMENTS: "Fidelity Investments",
     SearchSourceConnectorType.BANK_OF_AMERICA: "Bank of America",
@@ -43,48 +30,21 @@ def get_base_name_for_type(connector_type: SearchSourceConnectorType) -> str:
 
 
 def extract_identifier_from_credentials(
-    connector_type: SearchSourceConnectorType,
-    credentials: dict[str, Any],
+    _connector_type: SearchSourceConnectorType,
+    _credentials: dict[str, Any],
 ) -> str | None:
     """
     Extract a unique identifier from connector credentials.
 
     Args:
-        connector_type: The type of connector
-        credentials: The connector credentials dict
+        _connector_type: The type of connector (unused for Plaid)
+        _credentials: The connector credentials dict (unused for Plaid)
 
     Returns:
-        Identifier string (workspace name, email, etc.) or None
+        Identifier string or None for Plaid connectors (use institution name instead)
     """
-    if connector_type == SearchSourceConnectorType.SLACK_CONNECTOR:
-        return credentials.get("team_name")
-
-    if connector_type == SearchSourceConnectorType.TEAMS_CONNECTOR:
-        return credentials.get("tenant_name")
-
-    if connector_type == SearchSourceConnectorType.NOTION_CONNECTOR:
-        return credentials.get("workspace_name")
-
-    if connector_type == SearchSourceConnectorType.DISCORD_CONNECTOR:
-        return credentials.get("guild_name")
-
-    if connector_type in (
-        SearchSourceConnectorType.JIRA_CONNECTOR,
-        SearchSourceConnectorType.CONFLUENCE_CONNECTOR,
-    ):
-        base_url = credentials.get("base_url", "")
-        if base_url:
-            try:
-                parsed = urlparse(base_url)
-                hostname = parsed.netloc or parsed.path
-                if ".atlassian.net" in hostname:
-                    return hostname.replace(".atlassian.net", "")
-                return hostname
-            except (ValueError, TypeError, AttributeError):
-                pass
-        return None
-
-    # Google, Linear, Airtable require API calls - return None
+    # Plaid connectors use institution name from Plaid API, not credentials
+    # All financial connectors return None here
     return None
 
 
@@ -116,7 +76,7 @@ async def count_connectors_of_type(
 ) -> int:
     """Count existing connectors of a type for a user in a search space."""
     result = await session.execute(
-        select(func.count(SearchSourceConnector.id)).where(
+        select(func.count(SearchSourceConnector.id)).where(  # pyright: ignore[reportCallIssue]
             SearchSourceConnector.connector_type == connector_type,
             SearchSourceConnector.search_space_id == search_space_id,
             SearchSourceConnector.user_id == user_id,
@@ -150,7 +110,7 @@ async def check_duplicate_connector(
 
     expected_name = f"{get_base_name_for_type(connector_type)} - {identifier}"
     result = await session.execute(
-        select(func.count(SearchSourceConnector.id)).where(
+        select(func.count(SearchSourceConnector.id)).where(  # pyright: ignore[reportCallIssue]
             SearchSourceConnector.connector_type == connector_type,
             SearchSourceConnector.search_space_id == search_space_id,
             SearchSourceConnector.user_id == user_id,

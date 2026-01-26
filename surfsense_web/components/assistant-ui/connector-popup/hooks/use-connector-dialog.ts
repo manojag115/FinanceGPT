@@ -83,6 +83,9 @@ export const useConnectorDialog = () => {
 	// MCP list view state (for managing multiple MCP connectors)
 	const [viewingMCPList, setViewingMCPList] = useState(false);
 
+	// Plaid manage view state (for managing accounts within a Plaid connector)
+	const [managingPlaidConnector, setManagingPlaidConnector] = useState<SearchSourceConnector | null>(null);
+
 	// Composio toolkit view state
 	const [viewingComposio, setViewingComposio] = useState(false);
 	const [connectingComposioToolkit, setConnectingComposioToolkit] = useState<string | null>(null);
@@ -837,6 +840,28 @@ export const useConnectorDialog = () => {
 		(connectorType: string, connectorTitle: string) => {
 			if (!searchSpaceId) return;
 
+			// For Plaid connectors, show manage modal directly
+			const plaidTypes = [
+				EnumConnectorName.CHASE_BANK,
+				EnumConnectorName.CHASE_CREDIT,
+				EnumConnectorName.FIDELITY_INVESTMENTS,
+				EnumConnectorName.BANK_OF_AMERICA,
+			];
+			if (plaidTypes.includes(connectorType as EnumConnectorName)) {
+				// Find the connector for this type
+				const connector = allConnectors?.find(c => c.connector_type === connectorType);
+				if (connector) {
+					setManagingPlaidConnector(connector);
+					// Update URL
+					const url = new URL(window.location.href);
+					url.searchParams.set("modal", "connectors");
+					url.searchParams.set("view", "manage-plaid");
+					url.searchParams.set("connectorId", connector.id.toString());
+					window.history.pushState({ modal: true }, "", url.toString());
+					return;
+				}
+			}
+
 			setViewingAccountsType({
 				connectorType,
 				connectorTitle,
@@ -850,7 +875,7 @@ export const useConnectorDialog = () => {
 			// Keep the current tab in URL so we can go back to it
 			window.history.pushState({ modal: true }, "", url.toString());
 		},
-		[searchSpaceId]
+		[searchSpaceId, allConnectors]
 	);
 
 	// Handle going back from accounts list view
@@ -863,6 +888,56 @@ export const useConnectorDialog = () => {
 		url.searchParams.delete("connectorType");
 		router.replace(url.pathname + url.search, { scroll: false });
 	}, [router]);
+
+	// Handle closing Plaid manage view
+	const handleClosePlaidManage = useCallback(() => {
+		setManagingPlaidConnector(null);
+		const url = new URL(window.location.href);
+		url.searchParams.set("modal", "connectors");
+		url.searchParams.set("tab", "all");
+		url.searchParams.delete("view");
+		url.searchParams.delete("connectorId");
+		router.replace(url.pathname + url.search, { scroll: false });
+	}, [router]);
+
+	// Handle disconnecting from Plaid manage view
+	const handleDisconnectPlaidConnector = useCallback(async () => {
+		if (!managingPlaidConnector || !searchSpaceId) return;
+
+		const connectorToDelete = managingPlaidConnector;
+		
+		try {
+			setIsDisconnecting(true);
+			await deleteConnector({
+				id: connectorToDelete.id,
+			});
+
+			trackConnectorDeleted(
+				Number(searchSpaceId),
+				connectorToDelete.connector_type,
+				connectorToDelete.id
+			);
+
+			toast.success(`${connectorToDelete.name} disconnected successfully`);
+
+			// Close the manage view and go back to main connectors modal
+			setManagingPlaidConnector(null);
+			const url = new URL(window.location.href);
+			url.searchParams.set("modal", "connectors");
+			url.searchParams.set("tab", "all");
+			url.searchParams.delete("view");
+			url.searchParams.delete("connectorId");
+			router.replace(url.pathname + url.search, { scroll: false });
+
+			await refetchAllConnectors();
+		} catch (error) {
+			console.error("Error disconnecting Plaid connector:", error);
+			toast.error("Failed to disconnect connector");
+		} finally {
+			setIsDisconnecting(false);
+		}
+	}, [managingPlaidConnector, searchSpaceId, deleteConnector, router, refetchAllConnectors]);
+
 
 	// Handle viewing MCP list
 	const handleViewMCPList = useCallback(() => {
@@ -1614,6 +1689,7 @@ export const useConnectorDialog = () => {
 		viewingAccountsType,
 		viewingMCPList,
 		viewingComposio,
+		managingPlaidConnector,
 
 		// Setters
 		setSearchQuery,
@@ -1643,6 +1719,8 @@ export const useConnectorDialog = () => {
 		handleBackFromYouTube,
 		handleViewAccountsList,
 		handleBackFromAccountsList,
+		handleClosePlaidManage,
+		handleDisconnectPlaidConnector,
 		handleViewMCPList,
 		handleBackFromMCPList,
 		handleAddNewMCPFromList,

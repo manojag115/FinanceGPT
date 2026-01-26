@@ -69,8 +69,9 @@ class OFXParser(BaseFinancialParser):
                         balances.append(account_bal)
 
             # Parse investment accounts
-            if hasattr(ofx, "investments") and ofx.investments:
-                for investment in ofx.investments:
+            investments = getattr(ofx, "investments", [])
+            if investments:
+                for investment in investments:
                     inv_trans, inv_holdings = await self._parse_investment_account(
                         investment
                     )
@@ -78,8 +79,9 @@ class OFXParser(BaseFinancialParser):
                     holdings.extend(inv_holdings)
 
             # Parse credit card accounts
-            if hasattr(ofx, "credit_cards") and ofx.credit_cards:
-                for cc_account in ofx.credit_cards:
+            credit_cards = getattr(ofx, "credit_cards", [])
+            if credit_cards:
+                for cc_account in credit_cards:
                     cc_trans, cc_bal = await self._parse_bank_account(
                         cc_account, is_credit_card=True
                     )
@@ -102,7 +104,7 @@ class OFXParser(BaseFinancialParser):
             }
 
         except Exception as e:
-            logger.error(f"Error parsing OFX file: {e}", exc_info=True)
+            logger.error("Error parsing OFX file: %s", e, exc_info=True)
             raise
 
     async def _parse_bank_account(
@@ -159,7 +161,7 @@ class OFXParser(BaseFinancialParser):
                         )
                         transactions.append(transaction)
                     except Exception as e:
-                        logger.warning(f"Error parsing OFX transaction: {e}")
+                        logger.warning("Error parsing OFX transaction: %s", e)
                         continue
 
         return transactions, balance_obj
@@ -185,7 +187,7 @@ class OFXParser(BaseFinancialParser):
                     )
                     holdings.append(holding)
                 except Exception as e:
-                    logger.warning(f"Error parsing OFX position: {e}")
+                    logger.warning("Error parsing OFX position: %s", e)
                     continue
 
         # Parse investment transactions
@@ -209,7 +211,7 @@ class OFXParser(BaseFinancialParser):
                     )
                     transactions.append(transaction)
                 except Exception as e:
-                    logger.warning(f"Error parsing OFX investment transaction: {e}")
+                    logger.warning("Error parsing OFX investment transaction: %s", e)
                     continue
 
         return transactions, holdings

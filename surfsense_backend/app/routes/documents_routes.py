@@ -83,13 +83,6 @@ async def create_documents(
                 process_extension_document_task.delay(
                     document_dict, request.search_space_id, str(user.id)
                 )
-        elif request.document_type == DocumentType.YOUTUBE_VIDEO:
-            from app.tasks.celery_tasks.document_tasks import process_youtube_video_task
-
-            for url in request.content:
-                process_youtube_video_task.delay(
-                    url, request.search_space_id, str(user.id)
-                )
         else:
             raise HTTPException(status_code=400, detail="Invalid document type")
 
