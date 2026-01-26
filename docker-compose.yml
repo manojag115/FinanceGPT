@@ -12,7 +12,7 @@ services:
     environment:
       - POSTGRES_USER=${POSTGRES_USER:-postgres}
       - POSTGRES_PASSWORD=${POSTGRES_PASSWORD:-postgres}
-      - POSTGRES_DB=${POSTGRES_DB:-surfsense}
+      - POSTGRES_DB=${POSTGRES_DB:-financegpt}
       - ELECTRIC_DB_USER=${ELECTRIC_DB_USER:-electric}
       - ELECTRIC_DB_PASSWORD=${ELECTRIC_DB_PASSWORD:-electric_password}
     command: postgres -c config_file=/etc/postgresql/postgresql.conf
@@ -22,8 +22,8 @@ services:
     ports:
       - "${PGADMIN_PORT:-5050}:80"
     environment:
-      - PGADMIN_DEFAULT_EMAIL=${PGADMIN_DEFAULT_EMAIL:-admin@surfsense.com}
-      - PGADMIN_DEFAULT_PASSWORD=${PGADMIN_DEFAULT_PASSWORD:-surfsense}
+      - PGADMIN_DEFAULT_EMAIL=${PGADMIN_DEFAULT_EMAIL:-admin@financegpt.com}
+      - PGADMIN_DEFAULT_PASSWORD=${PGADMIN_DEFAULT_PASSWORD:-financegpt}
     volumes:
       - pgadmin_data:/var/lib/pgadmin
     depends_on:
@@ -50,7 +50,7 @@ services:
     env_file:
       - ./surfsense_backend/.env
     environment:
-      - DATABASE_URL=postgresql+asyncpg://${POSTGRES_USER:-postgres}:${POSTGRES_PASSWORD:-postgres}@db:5432/${POSTGRES_DB:-surfsense}
+      - DATABASE_URL=postgresql+asyncpg://${POSTGRES_USER:-postgres}:${POSTGRES_PASSWORD:-postgres}@db:5432/${POSTGRES_DB:-financegpt}
       - CELERY_BROKER_URL=redis://redis:${REDIS_PORT:-6379}/0
       - CELERY_RESULT_BACKEND=redis://redis:${REDIS_PORT:-6379}/0
       - PYTHONPATH=/app
@@ -125,7 +125,7 @@ services:
     ports:
       - "${ELECTRIC_PORT:-5133}:3000"
     environment:
-      - DATABASE_URL=${ELECTRIC_DATABASE_URL:-postgresql://${ELECTRIC_DB_USER:-electric}:${ELECTRIC_DB_PASSWORD:-electric_password}@${POSTGRES_HOST:-db}:${POSTGRES_PORT:-5432}/${POSTGRES_DB:-surfsense}?sslmode=disable}
+      - DATABASE_URL=${ELECTRIC_DATABASE_URL:-postgresql://${ELECTRIC_DB_USER:-electric}:${ELECTRIC_DB_PASSWORD:-electric_password}@${POSTGRES_HOST:-db}:${POSTGRES_PORT:-5432}/${POSTGRES_DB:-financegpt}?sslmode=disable}
       - ELECTRIC_INSECURE=true
       - ELECTRIC_WRITE_TO_PG_MODE=direct
     restart: unless-stopped

@@ -16,16 +16,16 @@ from pathlib import Path
 # Add the parent directory to the path so we can import app modules
 sys.path.insert(0, str(Path(__file__).resolve().parent.parent))
 
-from app.tasks.surfsense_docs_indexer import seed_surfsense_docs
+from app.tasks.financegpt_docs_indexer import seed_financegpt_docs
 
 
 def main():
-    """CLI entry point for seeding Surfsense docs."""
-    print("=" * 50)
-    print("  Surfsense Documentation Seeding")
-    print("=" * 50)
+    """CLI entry point for seeding FinanceGPT docs."""
+    print("="*50)
+    print("  FinanceGPT Documentation Seeding")
+    print("="*50)
 
-    created, updated, skipped, deleted = asyncio.run(seed_surfsense_docs())
+    created, updated, skipped, deleted = asyncio.run(seed_financegpt_docs())
 
     print()
     print("Results:")

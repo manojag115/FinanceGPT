@@ -644,13 +644,13 @@ class Chunk(BaseModel, TimestampMixin):
     document = relationship("Document", back_populates="chunks")
 
 
-class SurfsenseDocsDocument(BaseModel, TimestampMixin):
+class FinanceGPTDocsDocument(BaseModel, TimestampMixin):
     """
-    Surfsense documentation storage.
+    FinanceGPT documentation storage.
     Indexed at migration time from MDX files.
     """
 
-    __tablename__ = "surfsense_docs_documents"
+    __tablename__ = "financegpt_docs_documents"
 
     source = Column(
         String, nullable=False, unique=True, index=True
@@ -662,26 +662,26 @@ class SurfsenseDocsDocument(BaseModel, TimestampMixin):
     updated_at = Column(TIMESTAMP(timezone=True), nullable=True, index=True)
 
     chunks = relationship(
-        "SurfsenseDocsChunk",
+        "FinanceGPTDocsChunk",
         back_populates="document",
         cascade="all, delete-orphan",
     )
 
 
-class SurfsenseDocsChunk(BaseModel, TimestampMixin):
-    """Chunk storage for Surfsense documentation."""
+class FinanceGPTDocsChunk(BaseModel, TimestampMixin):
+    """Chunk storage for FinanceGPT documentation."""
 
-    __tablename__ = "surfsense_docs_chunks"
+    __tablename__ = "financegpt_docs_chunks"
 
     content = Column(Text, nullable=False)
     embedding = Column(Vector(config.embedding_model_instance.dimension))
 
     document_id = Column(
         Integer,
-        ForeignKey("surfsense_docs_documents.id", ondelete="CASCADE"),
+        ForeignKey("financegpt_docs_documents.id", ondelete="CASCADE"),
         nullable=False,
     )
-    document = relationship("SurfsenseDocsDocument", back_populates="chunks")
+    document = relationship("FinanceGPTDocsDocument", back_populates="chunks")
 
 
 class Podcast(BaseModel, TimestampMixin):
@@ -837,10 +837,10 @@ class NewLLMConfig(BaseModel, TimestampMixin):
 
     This table provides:
     - LLM model configuration (provider, model_name, api_key, etc.)
-    - Configurable system instructions (defaults to SURFSENSE_SYSTEM_INSTRUCTIONS)
+    - Configurable system instructions (defaults to FINANCEGPT_SYSTEM_INSTRUCTIONS)
     - Citation toggle (enable/disable citation instructions)
 
-    Note: SURFSENSE_TOOLS_INSTRUCTIONS is always used and not configurable.
+    Note: FINANCEGPT_TOOLS_INSTRUCTIONS is always used and not configurable.
     """
 
     __tablename__ = "new_llm_configs"
@@ -862,17 +862,17 @@ class NewLLMConfig(BaseModel, TimestampMixin):
     litellm_params = Column(JSON, nullable=True, default={})
 
     # === Prompt Configuration ===
-    # Configurable system instructions (defaults to SURFSENSE_SYSTEM_INSTRUCTIONS)
+    # Configurable system instructions (defaults to FINANCEGPT_SYSTEM_INSTRUCTIONS)
     # Users can customize this from the UI
     system_instructions = Column(
         Text,
         nullable=False,
-        default="",  # Empty string means use default SURFSENSE_SYSTEM_INSTRUCTIONS
+        default="",  # Empty string means use default FINANCEGPT_SYSTEM_INSTRUCTIONS
     )
     # Whether to use the default system instructions when system_instructions is empty
     use_default_system_instructions = Column(Boolean, nullable=False, default=True)
 
-    # Citation toggle - when enabled, SURFSENSE_CITATION_INSTRUCTIONS is injected
+    # Citation toggle - when enabled, FINANCEGPT_CITATION_INSTRUCTIONS is injected
     # When disabled, an anti-citation prompt is injected instead
     citations_enabled = Column(Boolean, nullable=False, default=True)
 
@@ -1226,7 +1226,7 @@ async def setup_indexes():
         )
         await conn.execute(
             text(
-                "CREATE INDEX IF NOT EXISTS idx_surfsense_docs_title_trgm ON surfsense_docs_documents USING gin (title gin_trgm_ops)"
+                "CREATE INDEX IF NOT EXISTS idx_financegpt_docs_title_trgm ON financegpt_docs_documents USING gin (title gin_trgm_ops)"
             )
         )
 

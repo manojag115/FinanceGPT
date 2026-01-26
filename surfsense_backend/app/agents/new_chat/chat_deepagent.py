@@ -18,7 +18,7 @@ from app.agents.new_chat.context import SurfSenseContextSchema
 from app.agents.new_chat.llm_config import AgentConfig
 from app.agents.new_chat.system_prompt import (
     build_configurable_system_prompt,
-    build_surfsense_system_prompt,
+    build_financegpt_system_prompt,
 )
 from app.agents.new_chat.tools.registry import build_tools_async
 from app.services.connector_service import ConnectorService
@@ -28,7 +28,7 @@ from app.services.connector_service import ConnectorService
 # =============================================================================
 
 
-async def create_surfsense_deep_agent(
+async def create_financegpt_deep_agent(
     llm: ChatLiteLLM,
     search_space_id: int,
     db_session: AsyncSession,
@@ -84,7 +84,7 @@ async def create_surfsense_deep_agent(
 
     Examples:
         # Create agent with all default tools and default prompt
-        agent = create_surfsense_deep_agent(llm, search_space_id, db_session, ...)
+        agent = create_financegpt_deep_agent(llm, search_space_id, db_session, ...)
 
         # Create agent with custom prompt configuration
         agent = create_surfsense_deep_agent(
@@ -143,7 +143,7 @@ async def create_surfsense_deep_agent(
         )
     else:
         # Use default prompt (with citations enabled)
-        system_prompt = build_surfsense_system_prompt()
+        system_prompt = build_financegpt_system_prompt()
 
     # Create the deep agent with system prompt and checkpointer
     # Note: TodoListMiddleware (write_todos) is included by default in create_deep_agent

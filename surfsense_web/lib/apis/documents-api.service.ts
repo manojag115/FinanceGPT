@@ -254,7 +254,7 @@ class DocumentsApiService {
 	 */
 	getSurfsenseDocByChunk = async (chunkId: number) => {
 		return baseApiService.get(
-			`/api/v1/surfsense-docs/by-chunk/${chunkId}`,
+				`/api/v1/financegpt-docs/by-chunk/${chunkId}`,
 			getSurfsenseDocsByChunkResponse
 		);
 	};
@@ -285,7 +285,7 @@ class DocumentsApiService {
 			? new URLSearchParams(transformedQueryParams).toString()
 			: "";
 
-		const url = `/api/v1/surfsense-docs?${queryParams}`;
+		const url = `/api/v1/financegpt-docs?${queryParams}`;
 
 		return baseApiService.get(url, getSurfsenseDocsResponse, { signal });
 	};

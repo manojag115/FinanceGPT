@@ -1,7 +1,7 @@
 """
-System prompt building for SurfSense agents.
+System prompt building for FinanceGPT agents.
 
-This module provides functions and constants for building the SurfSense system prompt
+This module provides functions and constants for building the FinanceGPT system prompt
 with configurable user instructions and citation support.
 
 The prompt is composed of three parts:
@@ -13,7 +13,7 @@ The prompt is composed of three parts:
 from datetime import UTC, datetime
 
 # Default system instructions - can be overridden via NewLLMConfig.system_instructions
-SURFSENSE_SYSTEM_INSTRUCTIONS = """
+FINANCEGPT_SYSTEM_INSTRUCTIONS = """
 <system_instruction>
 You are FinanceGPT, an intelligent financial assistant designed to help users understand and analyze their personal finances.
 
@@ -46,14 +46,14 @@ When analyzing financial data:
 </system_instruction>
 """
 
-SURFSENSE_TOOLS_INSTRUCTIONS = """
+FINANCEGPT_TOOLS_INSTRUCTIONS = """
 <tools>
 You have access to the following tools:
 
-0. search_surfsense_docs: Search the official SurfSense documentation.
-  - Use this tool when the user asks anything about SurfSense itself (the application they are using).
+0. search_financegpt_docs: Search the official FinanceGPT documentation.
+  - Use this tool when the user asks anything about FinanceGPT itself (the application they are using).
   - Args:
-    - query: The search query about SurfSense
+    - query: The search query about FinanceGPT
     - top_k: Number of documentation chunks to retrieve (default: 10)
   - Returns: Documentation content with chunk IDs for citations (prefixed with 'doc-', e.g., [citation:doc-123])
 
@@ -81,7 +81,7 @@ You have access to the following tools:
       * If based on knowledge base search: Include the key findings and insights from the search results
       * You can combine both: conversation context + search results for richer podcasts
       * The more detailed the source_content, the better the podcast quality
-    - podcast_title: Optional title for the podcast (default: "SurfSense Podcast")
+    - podcast_title: Optional title for the podcast (default: "FinanceGPT Podcast")
     - user_prompt: Optional instructions for podcast style/format (e.g., "Make it casual and fun")
   - Returns: A task_id for tracking. The podcast will be generated in the background.
   - IMPORTANT: Only one podcast can be generated at a time. If a podcast is already being generated, the tool will return status "already_generating".
@@ -217,17 +217,17 @@ You have access to the following tools:
 - User: "Show me transactions from Fidelity"
   - Call: `search_knowledge_base(query="transactions", connectors_to_search=["PLAID_CONNECTOR"])`
 
-- User: "How do I install SurfSense?"
-  - Call: `search_surfsense_docs(query="installation setup")`
+- User: "How do I install FinanceGPT?"
+  - Call: `search_financegpt_docs(query="installation setup")`
 
-- User: "What connectors does SurfSense support?"
-  - Call: `search_surfsense_docs(query="available connectors integrations")`
+- User: "What connectors does FinanceGPT support?"
+  - Call: `search_financegpt_docs(query="available connectors integrations")`
 
 - User: "How do I connect my bank account?"
-  - Call: `search_surfsense_docs(query="Plaid connector setup bank connection")`
+  - Call: `search_financegpt_docs(query="Plaid connector setup bank connection")`
 
 - User: "How do I use Docker to run FinanceGPT?"
-  - Call: `search_surfsense_docs(query="Docker installation setup")`
+  - Call: `search_financegpt_docs(query="Docker installation setup")`
 
 - User: "Remember that I want to save 20% of my income"
   - Call: `save_memory(content="User's savings goal is 20% of income", category="preference")`
@@ -317,7 +317,7 @@ You have access to the following tools:
 </tool_call_examples>
 """
 
-SURFSENSE_CITATION_INSTRUCTIONS = """
+FINANCEGPT_CITATION_INSTRUCTIONS = """
 <citation_instructions>
 CRITICAL CITATION REQUIREMENTS:
 
@@ -368,11 +368,11 @@ IMPORTANT: You MUST cite using the chunk ids (e.g. 123, 124, doc-45). Do NOT cit
 <citation_examples>
 CORRECT citation formats:
 - [citation:5]
-- [citation:doc-123] (for Surfsense documentation chunks)
+- [citation:doc-123] (for FinanceGPT documentation chunks)
 - [citation:chunk_id1], [citation:chunk_id2], [citation:chunk_id3]
 
 INCORRECT citation formats (DO NOT use):
-- Using parentheses and markdown links: ([citation:5](https://github.com/MODSetter/SurfSense))
+- Using parentheses and markdown links: ([citation:5](https://github.com/example/FinanceGPT))
 - Using parentheses around brackets: ([citation:5])
 - Using hyperlinked text: [link to source 5](https://example.com)
 - Using footnote style: ... library¹
@@ -393,7 +393,7 @@ However, from your video learning, it's important to note that asyncio is not su
 
 # Anti-citation prompt - used when citations are disabled
 # This explicitly tells the model NOT to include citations
-SURFSENSE_NO_CITATION_INSTRUCTIONS = """
+FINANCEGPT_NO_CITATION_INSTRUCTIONS = """
 <citation_instructions>
 IMPORTANT: Citations are DISABLED for this configuration.
 
@@ -413,11 +413,11 @@ Your goal is to provide helpful, informative answers in a clean, readable format
 """
 
 
-def build_surfsense_system_prompt(
+def build_financegpt_system_prompt(
     today: datetime | None = None,
 ) -> str:
     """
-    Build the SurfSense system prompt with default settings.
+    Build the FinanceGPT system prompt with default settings.
 
     This is a convenience function that builds the prompt with:
     - Default system instructions
@@ -433,9 +433,9 @@ def build_surfsense_system_prompt(
     resolved_today = (today or datetime.now(UTC)).astimezone(UTC).date().isoformat()
 
     return (
-        SURFSENSE_SYSTEM_INSTRUCTIONS.format(resolved_today=resolved_today)
-        + SURFSENSE_TOOLS_INSTRUCTIONS
-        + SURFSENSE_CITATION_INSTRUCTIONS
+        FINANCEGPT_SYSTEM_INSTRUCTIONS.format(resolved_today=resolved_today)
+        + FINANCEGPT_TOOLS_INSTRUCTIONS
+        + FINANCEGPT_CITATION_INSTRUCTIONS
     )
 
 
@@ -446,17 +446,17 @@ def build_configurable_system_prompt(
     today: datetime | None = None,
 ) -> str:
     """
-    Build a configurable SurfSense system prompt based on NewLLMConfig settings.
+    Build a configurable FinanceGPT system prompt based on NewLLMConfig settings.
 
     The prompt is composed of three parts:
-    1. System Instructions - either custom or default SURFSENSE_SYSTEM_INSTRUCTIONS
-    2. Tools Instructions - always included (SURFSENSE_TOOLS_INSTRUCTIONS)
-    3. Citation Instructions - either SURFSENSE_CITATION_INSTRUCTIONS or SURFSENSE_NO_CITATION_INSTRUCTIONS
+    1. System Instructions - either custom or default FINANCEGPT_SYSTEM_INSTRUCTIONS
+    2. Tools Instructions - always included (FINANCEGPT_TOOLS_INSTRUCTIONS)
+    3. Citation Instructions - either FINANCEGPT_CITATION_INSTRUCTIONS or FINANCEGPT_NO_CITATION_INSTRUCTIONS
 
     Args:
         custom_system_instructions: Custom system instructions to use. If empty/None and
                                    use_default_system_instructions is True, defaults to
-                                   SURFSENSE_SYSTEM_INSTRUCTIONS.
+                                   FINANCEGPT_SYSTEM_INSTRUCTIONS.
         use_default_system_instructions: Whether to use default instructions when
                                         custom_system_instructions is empty/None.
         citations_enabled: Whether to include citation instructions (True) or
@@ -476,7 +476,7 @@ def build_configurable_system_prompt(
         )
     elif use_default_system_instructions:
         # Use default instructions
-        system_instructions = SURFSENSE_SYSTEM_INSTRUCTIONS.format(
+        system_instructions = FINANCEGPT_SYSTEM_INSTRUCTIONS.format(
             resolved_today=resolved_today
         )
     else:
@@ -484,13 +484,13 @@ def build_configurable_system_prompt(
         system_instructions = ""
 
     # Tools instructions are always included
-    tools_instructions = SURFSENSE_TOOLS_INSTRUCTIONS
+    tools_instructions = FINANCEGPT_TOOLS_INSTRUCTIONS
 
     # Citation instructions based on toggle
     citation_instructions = (
-        SURFSENSE_CITATION_INSTRUCTIONS
+        FINANCEGPT_CITATION_INSTRUCTIONS
         if citations_enabled
-        else SURFSENSE_NO_CITATION_INSTRUCTIONS
+        else FINANCEGPT_NO_CITATION_INSTRUCTIONS
     )
 
     return system_instructions + tools_instructions + citation_instructions
@@ -506,7 +506,7 @@ def get_default_system_instructions() -> str:
     Returns:
         Default system instructions string (with {resolved_today} placeholder)
     """
-    return SURFSENSE_SYSTEM_INSTRUCTIONS.strip()
+    return FINANCEGPT_SYSTEM_INSTRUCTIONS.strip()
 
 
-SURFSENSE_SYSTEM_PROMPT = build_surfsense_system_prompt()
+FINANCEGPT_SYSTEM_PROMPT = build_financegpt_system_prompt()

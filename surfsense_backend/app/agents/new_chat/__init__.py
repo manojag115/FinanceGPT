@@ -15,7 +15,7 @@ Directory Structure:
 """
 
 # Agent factory
-from .chat_deepagent import create_surfsense_deep_agent
+from .chat_deepagent import create_financegpt_deep_agent
 
 # Context
 from .context import SurfSenseContextSchema
@@ -25,9 +25,9 @@ from .llm_config import create_chat_litellm_from_config, load_llm_config_from_ya
 
 # System prompt
 from .system_prompt import (
-    SURFSENSE_CITATION_INSTRUCTIONS,
-    SURFSENSE_SYSTEM_PROMPT,
-    build_surfsense_system_prompt,
+    FINANCEGPT_CITATION_INSTRUCTIONS,
+    FINANCEGPT_SYSTEM_PROMPT,
+    build_financegpt_system_prompt,
 )
 
 # Tools - registry exports
@@ -51,12 +51,12 @@ __all__ = [
     # Tools registry
     "BUILTIN_TOOLS",
     # System prompt
-    "SURFSENSE_CITATION_INSTRUCTIONS",
-    "SURFSENSE_SYSTEM_PROMPT",
+    "FINANCEGPT_CITATION_INSTRUCTIONS",
+    "FINANCEGPT_SYSTEM_PROMPT",
     # Context
     "SurfSenseContextSchema",
     "ToolDefinition",
-    "build_surfsense_system_prompt",
+    "build_financegpt_system_prompt",
     "build_tools",
     # LLM config
     "create_chat_litellm_from_config",
@@ -65,7 +65,7 @@ __all__ = [
     "create_link_preview_tool",
     "create_search_knowledge_base_tool",
     # Agent factory
-    "create_surfsense_deep_agent",
+    "create_financegpt_deep_agent",
     # Knowledge base utilities
     "format_documents_for_context",
     "get_all_tool_names",

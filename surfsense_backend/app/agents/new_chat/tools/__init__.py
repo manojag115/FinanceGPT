@@ -6,7 +6,7 @@ To add a new tool, see the documentation in registry.py.
 
 Available tools:
 - search_knowledge_base: Search the user's personal knowledge base
-- search_surfsense_docs: Search documentation for usage help
+- search_financegpt_docs: Search documentation for usage help
 - link_preview: Fetch rich previews for URLs
 - display_image: Display images in chat
 - save_memory: Store facts/preferences about the user
@@ -30,7 +30,7 @@ from .registry import (
     get_default_enabled_tools,
     get_tool_by_name,
 )
-from .search_surfsense_docs import create_search_surfsense_docs_tool
+from .search_financegpt_docs import create_search_financegpt_docs_tool
 from .user_memory import create_recall_memory_tool, create_save_memory_tool
 
 __all__ = [
@@ -44,7 +44,7 @@ __all__ = [
     "create_recall_memory_tool",
     "create_save_memory_tool",
     "create_search_knowledge_base_tool",
-    "create_search_surfsense_docs_tool",
+    "create_search_financegpt_docs_tool",
     # Knowledge base utilities
     "format_documents_for_context",
     "get_all_tool_names",

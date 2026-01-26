@@ -17,7 +17,7 @@ from langchain_core.messages import HumanMessage
 from sqlalchemy.ext.asyncio import AsyncSession
 from sqlalchemy.future import select
 
-from app.agents.new_chat.chat_deepagent import create_surfsense_deep_agent
+from app.agents.new_chat.chat_deepagent import create_financegpt_deep_agent
 from app.agents.new_chat.checkpointer import get_checkpointer
 from app.agents.new_chat.llm_config import (
     AgentConfig,
@@ -26,7 +26,7 @@ from app.agents.new_chat.llm_config import (
     load_agent_config,
     load_llm_config_from_yaml,
 )
-from app.db import Document, SurfsenseDocsDocument
+from app.db import Document, FinanceGPTDocsDocument
 from app.schemas.new_chat import ChatAttachment
 from app.services.chat_session_state_service import (
     clear_ai_responding,
@@ -75,9 +75,9 @@ def format_mentioned_documents_as_context(documents: list[Document]) -> str:
 
 
 def format_mentioned_surfsense_docs_as_context(
-    documents: list[SurfsenseDocsDocument],
+    documents: list[FinanceGPTDocsDocument],
 ) -> str:
-    """Format mentioned SurfSense documentation as context for the agent."""
+    """Format mentioned FinanceGPT documentation as context for the agent."""
     if not documents:
         return ""
 
@@ -85,8 +85,8 @@ def format_mentioned_surfsense_docs_as_context(
 
     context_parts = ["<mentioned_surfsense_docs>"]
     context_parts.append(
-        "The user has explicitly mentioned the following SurfSense documentation pages. "
-        "These are official documentation about how to use SurfSense and should be used to answer questions about the application. "
+        "The user has explicitly mentioned the following FinanceGPT documentation pages. "
+        "These are official documentation about how to use FinanceGPT and should be used to answer questions about the application. "
         "Use [citation:CHUNK_ID] format for citations (e.g., [citation:doc-123])."
     )
 
@@ -96,7 +96,7 @@ def format_mentioned_surfsense_docs_as_context(
         context_parts.append("<document>")
         context_parts.append("<document_metadata>")
         context_parts.append(f"  <document_id>doc-{doc.id}</document_id>")
-        context_parts.append("  <document_type>SURFSENSE_DOCS</document_type>")
+        context_parts.append("  <document_type>FINANCEGPT_DOCS</document_type>")
         context_parts.append(f"  <title><![CDATA[{doc.title}]]></title>")
         context_parts.append(f"  <url><![CDATA[{doc.source}]]></url>")
         context_parts.append(
@@ -248,7 +248,7 @@ async def stream_new_chat(
         checkpointer = await get_checkpointer()
 
         # Create the deep agent with checkpointer and configurable prompts
-        agent = await create_surfsense_deep_agent(
+        agent = await create_financegpt_deep_agent(
             llm=llm,
             search_space_id=search_space_id,
             db_session=session,
@@ -274,15 +274,15 @@ async def stream_new_chat(
             mentioned_documents = list(result.scalars().all())
 
         # Fetch mentioned SurfSense docs if any
-        mentioned_surfsense_docs: list[SurfsenseDocsDocument] = []
+        mentioned_surfsense_docs: list[FinanceGPTDocsDocument] = []
         if mentioned_surfsense_doc_ids:
             from sqlalchemy.orm import selectinload
 
             result = await session.execute(
-                select(SurfsenseDocsDocument)
-                .options(selectinload(SurfsenseDocsDocument.chunks))
+                select(FinanceGPTDocsDocument)
+                .options(selectinload(FinanceGPTDocsDocument.chunks))
                 .filter(
-                    SurfsenseDocsDocument.id.in_(mentioned_surfsense_doc_ids),
+                    FinanceGPTDocsDocument.id.in_(mentioned_surfsense_doc_ids),
                 )
             )
             mentioned_surfsense_docs = list(result.scalars().all())
