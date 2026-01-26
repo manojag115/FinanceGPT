@@ -1,4 +1,4 @@
 {
-	"biome.configurationPath": "./surfsense_web/biome.json",
+	"biome.configurationPath": "./financegpt_web/biome.json",
 	"python-envs.pythonProjects": []
 }

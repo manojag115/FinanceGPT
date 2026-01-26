@@ -319,7 +319,7 @@ Docker 和手动安装指南都包含适用于 Windows、macOS 和 Linux 的详�
 
 想要为 FinanceGPT 代理添加新工具？非常简单：
 
-1. 在 `surfsense_backend/app/agents/new_chat/tools/my_tool.py` 中创建您的工具文件
+1. 在 `financegpt_backend/app/agents/new_chat/tools/my_tool.py` 中创建您的工具文件
 2. 在 `registry.py` 中注册：
 
 ```python

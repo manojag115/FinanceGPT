@@ -68,9 +68,9 @@ Financial Data Processor
 ```
 
 ### Files Added
-- `surfsense_backend/app/parsers/pdf_statement_parser.py` - Main PDF parser
-- `surfsense_backend/app/parsers/parser_factory.py` - Updated with PDF detection
-- `surfsense_backend/app/tasks/document_processors/file_processors.py` - Integrated PDF parsing
+- `financegpt_backend/app/parsers/pdf_statement_parser.py` - Main PDF parser
+- `financegpt_backend/app/parsers/parser_factory.py` - Updated with PDF detection
+- `financegpt_backend/app/tasks/document_processors/file_processors.py` - Integrated PDF parsing
 
 ### Dependencies Added
 - `pdfplumber>=0.11.0` - Robust PDF text extraction

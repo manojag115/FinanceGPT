@@ -21,23 +21,23 @@
             ],
             "console": "integratedTerminal",
             "justMyCode": false,
-            "cwd": "${workspaceFolder}/surfsense_backend",
+            "cwd": "${workspaceFolder}/financegpt_backend",
             "python": "${command:python.interpreterPath}"
         },
         {
             "name": "Backend: FastAPI (main.py)",
             "type": "debugpy",
             "request": "launch",
-            "program": "${workspaceFolder}/surfsense_backend/main.py",
+            "program": "${workspaceFolder}/financegpt_backend/main.py",
             "console": "integratedTerminal",
             "justMyCode": false,
-            "cwd": "${workspaceFolder}/surfsense_backend"
+            "cwd": "${workspaceFolder}/financegpt_backend"
         },
         {
             "name": "Frontend: Next.js",
             "type": "node",
             "request": "launch",
-            "cwd": "${workspaceFolder}/surfsense_web",
+            "cwd": "${workspaceFolder}/financegpt_web",
             "runtimeExecutable": "npm",
             "runtimeArgs": ["run", "dev"],
             "console": "integratedTerminal",
@@ -51,7 +51,7 @@
             "name": "Frontend: Next.js (Server-Side Debug)",
             "type": "node",
             "request": "launch",
-            "cwd": "${workspaceFolder}/surfsense_web",
+            "cwd": "${workspaceFolder}/financegpt_web",
             "runtimeExecutable": "npm",
             "runtimeArgs": ["run", "debug:server"],
             "console": "integratedTerminal",
@@ -75,7 +75,7 @@
             ],
             "console": "integratedTerminal",
             "justMyCode": false,
-            "cwd": "${workspaceFolder}/surfsense_backend",
+            "cwd": "${workspaceFolder}/financegpt_backend",
             "python": "${command:python.interpreterPath}"
         },
         {
@@ -91,7 +91,7 @@
             ],
             "console": "integratedTerminal",
             "justMyCode": false,
-            "cwd": "${workspaceFolder}/surfsense_backend",
+            "cwd": "${workspaceFolder}/financegpt_backend",
             "python": "${command:python.interpreterPath}"
         }
     ],

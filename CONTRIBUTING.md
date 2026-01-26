@@ -70,9 +70,9 @@ For detailed setup instructions, refer to our [Installation Guide](https://www.f
 
 FinanceGPT consists of three main components:
 
-- **`surfsense_backend/`** - Python/FastAPI backend service
-- **`surfsense_web/`** - Next.js web application
-- **`surfsense_browser_extension/`** - Browser extension for data collection
+- **`financegpt_backend/`** - Python/FastAPI backend service
+- **`financegpt_web/`** - Next.js web application
+- **`financegpt_browser_extension/`** - Browser extension for data collection
 
 ## 🧪 Development Guidelines
 

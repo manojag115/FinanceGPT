@@ -313,7 +313,7 @@ Fine-tuning the Backend is always desired.
 
 Want to add a new tool to the FinanceGPT agent? It's easy:
 
-1. Create your tool file in `surfsense_backend/app/agents/new_chat/tools/my_tool.py`
+1. Create your tool file in `financegpt_backend/app/agents/new_chat/tools/my_tool.py`
 2. Register it in `registry.py`:
 
 ```python

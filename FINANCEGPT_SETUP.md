@@ -39,7 +39,7 @@ Then access:
 #### 1. Backend Setup
 
 ```bash
-cd surfsense_backend
+cd financegpt_backend
 
 # Create virtual environment
 python3 -m venv venv
@@ -67,7 +67,7 @@ uvicorn app.app:app --reload --host 0.0.0.0 --port 8000
 #### 2. Frontend Setup
 
 ```bash
-cd surfsense_web
+cd financegpt_web
 
 # Install dependencies
 pnpm install
@@ -83,7 +83,7 @@ pnpm dev
 We've verified the parsers work! Run this quick test:
 
 ```bash
-cd surfsense_backend
+cd financegpt_backend
 python3 test_simple.py
 ```
 
@@ -145,7 +145,7 @@ Once running, users can:
 ## 📁 File Structure Created
 
 ```
-surfsense_backend/app/
+financegpt_backend/app/
 ├── parsers/                          # NEW - Financial parsers
 │   ├── __init__.py
 │   ├── base_financial_parser.py     # Base classes & data models
@@ -157,7 +157,7 @@ surfsense_backend/app/
 ├── db.py                             # UPDATED - New enums
 └── test_simple.py                    # Test script
 
-surfsense_web/contracts/enums/
+financegpt_web/contracts/enums/
 └── connector.ts                      # UPDATED - Financial connector types
 ```
 
@@ -234,7 +234,7 @@ A: Very - data stays on your server, never sent to third parties.
 **Parser tests fail:**
 ```bash
 # Make sure you're in the right directory
-cd surfsense_backend
+cd financegpt_backend
 
 # Run the simple test
 python3 test_simple.py
@@ -250,7 +250,7 @@ pip install ofxparse
 **Database errors:**
 ```bash
 # Run migrations
-cd surfsense_backend
+cd financegpt_backend
 alembic upgrade head
 ```
 

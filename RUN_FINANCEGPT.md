@@ -71,7 +71,7 @@ docker compose -f docker-compose.quickstart.yml up -d
 Verify the parsers work correctly:
 
 ```bash
-cd surfsense_backend
+cd financegpt_backend
 python3 test_simple.py
 ```
 
@@ -83,7 +83,7 @@ You should see transaction parsing in action!
 
 ### New Files Created:
 ```
-surfsense_backend/app/parsers/
+financegpt_backend/app/parsers/
 ├── base_financial_parser.py   # Base classes (BankTransaction, InvestmentHolding, etc.)
 ├── chase_parser.py             # Chase bank & credit card
 ├── fidelity_parser.py          # Fidelity investments
@@ -91,7 +91,7 @@ surfsense_backend/app/parsers/
 ├── ofx_parser.py               # Universal OFX/QFX parser
 └── parser_factory.py           # Auto-detection & factory
 
-surfsense_backend/
+financegpt_backend/
 ├── test_simple.py              # Standalone parser test
 ├── test_financial_parsers.py   # Full integration test
 └── pyproject.toml              # Updated (added ofxparse)
@@ -104,8 +104,8 @@ Root:
 
 ### Modified Files:
 ```
-surfsense_backend/app/db.py                           # Added financial connector types
-surfsense_web/contracts/enums/connector.ts            # Added financial enums
+financegpt_backend/app/db.py                           # Added financial connector types
+financegpt_web/contracts/enums/connector.ts            # Added financial enums
 ```
 
 ---
@@ -173,7 +173,7 @@ docker compose -f docker-compose.quickstart.yml logs -f
 
 ### Parser test fails:
 ```bash
-cd surfsense_backend
+cd financegpt_backend
 python3 test_simple.py
 ```
 
