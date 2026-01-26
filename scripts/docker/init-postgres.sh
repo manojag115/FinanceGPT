@@ -1,5 +1,5 @@
 #!/bin/bash
-# PostgreSQL initialization script for SurfSense
+# PostgreSQL initialization script for FinanceGPT
 # This script is called during container startup if the database needs initialization
 
 set -e

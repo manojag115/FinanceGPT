@@ -213,7 +213,7 @@ export const DocumentMentionPicker = forwardRef<
 					combinedDocs.push({
 						id: doc.id,
 						title: doc.title,
-						document_type: "SURFSENSE_DOCS",
+						document_type: "FINANCEGPT_DOCS",
 					});
 				}
 			}
@@ -293,7 +293,7 @@ export const DocumentMentionPicker = forwardRef<
 		[actualDocuments]
 	);
 	const userDocsList = useMemo(
-		() => actualDocuments.filter((doc) => doc.document_type !== "SURFSENSE_DOCS"),
+		() => actualDocuments.filter((doc) => doc.document_type !== "FINANCEGPT_DOCS"),
 		[actualDocuments]
 	);
 

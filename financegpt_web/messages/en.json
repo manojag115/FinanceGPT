@@ -158,7 +158,7 @@
 		"delete_note_confirm": "Are you sure you want to delete",
 		"action_cannot_undone": "This action cannot be undone.",
 		"deleting": "Deleting...",
-		"surfsense_dashboard": "FinanceGPT Dashboard",
+		"financegpt_dashboard": "FinanceGPT Dashboard",
 		"welcome_message": "Welcome to your FinanceGPT dashboard.",
 		"your_search_spaces": "Your Search Spaces",
 		"shared": "Shared",

@@ -260,10 +260,10 @@ const Composer: FC = () => {
 	useEffect(() => {
 		setMentionedDocumentIds({
 			financegpt_doc_ids: mentionedDocuments
-				.filter((doc) => doc.document_type === "SURFSENSE_DOCS")
+				.filter((doc) => doc.document_type === "FINANCEGPT_DOCS")
 				.map((doc) => doc.id),
 			document_ids: mentionedDocuments
-				.filter((doc) => doc.document_type !== "SURFSENSE_DOCS")
+				.filter((doc) => doc.document_type !== "FINANCEGPT_DOCS")
 				.map((doc) => doc.id),
 		});
 	}, [mentionedDocuments, setMentionedDocumentIds]);
@@ -350,10 +350,10 @@ const Composer: FC = () => {
 				const updated = prev.filter((doc) => !(doc.id === docId && doc.document_type === docType));
 				setMentionedDocumentIds({
 					financegpt_doc_ids: updated
-						.filter((doc) => doc.document_type === "SURFSENSE_DOCS")
-						.map((doc) => doc.id),
-					document_ids: updated
-						.filter((doc) => doc.document_type !== "SURFSENSE_DOCS")
+					.filter((doc) => doc.document_type === "FINANCEGPT_DOCS")
+					.map((doc) => doc.id),
+				document_ids: updated
+					.filter((doc) => doc.document_type !== "FINANCEGPT_DOCS")
 						.map((doc) => doc.id),
 				});
 				return updated;
@@ -382,10 +382,10 @@ const Composer: FC = () => {
 				const updated = [...prev, ...uniqueNewDocs];
 				setMentionedDocumentIds({
 					financegpt_doc_ids: updated
-						.filter((doc) => doc.document_type === "SURFSENSE_DOCS")
-						.map((doc) => doc.id),
-					document_ids: updated
-						.filter((doc) => doc.document_type !== "SURFSENSE_DOCS")
+					.filter((doc) => doc.document_type === "FINANCEGPT_DOCS")
+					.map((doc) => doc.id),
+				document_ids: updated
+					.filter((doc) => doc.document_type !== "FINANCEGPT_DOCS")
 						.map((doc) => doc.id),
 				});
 				return updated;

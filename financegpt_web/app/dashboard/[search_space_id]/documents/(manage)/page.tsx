@@ -107,9 +107,9 @@ export default function DocumentsTable() {
 		enabled: !!searchSpaceId && !!debouncedSearch.trim(),
 	});
 
-	// Determine if we should show FinanceGPT docs (when no type filter or SURFSENSE_DOCS is selected)
+	// Determine if we should show FinanceGPT docs (when no type filter or FINANCEGPT_DOCS is selected)
 	const showFinanceGPTDocs =
-		activeTypes.length === 0 || activeTypes.includes("SURFSENSE_DOCS" as DocumentTypeEnum);
+		activeTypes.length === 0 || activeTypes.includes("FINANCEGPT_DOCS" as DocumentTypeEnum);
 
 	// Use query for fetching FinanceGPT docs
 	const {
@@ -136,7 +136,7 @@ export default function DocumentsTable() {
 		return financegptDocsResponse.items.map((doc) => ({
 			id: doc.id,
 			title: doc.title,
-			document_type: "SURFSENSE_DOCS",
+			document_type: "FINANCEGPT_DOCS",
 			document_metadata: { source: doc.source },
 			content: doc.content,
 			created_at: new Date().toISOString(),
@@ -144,11 +144,11 @@ export default function DocumentsTable() {
 		}));
 	}, [financegptDocsResponse]);
 
-	// Merge type counts with SURFSENSE_DOCS count
+	// Merge type counts with FINANCEGPT_DOCS count
 	const typeCounts = useMemo(() => {
 		const counts = { ...(rawTypeCounts || {}) };
 		if (financegptDocsResponse?.total) {
-			counts.SURFSENSE_DOCS = financegptDocsResponse.total;
+			counts.FINANCEGPT_DOCS = financegptDocsResponse.total;
 		}
 		return counts;
 	}, [rawTypeCounts, financegptDocsResponse?.total]);

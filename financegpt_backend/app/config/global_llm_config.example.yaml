@@ -27,7 +27,7 @@ global_llm_configs:
       temperature: 0.7
       max_tokens: 4000
     # Prompt Configuration
-    system_instructions: ""  # Empty = use default SURFSENSE_SYSTEM_INSTRUCTIONS
+    system_instructions: ""  # Empty = use default FINANCEGPT_SYSTEM_INSTRUCTIONS
     use_default_system_instructions: true
     citations_enabled: true
 
@@ -104,6 +104,6 @@ global_llm_configs:
 # - IDs should be unique and sequential (e.g., -1, -2, -3, etc.)
 # - The 'api_key' field will not be exposed to users via API
 # - system_instructions: Custom prompt or empty string to use defaults
-# - use_default_system_instructions: true = use SURFSENSE_SYSTEM_INSTRUCTIONS when system_instructions is empty
+# - use_default_system_instructions: true = use FINANCEGPT_SYSTEM_INSTRUCTIONS when system_instructions is empty
 # - citations_enabled: true = include citation instructions, false = include anti-citation instructions
 # - All standard LiteLLM providers are supported

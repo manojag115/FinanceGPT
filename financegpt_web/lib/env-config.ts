@@ -22,7 +22,7 @@ export const BACKEND_URL = process.env.NEXT_PUBLIC_FASTAPI_BACKEND_URL || "http:
 export const ETL_SERVICE = process.env.NEXT_PUBLIC_ETL_SERVICE || "DOCLING";
 
 // Deployment Mode: "self-hosted" or "cloud"
-// Matches backend's SURFSENSE_DEPLOYMENT_MODE - defaults to "self-hosted"
+// Matches backend's FINANCEGPT_DEPLOYMENT_MODE - defaults to "self-hosted"
 // self-hosted: Full access to local file system connectors (Obsidian, etc.)
 // cloud: Only cloud-based connectors available
 // Placeholder: __NEXT_PUBLIC_DEPLOYMENT_MODE__

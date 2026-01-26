@@ -126,7 +126,7 @@ class DefaultSystemInstructionsResponse(BaseModel):
     """Response schema for getting default system instructions."""
 
     default_system_instructions: str = Field(
-        ..., description="The default SURFSENSE_SYSTEM_INSTRUCTIONS template"
+        ..., description="The default FINANCEGPT_SYSTEM_INSTRUCTIONS template"
     )
 
 

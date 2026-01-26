@@ -28,8 +28,8 @@ import type { Document } from "./types";
 // Only FILE and NOTE document types can be edited
 const EDITABLE_DOCUMENT_TYPES = ["FILE", "NOTE"] as const;
 
-// SURFSENSE_DOCS are system-managed and cannot be deleted
-const NON_DELETABLE_DOCUMENT_TYPES = ["SURFSENSE_DOCS"] as const;
+// FINANCEGPT_DOCS are system-managed and cannot be deleted
+const NON_DELETABLE_DOCUMENT_TYPES = ["FINANCEGPT_DOCS"] as const;
 
 export function RowActions({
 	document,

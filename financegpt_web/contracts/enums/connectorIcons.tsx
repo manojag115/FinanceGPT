@@ -73,11 +73,11 @@ export const getConnectorIcon = (connectorType: EnumConnectorName | string, clas
 			return <Image src="/connectors/composio.svg" alt="Composio" {...imgProps} />;
 		// Financial Connectors
 		case EnumConnectorName.CHASE_BANK:
-			return <Landmark {...iconProps} />;
+			return <Image src="/connectors/chase.svg" alt="Chase" {...imgProps} />;
 		case EnumConnectorName.FIDELITY_INVESTMENTS:
-			return <Landmark {...iconProps} />;
+			return <Image src="/connectors/fidelity.svg" alt="Fidelity" {...imgProps} />;
 		case EnumConnectorName.BANK_OF_AMERICA:
-			return <Landmark {...iconProps} />;
+			return <Image src="/connectors/bank-of-america.svg" alt="Bank of America" {...imgProps} />;
 		case EnumConnectorName.WELLS_FARGO:
 			return <Landmark {...iconProps} />;
 		case "PLAID_CONNECTOR":
@@ -107,7 +107,7 @@ export const getConnectorIcon = (connectorType: EnumConnectorName | string, clas
 			return <FileText {...iconProps} />;
 		case "EXTENSION":
 			return <Webhook {...iconProps} />;
-		case "SURFSENSE_DOCS":
+		case "FINANCEGPT_DOCS":
 			return <BookOpen {...iconProps} />;
 		case "DEEP":
 			return <Sparkles {...iconProps} />;

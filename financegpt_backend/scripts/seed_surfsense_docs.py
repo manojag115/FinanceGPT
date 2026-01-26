@@ -1,12 +1,12 @@
 #!/usr/bin/env python
 """
-Seed Surfsense documentation into the database.
+Seed FinanceGPT documentation into the database.
 
-CLI wrapper for the seed_surfsense_docs function.
+CLI wrapper for the seed_financegpt_docs function.
 Can be run manually for debugging or re-indexing.
 
 Usage:
-    python scripts/seed_surfsense_docs.py
+    python scripts/seed_financegpt_docs.py
 """
 
 import asyncio

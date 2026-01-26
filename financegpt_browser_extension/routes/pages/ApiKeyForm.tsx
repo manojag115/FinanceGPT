@@ -55,16 +55,16 @@ const ApiKeyForm = () => {
 			<div className="w-full max-w-md mx-auto space-y-8">
 				<div className="flex flex-col items-center space-y-2">
 					<div className="bg-gray-800 p-3 rounded-full ring-2 ring-gray-700 shadow-lg">
-						<img className="w-12 h-12" src={icon} alt="SurfSense" />
+						<img className="w-12 h-12" src={icon} alt="FinanceGPT" />
 					</div>
-					<h1 className="text-3xl font-semibold tracking-tight text-white mt-4">SurfSense</h1>
+					<h1 className="text-3xl font-semibold tracking-tight text-white mt-4">FinanceGPT</h1>
 				</div>
 
 				<div className="bg-gray-800/70 backdrop-blur-sm rounded-xl shadow-xl border border-gray-700 p-6">
 					<div className="space-y-6">
 						<h2 className="text-xl font-medium text-white">Enter your API Key</h2>
 						<p className="text-gray-400 text-sm">
-							Your API key connects this extension to the SurfSense.
+							Your API key connects this extension to FinanceGPT.
 						</p>
 
 						<form onSubmit={handleSubmit} className="space-y-4">
@@ -103,7 +103,7 @@ const ApiKeyForm = () => {
 							<p className="text-sm text-gray-400">
 								Need an API key?{" "}
 								<a
-									href="https://www.surfsense.com"
+									href="https://www.financegpt.com"
 									target="_blank"
 									className="text-teal-400 hover:text-teal-300 hover:underline"
 									rel="noopener"

@@ -64,7 +64,7 @@ class Config:
     # Deployment Mode (self-hosted or cloud)
     # self-hosted: Full access to local file system connectors (Obsidian, etc.)
     # cloud: Only cloud-based connectors available
-    DEPLOYMENT_MODE = os.getenv("SURFSENSE_DEPLOYMENT_MODE", "self-hosted")
+    DEPLOYMENT_MODE = os.getenv("FINANCEGPT_DEPLOYMENT_MODE", "self-hosted")
 
     @classmethod
     def is_self_hosted(cls) -> bool:

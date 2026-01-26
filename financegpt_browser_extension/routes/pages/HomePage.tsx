@@ -274,7 +274,7 @@ const HomePage = () => {
 		setIsSaving(true);
 		toast({
 			title: "Save job running",
-			description: "Saving captured content to SurfSense",
+				description: "Saving captured content to FinanceGPT",
 		});
 
 		try {
@@ -313,9 +313,9 @@ const HomePage = () => {
 					<div className="w-full max-w-md space-y-8">
 						<div className="flex flex-col items-center space-y-2 text-center">
 							<div className="rounded-full bg-gray-800 p-3 shadow-lg ring-2 ring-gray-700">
-								<img className="h-12 w-12" src={icon} alt="SurfSense" />
-							</div>
-							<h1 className="mt-4 text-3xl font-semibold tracking-tight text-white">SurfSense</h1>
+							<img className="h-12 w-12" src={icon} alt="FinanceGPT" />
+						</div>
+						<h1 className="mt-4 text-3xl font-semibold tracking-tight text-white">FinanceGPT</h1>
 							<div className="mt-4 rounded-lg border border-yellow-500/20 bg-yellow-500/10 p-4 text-yellow-300">
 								<p className="text-sm">Please create a Search Space to continue</p>
 							</div>
@@ -340,9 +340,9 @@ const HomePage = () => {
 					<div className="flex items-center justify-between border-b border-gray-700 pb-4">
 						<div className="flex items-center space-x-3">
 							<div className="rounded-full bg-gray-800 p-2 shadow-md ring-1 ring-gray-700">
-								<img className="h-6 w-6" src={icon} alt="SurfSense" />
-							</div>
-							<h1 className="text-xl font-semibold text-white">SurfSense</h1>
+							<img className="h-6 w-6" src={icon} alt="FinanceGPT" />
+						</div>
+						<h1 className="text-xl font-semibold text-white">FinanceGPT</h1>
 						</div>
 						<Button
 							variant="ghost"
@@ -458,12 +458,12 @@ const HomePage = () => {
 								{isSaving ? (
 									<>
 										<ReloadIcon className="mr-2 h-4 w-4 animate-spin" />
-										<span>Saving to SurfSense...</span>
+										<span>Saving to FinanceGPT...</span>
 									</>
 								) : (
 									<>
 										<UploadIcon className="h-4 w-4 transition-transform group-hover:scale-110" />
-										<span>Save to SurfSense</span>
+										<span>Save to FinanceGPT</span>
 									</>
 								)}
 							</Button>

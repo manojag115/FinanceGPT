@@ -143,7 +143,7 @@
 		"delete_note_confirm": "您确定要删除",
 		"action_cannot_undone": "此操作无法撤销。",
 		"deleting": "删除中...",
-		"surfsense_dashboard": "FinanceGPT 仪表盘",
+		"financegpt_dashboard": "FinanceGPT 仪表盘",
 		"welcome_message": "欢迎来到您的 FinanceGPT 仪表盘。",
 		"your_search_spaces": "您的搜索空间",
 		"shared": "共享",
