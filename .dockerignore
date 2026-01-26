@@ -38,8 +38,8 @@ LICENSE
 **/eggs/
 **/.eggs/
 # Python venv lib folders (but not frontend lib folders)
-surfsense_backend/lib/
-surfsense_backend/lib64/
+financegpt_backend/lib/
+financegpt_backend/lib64/
 **/parts/
 **/sdist/
 **/var/
@@ -83,15 +83,15 @@ surfsense_backend/lib64/
 **/.temp/
 
 # Build artifacts from backend
-surfsense_backend/podcasts/
-surfsense_backend/temp_audio/
-surfsense_backend/*.bak
-surfsense_backend/*.dat
-surfsense_backend/*.dir
+financegpt_backend/podcasts/
+financegpt_backend/temp_audio/
+financegpt_backend/*.bak
+financegpt_backend/*.dat
+financegpt_backend/*.dir
 
 # GitHub
 .github/
 
 # Browser extension (not needed for main deployment)
-surfsense_browser_extension/
+financegpt_browser_extension/
 

@@ -1,11 +1,11 @@
 ---
 title: Confluence
-description: Connect your Confluence spaces to SurfSense
+description: Connect your Confluence spaces to FinanceGPT
 ---
 
 # Confluence OAuth Integration Setup Guide
 
-This guide walks you through setting up an Atlassian OAuth 2.0 (3LO) integration for SurfSense to connect your Confluence spaces.
+This guide walks you through setting up an Atlassian OAuth 2.0 (3LO) integration for FinanceGPT to connect your Confluence spaces.
 
 ## Step 1: Access the Developer Console
 
@@ -24,7 +24,7 @@ This guide walks you through setting up an Atlassian OAuth 2.0 (3LO) integration
 
 ## Step 3: Name Your Integration
 
-1. Enter **Name**: `SurfSense`
+1. Enter **Name**: `FinanceGPT`
 2. Check the box to agree to Atlassian's developer terms
 3. Click **"Create"**
 
@@ -89,18 +89,18 @@ Select the **"Granular scopes"** tab and enable:
 
 ---
 
-## Running SurfSense with Confluence Connector
+## Running FinanceGPT with Confluence Connector
 
 Add the Atlassian environment variables to your Docker run command:
 
 ```bash
 docker run -d -p 3000:3000 -p 8000:8000 \
-  -v surfsense-data:/data \
+  -v financegpt-data:/data \
   # Confluence Connector
   -e ATLASSIAN_CLIENT_ID=your_atlassian_client_id \
   -e ATLASSIAN_CLIENT_SECRET=your_atlassian_client_secret \
   -e CONFLUENCE_REDIRECT_URI=http://localhost:8000/api/v1/auth/confluence/connector/callback \
-  --name surfsense \
+  --name financegpt \
   --restart unless-stopped \
-  ghcr.io/modsetter/surfsense:latest
+  ghcr.io/modsetter/financegpt:latest
 ```

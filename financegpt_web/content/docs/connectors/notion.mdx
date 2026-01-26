@@ -1,11 +1,11 @@
 ---
 title: Notion
-description: Connect your Notion workspaces to SurfSense
+description: Connect your Notion workspaces to FinanceGPT
 ---
 
 # Notion OAuth Integration Setup Guide
 
-This guide walks you through setting up a Notion OAuth integration for SurfSense.
+This guide walks you through setting up a Notion OAuth integration for FinanceGPT.
 
 ## Step 1: Access Notion Integrations
 
@@ -20,7 +20,7 @@ Fill in the integration details:
 
 | Field | Value |
 |-------|-------|
-| **Integration Name** | `SurfSense` |
+| **Integration Name** | `FinanceGPT` |
 | **Associated workspace** | Select your workspace |
 | **Type** | `Public` |
 | **Company name** | Your company name |
@@ -67,18 +67,18 @@ Click **Save** to apply the capabilities.
 
 ---
 
-## Running SurfSense with Notion Connector
+## Running FinanceGPT with Notion Connector
 
 Add the Notion environment variables to your Docker run command:
 
 ```bash
 docker run -d -p 3000:3000 -p 8000:8000 \
-  -v surfsense-data:/data \
+  -v financegpt-data:/data \
   # Notion Connector
   -e NOTION_OAUTH_CLIENT_ID=your_notion_client_id \
   -e NOTION_OAUTH_CLIENT_SECRET=your_notion_client_secret \
   -e NOTION_REDIRECT_URI=http://localhost:8000/api/v1/auth/notion/connector/callback \
-  --name surfsense \
+  --name financegpt \
   --restart unless-stopped \
-  ghcr.io/modsetter/surfsense:latest
+  ghcr.io/modsetter/financegpt:latest
 ```

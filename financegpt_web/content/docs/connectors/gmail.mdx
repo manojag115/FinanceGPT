@@ -1,11 +1,11 @@
 ---
 title: Gmail
-description: Connect your Gmail to SurfSense
+description: Connect your Gmail to FinanceGPT
 ---
 
 # Gmail OAuth Integration Setup Guide
 
-This guide walks you through setting up a Google OAuth 2.0 integration for SurfSense to connect your Gmail account.
+This guide walks you through setting up a Google OAuth 2.0 integration for FinanceGPT to connect your Gmail account.
 
 ## Step 1: Access the Google Cloud Console
 
@@ -26,7 +26,7 @@ This guide walks you through setting up a Google OAuth 2.0 integration for SurfS
 1. Go to **APIs & Services** > **OAuth consent screen**
 2. Select **External** user type (or Internal if using Google Workspace)
 3. Fill in the required information:
-   - **App name**: `SurfSense`
+   - **App name**: `FinanceGPT`
    - **User support email**: Your email address
    - **Developer contact information**: Your email address
 4. Click **Save and Continue**
@@ -46,7 +46,7 @@ This guide walks you through setting up a Google OAuth 2.0 integration for SurfS
 1. Go to **APIs & Services** > **Credentials**
 2. Click **Create Credentials** > **OAuth client ID**
 3. Select **Web application** as the application type
-4. Enter **Name**: `SurfSense`
+4. Enter **Name**: `FinanceGPT`
 5. Under **Authorized redirect URIs**, add:
    ```
    http://localhost:8000/api/v1/auth/google/gmail/connector/callback
@@ -66,18 +66,18 @@ This guide walks you through setting up a Google OAuth 2.0 integration for SurfS
 
 ---
 
-## Running SurfSense with Gmail Connector
+## Running FinanceGPT with Gmail Connector
 
 Add the Google OAuth environment variables to your Docker run command:
 
 ```bash
 docker run -d -p 3000:3000 -p 8000:8000 \
-  -v surfsense-data:/data \
+  -v financegpt-data:/data \
   # Gmail Connector
   -e GOOGLE_OAUTH_CLIENT_ID=your_google_client_id \
   -e GOOGLE_OAUTH_CLIENT_SECRET=your_google_client_secret \
   -e GOOGLE_GMAIL_REDIRECT_URI=http://localhost:8000/api/v1/auth/google/gmail/connector/callback \
-  --name surfsense \
+  --name financegpt \
   --restart unless-stopped \
-  ghcr.io/modsetter/surfsense:latest
+  ghcr.io/modsetter/financegpt:latest
 ```

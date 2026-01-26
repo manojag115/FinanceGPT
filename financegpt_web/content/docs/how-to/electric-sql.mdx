@@ -1,11 +1,11 @@
 ---
 title: Electric SQL
-description: Setting up Electric SQL for real-time data synchronization in SurfSense
+description: Setting up Electric SQL for real-time data synchronization in FinanceGPT
 ---
 
 # Electric SQL
 
-[Electric SQL](https://electric-sql.com/) enables real-time data synchronization in SurfSense, providing instant updates for inbox items, document indexing status, and connector sync progress without manual refresh. The frontend uses [PGlite](https://pglite.dev/) (a lightweight PostgreSQL in the browser) to maintain a local database that syncs with the backend via Electric SQL.
+[Electric SQL](https://electric-sql.com/) enables real-time data synchronization in FinanceGPT, providing instant updates for inbox items, document indexing status, and connector sync progress without manual refresh. The frontend uses [PGlite](https://pglite.dev/) (a lightweight PostgreSQL in the browser) to maintain a local database that syncs with the backend via Electric SQL.
 
 ## What Does Electric SQL Do?
 
@@ -27,7 +27,7 @@ This means:
 
 ### All-in-One Quickstart
 
-The simplest way to run SurfSense with Electric SQL is using the all-in-one Docker image. This bundles everything into a single container:
+The simplest way to run FinanceGPT with Electric SQL is using the all-in-one Docker image. This bundles everything into a single container:
 
 - PostgreSQL + pgvector (vector database)
 - Redis (task queue)
@@ -40,9 +40,9 @@ docker run -d \
   -p 3000:3000 \
   -p 8000:8000 \
   -p 5133:5133 \
-  -v surfsense-data:/data \
-  --name surfsense \
-  ghcr.io/modsetter/surfsense:latest
+  -v financegpt-data:/data \
+  --name financegpt \
+  ghcr.io/modsetter/financegpt:latest
 ```
 
 **With custom Electric SQL credentials:**
@@ -52,14 +52,14 @@ docker run -d \
   -p 3000:3000 \
   -p 8000:8000 \
   -p 5133:5133 \
-  -v surfsense-data:/data \
+  -v financegpt-data:/data \
   -e ELECTRIC_DB_USER=your_electric_user \
   -e ELECTRIC_DB_PASSWORD=your_electric_password \
-  --name surfsense \
-  ghcr.io/modsetter/surfsense:latest
+  --name financegpt \
+  ghcr.io/modsetter/financegpt:latest
 ```
 
-Access SurfSense at `http://localhost:3000`. Electric SQL is automatically configured and running on port 5133.
+Access FinanceGPT at `http://localhost:3000`. Electric SQL is automatically configured and running on port 5133.
 
 ### Docker Compose
 
@@ -81,7 +81,7 @@ electric:
   ports:
     - "${ELECTRIC_PORT:-5133}:3000"
   environment:
-    - DATABASE_URL=${ELECTRIC_DATABASE_URL:-postgresql://${ELECTRIC_DB_USER:-electric}:${ELECTRIC_DB_PASSWORD:-electric_password}@${POSTGRES_HOST:-db}:${POSTGRES_PORT:-5432}/${POSTGRES_DB:-surfsense}?sslmode=disable}
+    - DATABASE_URL=${ELECTRIC_DATABASE_URL:-postgresql://${ELECTRIC_DB_USER:-electric}:${ELECTRIC_DB_PASSWORD:-electric_password}@${POSTGRES_HOST:-db}:${POSTGRES_PORT:-5432}/${POSTGRES_DB:-financegpt}?sslmode=disable}
     - ELECTRIC_INSECURE=true
     - ELECTRIC_WRITE_TO_PG_MODE=direct
   restart: unless-stopped
@@ -100,7 +100,7 @@ Follow the steps below based on your PostgreSQL setup.
 
 ### Step 1: Configure Environment Variables
 
-Ensure your environment files are configured. If you haven't set up SurfSense yet, follow the [Manual Installation Guide](/docs/manual-installation) first.
+Ensure your environment files are configured. If you haven't set up FinanceGPT yet, follow the [Manual Installation Guide](/docs/manual-installation) first.
 
 For Electric SQL, verify these variables are set:
 
@@ -114,7 +114,7 @@ ELECTRIC_DB_PASSWORD=electric_password
 NEXT_PUBLIC_ELECTRIC_URL=http://localhost:5133
 ```
 
-**Frontend `.env` (`surfsense_web/.env`):**
+**Frontend `.env` (`financegpt_web/.env`):**
 
 ```bash
 NEXT_PUBLIC_ELECTRIC_URL=http://localhost:5133
@@ -144,7 +144,7 @@ docker-compose up -d db electric
 **3. Run database migration:**
 
 ```bash
-cd surfsense_backend
+cd financegpt_backend
 uv run alembic upgrade head
 ```
 
@@ -203,7 +203,7 @@ docker-compose up -d electric
 **4. Run database migration:**
 
 ```bash
-cd surfsense_backend
+cd financegpt_backend
 uv run alembic upgrade head
 ```
 
@@ -271,5 +271,5 @@ You should receive:
 If data appears stale or corrupted in the browser:
 
 1. Open browser DevTools → Application → IndexedDB
-2. Delete databases starting with `surfsense-`
+2. Delete databases starting with `financegpt-`
 3. Refresh the page - PGlite will recreate the local database and resync

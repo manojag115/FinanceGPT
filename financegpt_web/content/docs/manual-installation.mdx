@@ -43,21 +43,21 @@ First, create and configure your environment variables by copying the example fi
 **Linux/macOS:**
 
 ```bash
-cd surfsense_backend
+cd financegpt_backend
 cp .env.example .env
 ```
 
 **Windows (Command Prompt):**
 
 ```cmd
-cd surfsense_backend
+cd financegpt_backend
 copy .env.example .env
 ```
 
 **Windows (PowerShell):**
 
 ```powershell
-cd surfsense_backend
+cd financegpt_backend
 Copy-Item -Path .env.example -Destination .env
 ```
 
@@ -275,8 +275,8 @@ In a new terminal window, start the Celery worker to handle background tasks:
 **If using uv:**
 
 ```bash
-# Make sure you're in the surfsense_backend directory
-cd surfsense_backend
+# Make sure you're in the financegpt_backend directory
+cd financegpt_backend
 
 # Start Celery worker
 uv run celery -A celery_worker.celery_app worker --loglevel=info --concurrency=1 --pool=solo
@@ -285,8 +285,8 @@ uv run celery -A celery_worker.celery_app worker --loglevel=info --concurrency=1
 **If using pip/venv:**
 
 ```bash
-# Make sure you're in the surfsense_backend directory
-cd surfsense_backend
+# Make sure you're in the financegpt_backend directory
+cd financegpt_backend
 
 # Activate virtual environment
 source .venv/bin/activate  # Linux/macOS
@@ -318,8 +318,8 @@ In another new terminal window, start Celery Beat to enable periodic tasks (like
 **If using uv:**
 
 ```bash
-# Make sure you're in the surfsense_backend directory
-cd surfsense_backend
+# Make sure you're in the financegpt_backend directory
+cd financegpt_backend
 
 # Start Celery Beat
 uv run celery -A celery_worker.celery_app beat --loglevel=info
@@ -328,8 +328,8 @@ uv run celery -A celery_worker.celery_app beat --loglevel=info
 **If using pip/venv:**
 
 ```bash
-# Make sure you're in the surfsense_backend directory
-cd surfsense_backend
+# Make sure you're in the financegpt_backend directory
+cd financegpt_backend
 
 # Activate virtual environment
 source .venv/bin/activate  # Linux/macOS
@@ -382,21 +382,21 @@ Set up the frontend environment:
 **Linux/macOS:**
 
 ```bash
-cd surfsense_web
+cd financegpt_web
 cp .env.example .env
 ```
 
 **Windows (Command Prompt):**
 
 ```cmd
-cd surfsense_web
+cd financegpt_web
 copy .env.example .env
 ```
 
 **Windows (PowerShell):**
 
 ```powershell
-cd surfsense_web
+cd financegpt_web
 Copy-Item -Path .env.example -Destination .env
 ```
 
@@ -455,21 +455,21 @@ The FinanceGPT browser extension allows you to save any webpage, including those
 **Linux/macOS:**
 
 ```bash
-cd surfsense_browser_extension
+cd financegpt_browser_extension
 cp .env.example .env
 ```
 
 **Windows (Command Prompt):**
 
 ```cmd
-cd surfsense_browser_extension
+cd financegpt_browser_extension
 copy .env.example .env
 ```
 
 **Windows (PowerShell):**
 
 ```powershell
-cd surfsense_browser_extension
+cd financegpt_browser_extension
 Copy-Item -Path .env.example -Destination .env
 ```
 

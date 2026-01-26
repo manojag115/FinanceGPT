@@ -1,24 +1,24 @@
 ---
 title: Docker Installation
-description: Setting up SurfSense using Docker
+description: Setting up FinanceGPT using Docker
 ---
 
 
 
 # Docker Installation
 
-This guide explains how to run SurfSense using Docker, with options ranging from quick single-command deployment to full production setups.
+This guide explains how to run FinanceGPT using Docker, with options ranging from quick single-command deployment to full production setups.
 
 ## Quick Start with Docker 🐳
 
-Get SurfSense running in seconds with a single command:
+Get FinanceGPT running in seconds with a single command:
 
 <Callout type="info">
-The all-in-one Docker image bundles PostgreSQL (with pgvector), Redis, and all SurfSense services. Perfect for quick evaluation and development.
+The all-in-one Docker image bundles PostgreSQL (with pgvector), Redis, and all FinanceGPT services. Perfect for quick evaluation and development.
 </Callout>
 
 <Callout type="warn">
-Make sure to include the `-v surfsense-data:/data` in your Docker command. This ensures your database and files are properly persisted.
+Make sure to include the `-v financegpt-data:/data` in your Docker command. This ensures your database and files are properly persisted.
 </Callout>
 
 ### One-Line Installation
@@ -27,20 +27,20 @@ Make sure to include the `-v surfsense-data:/data` in your Docker command. This 
 
 ```bash
 docker run -d -p 3000:3000 -p 8000:8000 -p 5133:5133 \
-  -v surfsense-data:/data \
-  --name surfsense \
+  -v financegpt-data:/data \
+  --name financegpt \
   --restart unless-stopped \
-  ghcr.io/modsetter/surfsense:latest
+  ghcr.io/modsetter/financegpt:latest
 ```
 
 **Windows (PowerShell):**
 
 ```powershell
 docker run -d -p 3000:3000 -p 8000:8000 -p 5133:5133 `
-  -v surfsense-data:/data `
-  --name surfsense `
+  -v financegpt-data:/data `
+  --name financegpt `
   --restart unless-stopped `
-  ghcr.io/modsetter/surfsense:latest
+  ghcr.io/modsetter/financegpt:latest
 ```
 
 > **Note:** A secure `SECRET_KEY` is automatically generated and persisted in the data volume on first run.
@@ -51,7 +51,7 @@ You can pass any [environment variable](/docs/manual-installation#backend-enviro
 
 ```bash
 docker run -d -p 3000:3000 -p 8000:8000 -p 5133:5133 \
-  -v surfsense-data:/data \
+  -v financegpt-data:/data \
   -e EMBEDDING_MODEL=openai://text-embedding-ada-002 \
   -e OPENAI_API_KEY=your_openai_api_key \
   -e AUTH_TYPE=GOOGLE \
@@ -59,9 +59,9 @@ docker run -d -p 3000:3000 -p 8000:8000 -p 5133:5133 \
   -e GOOGLE_OAUTH_CLIENT_SECRET=your_google_client_secret \
   -e ETL_SERVICE=LLAMACLOUD \
   -e LLAMA_CLOUD_API_KEY=your_llama_cloud_key \
-  --name surfsense \
+  --name financegpt \
   --restart unless-stopped \
-  ghcr.io/modsetter/surfsense:latest
+  ghcr.io/modsetter/financegpt:latest
 ```
 
 <Callout type="info">
@@ -76,7 +76,7 @@ For easier management with environment files:
 
 ```bash
 # Download the quick start compose file
-curl -o docker-compose.yml https://raw.githubusercontent.com/MODSetter/SurfSense/main/docker-compose.quickstart.yml
+curl -o docker-compose.yml https://raw.githubusercontent.com/MODSetter/FinanceGPT/main/docker-compose.quickstart.yml
 
 # Create .env file (optional - for custom configuration)
 cat > .env << EOF
@@ -85,11 +85,11 @@ cat > .env << EOF
 # SECRET_KEY=your_custom_secret_key  # Auto-generated if not set
 EOF
 
-# Start SurfSense
+# Start FinanceGPT
 docker compose up -d
 ```
 
-After starting, access SurfSense at:
+After starting, access FinanceGPT at:
 - **Frontend**: [http://localhost:3000](http://localhost:3000)
 - **Backend API**: [http://localhost:8000](http://localhost:8000)
 - **API Docs**: [http://localhost:8000/docs](http://localhost:8000/docs)
@@ -111,19 +111,19 @@ After starting, access SurfSense at:
 
 ```bash
 # View logs
-docker logs -f surfsense
+docker logs -f financegpt
 
-# Stop SurfSense
-docker stop surfsense
+# Stop FinanceGPT
+docker stop financegpt
 
-# Start SurfSense
-docker start surfsense
+# Start FinanceGPT
+docker start financegpt
 
 # Remove container (data preserved in volume)
-docker rm surfsense
+docker rm financegpt
 
 # Remove container AND data
-docker rm surfsense && docker volume rm surfsense-data
+docker rm financegpt && docker volume rm financegpt-data
 ```
 
 ---
@@ -155,24 +155,24 @@ Before you begin, ensure you have:
 
     ```bash
     # Copy example environment files
-    cp surfsense_backend/.env.example surfsense_backend/.env
-    cp surfsense_web/.env.example surfsense_web/.env
+    cp financegpt_backend/.env.example financegpt_backend/.env
+    cp financegpt_web/.env.example financegpt_web/.env
     cp .env.example .env  # For Docker-specific settings
     ```
 
     **Windows (Command Prompt):**
 
     ```cmd
-    copy surfsense_backend\.env.example surfsense_backend\.env
-    copy surfsense_web\.env.example surfsense_web\.env
+    copy financegpt_backend\.env.example financegpt_backend\.env
+    copy financegpt_web\.env.example financegpt_web\.env
     copy .env.example .env
     ```
 
     **Windows (PowerShell):**
 
     ```powershell
-    Copy-Item -Path surfsense_backend\.env.example -Destination surfsense_backend\.env
-    Copy-Item -Path surfsense_web\.env.example -Destination surfsense_web\.env
+    Copy-Item -Path financegpt_backend\.env.example -Destination financegpt_backend\.env
+    Copy-Item -Path financegpt_web\.env.example -Destination financegpt_web\.env
     Copy-Item -Path .env.example -Destination .env
     ```
 
@@ -190,9 +190,9 @@ Before you begin, ensure you have:
 | FLOWER_PORT                | Port for Flower (Celery monitoring tool)                                    | 5555                |
 | POSTGRES_USER              | PostgreSQL username                                                         | postgres            |
 | POSTGRES_PASSWORD          | PostgreSQL password                                                         | postgres            |
-| POSTGRES_DB                | PostgreSQL database name                                                    | surfsense           |
-| PGADMIN_DEFAULT_EMAIL      | Email for pgAdmin login                                                     | admin@surfsense.com |
-| PGADMIN_DEFAULT_PASSWORD   | Password for pgAdmin login                                                  | surfsense           |
+| POSTGRES_DB                | PostgreSQL database name                                                    | financegpt           |
+| PGADMIN_DEFAULT_EMAIL      | Email for pgAdmin login                                                     | admin@financegpt.com |
+| PGADMIN_DEFAULT_PASSWORD   | Password for pgAdmin login                                                  | financegpt           |
 | NEXT_PUBLIC_FASTAPI_BACKEND_URL | URL of the backend API (used by frontend during build and runtime)     | http://localhost:8000 |
 | NEXT_PUBLIC_FASTAPI_BACKEND_AUTH_TYPE | Authentication method for frontend: `LOCAL` or `GOOGLE`           | LOCAL               |
 | NEXT_PUBLIC_ETL_SERVICE    | Document parsing service for frontend UI: `UNSTRUCTURED`, `LLAMACLOUD`, or `DOCLING` | DOCLING |
@@ -208,7 +208,7 @@ Before you begin, ensure you have:
 
 | ENV VARIABLE               | DESCRIPTION                                                                                                                                                                               |
 | -------------------------- | ----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| DATABASE_URL               | PostgreSQL connection string (e.g., `postgresql+asyncpg://postgres:postgres@localhost:5432/surfsense`)                                                                                    |
+| DATABASE_URL               | PostgreSQL connection string (e.g., `postgresql+asyncpg://postgres:postgres@localhost:5432/financegpt`)                                                                                    |
 | SECRET_KEY                 | JWT Secret key for authentication (should be a secure random string)                                                                                                                      |
 | NEXT_FRONTEND_URL          | URL where your frontend application is hosted (e.g., `http://localhost:3000`)                                                                                                             |
 | BACKEND_URL                | (Optional) Public URL of the backend for OAuth callbacks (e.g., `https://api.yourdomain.com`). Required when running behind a reverse proxy with HTTPS. Used to set correct OAuth redirect URLs and secure cookies. |
@@ -282,7 +282,7 @@ Before you begin, ensure you have:
 | LANGSMITH_TRACING | Enable LangSmith tracing (e.g., `true`) |
 | LANGSMITH_ENDPOINT | LangSmith API endpoint (e.g., `https://api.smith.langchain.com`) |
 | LANGSMITH_API_KEY | Your LangSmith API key |
-| LANGSMITH_PROJECT | LangSmith project name (e.g., `surfsense`) |
+| LANGSMITH_PROJECT | LangSmith project name (e.g., `financegpt`) |
 
 **Backend Uvicorn Server Configuration:**
 | ENV VARIABLE | DESCRIPTION | DEFAULT VALUE |
@@ -384,13 +384,13 @@ All services start automatically with `docker compose up`. The Celery Beat servi
 pgAdmin is included in the Docker setup to help manage your PostgreSQL database. To connect:
 
 1. Open pgAdmin at [http://localhost:5050](http://localhost:5050)
-2. Login with the credentials from your `.env` file (default: admin@surfsense.com / surfsense)
+2. Login with the credentials from your `.env` file (default: admin@financegpt.com / financegpt)
 3. Right-click "Servers" > "Create" > "Server"
-4. In the "General" tab, name your connection (e.g., "SurfSense DB")
+4. In the "General" tab, name your connection (e.g., "FinanceGPT DB")
 5. In the "Connection" tab:
    - Host: `db`
    - Port: `5432`
-   - Maintenance database: `surfsense`
+   - Maintenance database: `financegpt`
    - Username: `postgres` (or your custom POSTGRES_USER)
    - Password: `postgres` (or your custom POSTGRES_PASSWORD)
 6. Click "Save" to connect
@@ -452,4 +452,4 @@ pgAdmin is included in the Docker setup to help manage your PostgreSQL database.
 
 ## Next Steps
 
-Once your installation is complete, you can start using SurfSense! Navigate to the frontend URL and log in using your Google account.
+Once your installation is complete, you can start using FinanceGPT! Navigate to the frontend URL and log in using your Google account.
