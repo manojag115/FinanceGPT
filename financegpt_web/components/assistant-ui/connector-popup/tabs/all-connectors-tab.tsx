@@ -1,9 +1,11 @@
 "use client";
 
+import { Search, X } from "lucide-react";
 import type { FC } from "react";
 import type { PlaidLinkOnSuccessMetadata } from "react-plaid-link";
 import { EnumConnectorName } from "@/contracts/enums/connector";
 import type { SearchSourceConnector } from "@/contracts/types/connector.types";
+import { cn } from "@/lib/utils";
 import { isSelfHosted } from "@/lib/env-config";
 import { ComposioConnectorCard } from "../components/composio-connector-card";
 import { ConnectorCard } from "../components/connector-card";
@@ -38,6 +40,7 @@ const PLAID_CONNECTOR_TYPES = new Set([
 
 interface AllConnectorsTabProps {
 	searchQuery: string;
+	onSearchChange: (query: string) => void;
 	searchSpaceId: string;
 	connectedTypes: Set<string>;
 	connectingId: string | null;
@@ -57,6 +60,7 @@ interface AllConnectorsTabProps {
 
 export const AllConnectorsTab: FC<AllConnectorsTabProps> = ({
 	searchQuery,
+	onSearchChange,
 	searchSpaceId,
 	connectedTypes,
 	connectingId,
@@ -116,12 +120,36 @@ export const AllConnectorsTab: FC<AllConnectorsTabProps> = ({
 
 	return (
 		<div className="space-y-8">
+			{/* Search Input */}
+			<div className="w-full sm:w-96">
+				<div className="relative">
+					<Search className="absolute left-3 top-1/2 -translate-y-1/2 size-4 text-gray-500 dark:text-gray-500" />
+					<input
+						type="text"
+						placeholder="Search connectors..."
+						className={cn(
+							"w-full bg-slate-400/5 dark:bg-white/5 hover:bg-slate-400/10 dark:hover:bg-white/10 focus:bg-slate-400/10 dark:focus:bg-white/10 border border-border rounded-xl pl-9 py-2 text-sm transition-all outline-none placeholder:text-muted-foreground/50",
+							searchQuery ? "pr-9" : "pr-4"
+						)}
+						value={searchQuery}
+						onChange={(e) => onSearchChange(e.target.value)}
+					/>
+					{searchQuery && (
+						<button
+							type="button"
+							onClick={() => onSearchChange("")}
+							className="absolute right-3 top-1/2 -translate-y-1/2 size-4 text-gray-500 dark:text-gray-500 hover:text-gray-700 dark:hover:text-gray-300 transition-colors"
+							aria-label="Clear search"
+						>
+							<X className="size-4" />
+						</button>
+					)}
+				</div>
+			</div>
+
 			{/* Quick Connect */}
 			{filteredOAuth.length > 0 && (
 				<section>
-					<div className="flex items-center gap-2 mb-4">
-						<h3 className="text-sm font-semibold text-muted-foreground">Quick Connect</h3>
-					</div>
 					<div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
 						{filteredOAuth.map((connector) => {
 							const isConnected = connectedTypes.has(connector.connectorType);

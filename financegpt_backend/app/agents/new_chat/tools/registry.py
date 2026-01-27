@@ -44,6 +44,7 @@ from typing import Any
 from langchain_core.tools import BaseTool
 
 from .display_image import create_display_image_tool
+from .find_subscriptions import create_find_subscriptions_tool
 from .knowledge_base import create_search_knowledge_base_tool
 from .link_preview import create_link_preview_tool
 from .mcp_tool import load_mcp_tools
@@ -151,6 +152,17 @@ BUILTIN_TOOLS: list[ToolDefinition] = [
         name="calculate_portfolio_performance",
         description="Calculate portfolio performance over specified time periods (WoW, MoM, quarterly, YoY)",
         factory=lambda deps: create_portfolio_performance_tool(
+            search_space_id=deps["search_space_id"],
+            db_session=deps["db_session"],
+            connector_service=deps["connector_service"],
+        ),
+        requires=["search_space_id", "db_session", "connector_service"],
+    ),
+    # Subscription finder - identifies recurring charges and subscriptions
+    ToolDefinition(
+        name="find_subscriptions",
+        description="Find and analyze recurring subscriptions in transaction history",
+        factory=lambda deps: create_find_subscriptions_tool(
             search_space_id=deps["search_space_id"],
             db_session=deps["db_session"],
             connector_service=deps["connector_service"],

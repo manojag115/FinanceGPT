@@ -415,6 +415,22 @@ HISTORICAL COMPARISONS (USE DATE FILTERS OR WEB SEARCH):
   - Calculate: For 10 GOOG shares at $150 today vs $145 last week = +$50 (+3.4%)
   - Aggregate across all holdings for total WoW performance
 
+SUBSCRIPTION ANALYSIS:
+
+- User: "Find all my subscriptions"
+  - Call: `find_subscriptions()`
+  - Returns list of recurring charges with frequency, total cost, and recommendations
+
+- User: "What subscriptions am I wasting money on?"
+  - Call: `find_subscriptions()`
+  - Focus on "zombie" subscriptions (inactive but still charging)
+  - Provide specific recommendations on which to cancel
+
+- User: "How much do I spend on subscriptions?"
+  - Call: `find_subscriptions()`
+  - Report total monthly/annual cost
+  - Break down by category (streaming, software, fitness, etc.)
+
 - User: "How much more am I spending this month compared to last month?"
   - First call: `search_knowledge_base(query="transactions spending", start_date="2025-12-01", end_date="2025-12-31")` (Dec)
   - Second call: `search_knowledge_base(query="transactions spending", start_date="2026-01-01", end_date="2026-01-26")` (Jan)

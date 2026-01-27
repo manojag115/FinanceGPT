@@ -1,4 +1,5 @@
 import os
+from pathlib import Path
 
 
 def _parse_bool(value):
@@ -27,13 +28,18 @@ def load_uvicorn_config(args=None):
     Load Uvicorn configuration from environment variables and CLI args.
     Returns a dict suitable for passing to uvicorn.Config.
     """
+    # Get the base directory (where main.py is located)
+    base_dir = Path(__file__).parent.parent.parent
+    app_dir = base_dir / "app"
+    
     config_kwargs = {
         "app": "app.app:app",
         "host": os.getenv("UVICORN_HOST", "0.0.0.0"),
         "port": int(os.getenv("UVICORN_PORT", 8000)),
         "log_level": os.getenv("UVICORN_LOG_LEVEL", "info"),
         "reload": args.reload if args else False,
-        "reload_dirs": ["app"] if (args and args.reload) else None,
+        "reload_dirs": [str(app_dir)] if (args and args.reload) else None,
+        "reload_includes": ["*.py"] if (args and args.reload) else None,
     }
 
     # Configuration mapping for advanced options

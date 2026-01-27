@@ -1,6 +1,6 @@
 "use client";
 
-import { Search, X } from "lucide-react";
+
 import type { FC } from "react";
 import { DialogDescription, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 import { TabsList, TabsTrigger } from "@/components/ui/tabs";
@@ -10,17 +10,13 @@ interface ConnectorDialogHeaderProps {
 	activeTab: string;
 	totalSourceCount: number;
 	totalDocumentCount: number;
-	searchQuery: string;
 	onTabChange: (value: string) => void;
-	onSearchChange: (query: string) => void;
 	isScrolled: boolean;
 }
 
 export const ConnectorDialogHeader: FC<ConnectorDialogHeaderProps> = ({
 	totalSourceCount,
 	totalDocumentCount,
-	searchQuery,
-	onSearchChange,
 	isScrolled,
 }) => {
 	return (
@@ -32,10 +28,10 @@ export const ConnectorDialogHeader: FC<ConnectorDialogHeaderProps> = ({
 		>
 			<DialogHeader>
 				<DialogTitle className="text-xl sm:text-3xl font-semibold tracking-tight">
-					Connectors
+					Connections
 				</DialogTitle>
 				<DialogDescription className="text-xs sm:text-base text-muted-foreground/80 mt-1 sm:mt-1.5">
-					Search across all your apps and data in one place.
+					Search across all your accounts and documents in one place.
 				</DialogDescription>
 			</DialogHeader>
 
@@ -45,7 +41,7 @@ export const ConnectorDialogHeader: FC<ConnectorDialogHeaderProps> = ({
 						value="all"
 						className="px-0 pb-3 bg-transparent data-[state=active]:bg-transparent shadow-none data-[state=active]:shadow-none rounded-none border-b-[1.5px] border-transparent data-[state=active]:border-foreground dark:data-[state=active]:border-white transition-all text-base font-medium text-muted-foreground data-[state=active]:text-foreground"
 					>
-						All Connectors
+						Institution Connections
 					</TabsTrigger>
 					<TabsTrigger
 						value="active"
@@ -62,32 +58,6 @@ export const ConnectorDialogHeader: FC<ConnectorDialogHeaderProps> = ({
 					)}
 					</TabsTrigger>
 				</TabsList>
-
-				<div className="w-full sm:w-72 sm:pb-1">
-					<div className="relative">
-						<Search className="absolute left-3 top-1/2 -translate-y-1/2 size-4 text-gray-500 dark:text-gray-500" />
-						<input
-							type="text"
-							placeholder="Search"
-							className={cn(
-								"w-full bg-slate-400/5 dark:bg-white/5 hover:bg-slate-400/10 dark:hover:bg-white/10 focus:bg-slate-400/10 dark:focus:bg-white/10 border border-border rounded-xl pl-9 py-2 text-sm transition-all outline-none placeholder:text-muted-foreground/50",
-								searchQuery ? "pr-9" : "pr-4"
-							)}
-							value={searchQuery}
-							onChange={(e) => onSearchChange(e.target.value)}
-						/>
-						{searchQuery && (
-							<button
-								type="button"
-								onClick={() => onSearchChange("")}
-								className="absolute right-3 top-1/2 -translate-y-1/2 size-4 text-gray-500 dark:text-gray-500 hover:text-gray-700 dark:hover:text-gray-300 transition-colors"
-								aria-label="Clear search"
-							>
-								<X className="size-4" />
-							</button>
-						)}
-					</div>
-				</div>
 			</div>
 		</div>
 	);

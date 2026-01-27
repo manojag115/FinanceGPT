@@ -325,9 +325,7 @@ export const ConnectorIndicator: FC = () => {
 							activeTab={activeTab}
 							totalSourceCount={activeConnectorsCount}
 							totalDocumentCount={totalDocumentCount}
-							searchQuery={searchQuery}
 							onTabChange={handleTabChange}
-							onSearchChange={setSearchQuery}
 							isScrolled={isScrolled}
 						/>
 
@@ -337,8 +335,7 @@ export const ConnectorIndicator: FC = () => {
 								<div className="px-4 sm:px-12 py-4 sm:py-8 pb-12 sm:pb-16">
 									<TabsContent value="all" className="m-0">
 										<AllConnectorsTab
-											searchQuery={searchQuery}
-											searchSpaceId={searchSpaceId}
+											searchQuery={searchQuery}										onSearchChange={setSearchQuery}											searchSpaceId={searchSpaceId}
 											connectedTypes={connectedTypes}
 											connectingId={connectingId}
 											allConnectors={connectors}
