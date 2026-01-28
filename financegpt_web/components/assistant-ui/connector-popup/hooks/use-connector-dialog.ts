@@ -918,7 +918,9 @@ export const useConnectorDialog = () => {
 				connectorToDelete.id
 			);
 
-			toast.success(`${connectorToDelete.name} disconnected successfully`);
+			// Extract institution name (remove account names in parentheses)
+			const institutionName = connectorToDelete.name.split('(')[0].trim();
+			toast.success(`${institutionName} disconnected successfully`);
 
 			// Close the manage view and go back to main connectors modal
 			setManagingPlaidConnector(null);
@@ -1499,10 +1501,12 @@ export const useConnectorDialog = () => {
 					editingConnector.id
 				);
 
+				// Extract institution name (remove account names in parentheses)
+				const institutionName = editingConnector.name.split('(')[0].trim();
 				toast.success(
 					editingConnector.connector_type === "MCP_CONNECTOR"
-						? `${editingConnector.name} MCP server removed successfully`
-						: `${editingConnector.name} disconnected successfully`
+						? `${institutionName} MCP server removed successfully`
+						: `${institutionName} disconnected successfully`
 				);
 
 				// Update URL - for MCP from list view, go back to list; otherwise close modal
