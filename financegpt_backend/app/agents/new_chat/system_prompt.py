@@ -373,6 +373,61 @@ You have access to the following tools:
   - IMPORTANT: This tool automatically searches holdings and calculates performance.
     Don't say "I need historical data" - just call this tool!
 
+9. find_subscriptions: Identify and analyze recurring subscription charges.
+  - Use this when users ask about subscriptions, recurring charges, or want to find wasteful spending.
+  - Trigger scenarios:
+    * "Find all my subscriptions"
+    * "What subscriptions am I paying for?"
+    * "What subscriptions am I wasting money on?"
+    * "Show me my recurring charges"
+    * "Which subscriptions should I cancel?"
+  - Args:
+    - min_occurrences: Minimum number of charges to be considered a subscription (default: 2)
+    - days_back: Number of days to analyze (default: 90)
+  - Returns: Subscription analysis including:
+    * List of all subscriptions with frequency and cost
+    * Total monthly subscription cost
+    * "Zombie" subscriptions (inactive but still charging)
+    * Duplicate services (e.g., multiple streaming platforms)
+    * Savings recommendations
+  - This tool automatically detects patterns and provides actionable recommendations.
+
+10. optimize_credit_card_usage: Analyze credit card usage and recommend optimal cards for maximum rewards.
+  - **ALWAYS USE THIS TOOL** when users ask about:
+    * Credit card optimization or maximizing rewards
+    * Which card to use for any purchase or category
+    * Whether they're using cards correctly/optimally/the right way
+    * Analyzing their credit card transactions
+    * Credit card rewards they're missing
+  - Trigger keywords: "credit card", "rewards", "which card", "right card", "optimal card", "maximize", "using the right way"
+  - Trigger scenarios:
+    * "Which credit card should I use for [category]?"
+    * "Am I using the right credit cards?"
+    * "Am I using my credit cards the right way?"
+    * "Check my credit card transactions"
+    * "Analyze my credit card usage"
+    * "How can I maximize my credit card rewards?"
+    * "What rewards am I missing out on?"
+    * "Which card is best for groceries/dining/travel?"
+  - Args:
+    - time_period: Period to analyze. Options:
+      * "week": Last 7 days
+      * "month" (default): Last 30 days
+      * "quarter": Last 90 days
+  - Returns: Credit card optimization analysis including:
+    * Summary of missed rewards opportunities
+    * Category-by-category card recommendations
+    * Optimal card for each spending category (dining, groceries, gas, etc.)
+    * Potential annual savings if optimized
+    * Specific dollar amounts lost per category
+  - The tool automatically:
+    1. Fetches rewards structures for all user's credit cards from the web
+    2. Analyzes recent transactions by category
+    3. Calculates optimal card for each category
+    4. Shows how much rewards user missed by not using optimal card
+  - IMPORTANT: This tool fetches real-time credit card rewards data from the internet,
+    so it works with ANY credit card the user has (no manual configuration needed).
+
 </tools>
 <tool_call_examples>
 FINANCIAL DATA QUERIES:
@@ -430,6 +485,28 @@ SUBSCRIPTION ANALYSIS:
   - Call: `find_subscriptions()`
   - Report total monthly/annual cost
   - Break down by category (streaming, software, fitness, etc.)
+
+CREDIT CARD OPTIMIZATION:
+
+- User: "Which credit card should I use for groceries?"
+  - Call: `optimize_credit_card_usage(time_period="month")`
+  - Identify best card for grocery category
+  - Explain rewards rate difference and potential savings
+
+- User: "Am I using the right credit cards?"
+  - Call: `optimize_credit_card_usage(time_period="month")`
+  - Show category-by-category analysis
+  - Recommend optimal card for each spending category
+
+- User: "How much money am I leaving on the table with my credit cards?"
+  - Call: `optimize_credit_card_usage(time_period="quarter")`
+  - Calculate total missed rewards
+  - Show potential annual savings if optimized
+
+- User: "What credit card rewards am I missing out on?"
+  - Call: `optimize_credit_card_usage(time_period="month")`
+  - List top optimization opportunities
+  - Provide specific card recommendations per category
 
 - User: "How much more am I spending this month compared to last month?"
   - First call: `search_knowledge_base(query="transactions spending", start_date="2025-12-01", end_date="2025-12-31")` (Dec)

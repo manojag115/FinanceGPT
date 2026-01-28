@@ -48,6 +48,7 @@ from .find_subscriptions import create_find_subscriptions_tool
 from .knowledge_base import create_search_knowledge_base_tool
 from .link_preview import create_link_preview_tool
 from .mcp_tool import load_mcp_tools
+from .optimize_credit_card import create_optimize_credit_card_usage_tool
 from .portfolio_performance import create_portfolio_performance_tool
 from .search_financegpt_docs import create_search_financegpt_docs_tool
 from .user_memory import create_recall_memory_tool, create_save_memory_tool
@@ -163,6 +164,17 @@ BUILTIN_TOOLS: list[ToolDefinition] = [
         name="find_subscriptions",
         description="Find and analyze recurring subscriptions in transaction history",
         factory=lambda deps: create_find_subscriptions_tool(
+            search_space_id=deps["search_space_id"],
+            db_session=deps["db_session"],
+            connector_service=deps["connector_service"],
+        ),
+        requires=["search_space_id", "db_session", "connector_service"],
+    ),
+    # Credit card optimizer - recommends optimal card for each purchase category
+    ToolDefinition(
+        name="optimize_credit_card_usage",
+        description="Analyze credit card usage and recommend optimal cards to maximize rewards",
+        factory=lambda deps: create_optimize_credit_card_usage_tool(
             search_space_id=deps["search_space_id"],
             db_session=deps["db_session"],
             connector_service=deps["connector_service"],
