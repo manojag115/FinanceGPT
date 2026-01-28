@@ -6,19 +6,19 @@ import { cn } from "@/lib/utils";
 
 export function CTAHomepage() {
 	return (
-		<section className="w-full grid grid-cols-1 md:grid-cols-3 my-20 md:my-20 justify-start relative z-20 max-w-7xl mx-auto bg-gradient-to-br from-gray-100 to-white dark:from-neutral-900 dark:to-neutral-950">
+		<section className="w-full grid grid-cols-1 md:grid-cols-3 my-4 md:my-6 justify-start relative z-20 max-w-7xl mx-auto bg-gradient-to-br from-gray-100 to-white dark:from-neutral-900 dark:to-neutral-950">
 			<GridLineHorizontal className="top-0" offset="200px" />
 			<GridLineHorizontal className="bottom-0 top-auto" offset="200px" />
 			<GridLineVertical className="left-0" offset="80px" />
 			<GridLineVertical className="left-auto right-0" offset="80px" />
-			<div className="md:col-span-2 p-8 md:p-14">
+			<div className="md:col-span-2 p-6 md:p-8">
 				<h2 className="text-left text-neutral-500 dark:text-neutral-200 text-xl md:text-3xl tracking-tight font-medium">
-					Transform how your team{" "}
-					<span className="font-bold text-black dark:text-white">discovers and collaborates</span>
+					Take control of your{" "}
+					<span className="font-bold text-black dark:text-white">financial future</span>
 				</h2>
 				<p className="text-left text-neutral-500 mt-4 max-w-lg dark:text-neutral-200 text-xl md:text-3xl tracking-tight font-medium">
-					Unite your <span className="text-sky-700">team's knowledge</span> in one collaborative
-					space with <span className="text-indigo-700">intelligent search</span>.
+					Connect your <span className="text-emerald-700">accounts</span> and get
+					<span className="text-blue-700"> AI-powered insights</span> to optimize your finances.
 				</p>
 
 				<div className="flex items-start sm:items-center flex-col sm:flex-row sm:gap-4">

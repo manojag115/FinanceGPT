@@ -5,7 +5,7 @@ import { BentoGrid, BentoGridItem } from "@/components/ui/bento-grid";
 
 export function FeaturesBentoGrid() {
 	return (
-		<BentoGrid className="max-w-7xl my-8 mx-auto md:auto-rows-[20rem]">
+		<BentoGrid className="max-w-7xl my-4 mx-auto md:auto-rows-[20rem]">
 			{items.map((item, i) => (
 				<BentoGridItem
 					key={i}
@@ -415,32 +415,32 @@ const AudioCommentIllustration = () => (
 
 const items = [
 	{
-		title: "Find, Ask, Act",
+		title: "Ask About Your Finances",
 		description:
-			"Get instant information, detailed updates, and cited answers across company and personal knowledge.",
+			"Get instant answers about your spending, investments, and account balances using natural language.",
 		header: <CitationIllustration />,
 		className: "md:col-span-2",
 		icon: <IconSearch className="h-4 w-4 text-neutral-500" />,
 	},
 	{
-		title: "Work Together in Real Time",
+		title: "Track Your Portfolio",
 		description:
-			"Transform your company docs into multiplayer spaces with live edits, synced content, and presence.",
+			"Monitor investment performance, analyze gains and losses, and track your net worth over time.",
 		header: <CollaborationIllustration />,
 		className: "md:col-span-1",
 		icon: <IconUsers className="h-4 w-4 text-neutral-500" />,
 	},
 	{
-		title: "Collaborate Beyond Text",
+		title: "Find Hidden Subscriptions",
 		description:
-			"Create podcasts and multimedia your team can comment on, share, and refine together.",
+			"Automatically detect recurring charges and subscriptions you might have forgotten about.",
 		header: <AudioCommentIllustration />,
 		className: "md:col-span-1",
 		icon: <IconMicrophone className="h-4 w-4 text-neutral-500" />,
 	},
 	{
-		title: "Context Where It Counts",
-		description: "Add comments directly to your chats and docs for clear, in-the-moment feedback.",
+		title: "Optimize Credit Card Rewards",
+		description: "Maximize cashback and points by using the best card for each spending category.",
 		header: <AnnotationIllustration />,
 		className: "md:col-span-2",
 		icon: <IconMessage className="h-4 w-4 text-neutral-500" />,

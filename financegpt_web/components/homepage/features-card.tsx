@@ -4,15 +4,14 @@ import { Card, CardContent, CardHeader } from "@/components/ui/card";
 
 export function FeaturesCards() {
 	return (
-		<section className="py-2 md:py-8 dark:bg-transparent">
+		<section className="py-4 md:py-12 dark:bg-transparent">
 			<div className="@container mx-auto max-w-7xl">
 				<div className="text-center">
 					<h2 className="text-balance text-4xl font-semibold lg:text-5xl">
-						Your Team's AI-Powered Knowledge Hub
+						Personal Finance Made Intelligent
 					</h2>
 					<p className="mt-4">
-						Powerful features designed to enhance collaboration, boost productivity, and streamline
-						your workflow.
+						Powerful AI features to help you track spending, optimize credit cards, and grow your wealth.
 					</p>
 				</div>
 				<div className="@min-4xl:max-w-full @min-4xl:grid-cols-3 mx-auto mt-8 grid max-w-sm gap-6 *:text-center md:mt-16">
@@ -22,13 +21,13 @@ export function FeaturesCards() {
 								<Workflow className="size-6" aria-hidden />
 							</CardDecorator>
 
-							<h3 className="mt-6 font-medium">Streamlined Workflow</h3>
+							<h3 className="mt-6 font-medium">Connected Finances</h3>
 						</CardHeader>
 
 						<CardContent>
 							<p className="text-sm">
-								Centralize all your knowledge and resources in one intelligent workspace. Find what
-								you need instantly and accelerate decision-making.
+								Securely connect all your bank accounts, credit cards, and investments in one place.
+								See your complete financial picture at a glance.
 							</p>
 						</CardContent>
 					</Card>
@@ -39,13 +38,13 @@ export function FeaturesCards() {
 								<Users className="size-6" aria-hidden />
 							</CardDecorator>
 
-							<h3 className="mt-6 font-medium">Seamless Collaboration</h3>
+							<h3 className="mt-6 font-medium">Smart AI Insights</h3>
 						</CardHeader>
 
 						<CardContent>
 							<p className="text-sm">
-								Work together effortlessly with real-time collaboration tools that keep your entire
-								team aligned.
+								Chat with your finances using natural language. Find subscriptions, track spending patterns,
+								and get personalized recommendations.
 							</p>
 						</CardContent>
 					</Card>
@@ -56,12 +55,13 @@ export function FeaturesCards() {
 								<Sliders className="size-6" aria-hidden />
 							</CardDecorator>
 
-							<h3 className="mt-6 font-medium">Fully Customizable</h3>
+							<h3 className="mt-6 font-medium">Maximize Rewards</h3>
 						</CardHeader>
 
 						<CardContent>
 							<p className="text-sm">
-								Choose from 100+ leading LLMs and seamlessly call any model on demand.
+								Optimize credit card rewards based on your spending. Never miss out on cashback
+								or points again.
 							</p>
 						</CardContent>
 					</Card>

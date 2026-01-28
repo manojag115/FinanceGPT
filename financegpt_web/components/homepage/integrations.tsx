@@ -7,50 +7,37 @@ interface Integration {
 }
 
 const INTEGRATIONS: Integration[] = [
-	// Search
-	{ name: "Tavily", icon: "https://www.tavily.com/images/logo.svg" },
-	{
-		name: "LinkUp",
-		icon: "https://framerusercontent.com/images/7zeIm6t3f1HaSltkw8upEvsD80.png?scale-down-to=512",
-	},
-	{ name: "Elasticsearch", icon: "https://cdn.simpleicons.org/elastic/00A9E5" },
+	// Banks
+	{ name: "Chase", icon: "https://upload.wikimedia.org/wikipedia/commons/8/84/JPMorgan_Chase_Logo.svg" },
+	{ name: "Bank of America", icon: "https://upload.wikimedia.org/wikipedia/commons/8/80/Bank_of_America_logo.svg" },
+	{ name: "Wells Fargo", icon: "https://upload.wikimedia.org/wikipedia/commons/b/b3/Wells_Fargo_Bank.png" },
+	{ name: "Citibank", icon: "https://upload.wikimedia.org/wikipedia/commons/1/1b/Citi.svg" },
 
-	// Communication
-	{
-		name: "Slack",
-		icon: "https://upload.wikimedia.org/wikipedia/commons/d/d5/Slack_icon_2019.svg",
-	},
-	{ name: "Discord", icon: "https://cdn.simpleicons.org/discord/5865F2" },
-	{ name: "Gmail", icon: "https://cdn.simpleicons.org/gmail/EA4335" },
+	// Investment Platforms
+	{ name: "Fidelity", icon: "https://upload.wikimedia.org/wikipedia/commons/6/6b/Fidelity_Investments_Logo.svg" },
+	{ name: "Charles Schwab", icon: "https://upload.wikimedia.org/wikipedia/commons/9/9b/Charles_Schwab_Corporation_logo.svg" },
+	{ name: "Vanguard", icon: "https://cdn.iconscout.com/icon/free/png-256/free-vanguard-logo-icon-download-in-svg-png-gif-file-formats--brand-company-world-logos-vol-1-pack-icons-282332.png" },
+	{ name: "Robinhood", icon: "https://upload.wikimedia.org/wikipedia/commons/e/e4/Robinhood_logo.svg" },
 
-	// Project Management
-	{ name: "Linear", icon: "https://cdn.simpleicons.org/linear/5E6AD2" },
-	{ name: "Jira", icon: "https://cdn.simpleicons.org/jira/0052CC" },
-	{ name: "ClickUp", icon: "https://cdn.simpleicons.org/clickup/7B68EE" },
-	{ name: "Airtable", icon: "https://cdn.simpleicons.org/airtable/18BFFF" },
+	// Credit Cards
+	{ name: "American Express", icon: "https://upload.wikimedia.org/wikipedia/commons/3/30/American_Express_logo.svg" },
+	{ name: "Visa", icon: "https://cdn.simpleicons.org/visa/1A1F71" },
+	{ name: "Mastercard", icon: "https://cdn.simpleicons.org/mastercard/EB001B" },
+	{ name: "Discover", icon: "https://upload.wikimedia.org/wikipedia/commons/5/57/Discover_Card_logo.svg" },
 
-	// Documentation & Knowledge
-	{ name: "Confluence", icon: "https://cdn.simpleicons.org/confluence/172B4D" },
-	{ name: "Notion", icon: "https://cdn.simpleicons.org/notion/000000/ffffff" },
-	{ name: "Web Pages", icon: "https://cdn.jsdelivr.net/npm/lucide-static@0.294.0/icons/globe.svg" },
+	// Crypto
+	{ name: "Coinbase", icon: "https://cdn.simpleicons.org/coinbase/0052FF" },
+	{ name: "Binance", icon: "https://cdn.simpleicons.org/binance/F3BA2F" },
 
-	// Cloud Storage
-	{ name: "Google Drive", icon: "https://cdn.simpleicons.org/googledrive/4285F4" },
-	{ name: "Dropbox", icon: "https://cdn.simpleicons.org/dropbox/0061FF" },
-	{
-		name: "Amazon S3",
-		icon: "https://upload.wikimedia.org/wikipedia/commons/b/bc/Amazon-S3-Logo.svg",
-	},
+	// Payment Platforms
+	{ name: "PayPal", icon: "https://cdn.simpleicons.org/paypal/00457C" },
+	{ name: "Venmo", icon: "https://cdn.simpleicons.org/venmo/3D95CE" },
+	{ name: "Stripe", icon: "https://cdn.simpleicons.org/stripe/008CDD" },
 
-	// Development
-	{ name: "GitHub", icon: "https://cdn.simpleicons.org/github/181717/ffffff" },
-
-	// Productivity
-	{ name: "Google Calendar", icon: "https://cdn.simpleicons.org/googlecalendar/4285F4" },
-	{ name: "Luma", icon: "https://images.lumacdn.com/social-images/default-social-202407.png" },
-
-	// Media
-	{ name: "YouTube", icon: "https://cdn.simpleicons.org/youtube/FF0000" },
+	// More Banks
+	{ name: "Capital One", icon: "https://upload.wikimedia.org/wikipedia/commons/9/98/Capital_One_logo.svg" },
+	{ name: "US Bank", icon: "https://upload.wikimedia.org/wikipedia/commons/4/40/US_Bank_logo_%282018%29.svg" },
+	{ name: "PNC Bank", icon: "https://upload.wikimedia.org/wikipedia/commons/b/b4/PNC_Bank_logo.svg" },
 ];
 
 function SemiCircleOrbit({ radius, centerX, centerY, count, iconSize, startIndex }: any) {
@@ -148,9 +135,9 @@ export default function ExternalIntegrations() {
 				: Math.max(32, baseWidth * 0.07);
 
 	return (
-		<section className="py-12 relative min-h-screen w-full overflow-visible">
+		<section className="py-8 relative w-full overflow-visible">
 			<div className="relative flex flex-col items-center text-center z-10">
-				<h1 className="my-6 text-4xl font-bold lg:text-7xl">Integrations</h1>
+				<h1 className="my-4 text-4xl font-bold lg:text-7xl">Integrations</h1>
 				<p className="mb-12 max-w-2xl text-gray-600 dark:text-gray-400 lg:text-xl">
 					Integrate with your team's most important tools
 				</p>
