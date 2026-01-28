@@ -7,7 +7,6 @@ export {
 	MobileSidebar,
 	MobileSidebarTrigger,
 	NavSection,
-	PageUsageDisplay,
 	Sidebar,
 	SidebarCollapseButton,
 	SidebarHeader,

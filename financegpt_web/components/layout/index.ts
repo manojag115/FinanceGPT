@@ -19,7 +19,6 @@ export {
 	MobileSidebarTrigger,
 	NavIcon,
 	NavSection,
-	PageUsageDisplay,
 	SearchSpaceAvatar,
 	Sidebar,
 	SidebarCollapseButton,

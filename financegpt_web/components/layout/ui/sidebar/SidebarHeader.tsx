@@ -1,6 +1,6 @@
 "use client";
 
-import { ChevronsUpDown, ScrollText, Settings, Users } from "lucide-react";
+import { ChevronsUpDown, ScrollText, Settings } from "lucide-react";
 import { useParams, useRouter } from "next/navigation";
 import { useTranslations } from "next-intl";
 import { Button } from "@/components/ui/button";
@@ -18,7 +18,6 @@ interface SidebarHeaderProps {
 	searchSpace: SearchSpace | null;
 	isCollapsed?: boolean;
 	onSettings?: () => void;
-	onManageMembers?: () => void;
 	className?: string;
 }
 
@@ -26,7 +25,6 @@ export function SidebarHeader({
 	searchSpace,
 	isCollapsed,
 	onSettings,
-	onManageMembers,
 	className,
 }: SidebarHeaderProps) {
 	const t = useTranslations("sidebar");
@@ -52,10 +50,6 @@ export function SidebarHeader({
 					</Button>
 				</DropdownMenuTrigger>
 				<DropdownMenuContent align="start" className="w-56">
-					<DropdownMenuItem onClick={onManageMembers}>
-						<Users className="mr-2 h-4 w-4" />
-						{t("manage_members")}
-					</DropdownMenuItem>
 					<DropdownMenuItem onClick={() => router.push(`/dashboard/${searchSpaceId}/logs`)}>
 						<ScrollText className="mr-2 h-4 w-4" />
 						{t("logs")}

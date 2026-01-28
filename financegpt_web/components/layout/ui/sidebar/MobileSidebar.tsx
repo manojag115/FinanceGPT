@@ -29,7 +29,6 @@ interface MobileSidebarProps {
 	onViewAllPrivateChats?: () => void;
 	user: User;
 	onSettings?: () => void;
-	onManageMembers?: () => void;
 	onUserSettings?: () => void;
 	onLogout?: () => void;
 	pageUsage?: PageUsage;
@@ -68,7 +67,6 @@ export function MobileSidebar({
 	onViewAllPrivateChats,
 	user,
 	onSettings,
-	onManageMembers,
 	onUserSettings,
 	onLogout,
 	pageUsage,
@@ -145,7 +143,6 @@ export function MobileSidebar({
 						onViewAllPrivateChats={onViewAllPrivateChats}
 						user={user}
 						onSettings={onSettings}
-						onManageMembers={onManageMembers}
 						onUserSettings={onUserSettings}
 						onLogout={onLogout}
 						pageUsage={pageUsage}

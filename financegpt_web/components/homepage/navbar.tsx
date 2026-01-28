@@ -1,11 +1,10 @@
 "use client";
-import { IconBrandDiscord, IconBrandGithub, IconBrandReddit, IconMenu2, IconX } from "@tabler/icons-react";
+import { IconMenu2, IconX } from "@tabler/icons-react";
 import { AnimatePresence, motion } from "motion/react";
 import Link from "next/link";
 import { useEffect, useState } from "react";
 import { Logo } from "@/components/Logo";
 import { ThemeTogglerComponent } from "@/components/theme/theme-toggle";
-import { useGithubStars } from "@/hooks/use-github-stars";
 import { AUTH_TYPE, BACKEND_URL } from "@/lib/env-config";
 import { trackLoginAttempt } from "@/lib/posthog/events";
 import { cn } from "@/lib/utils";
@@ -78,13 +77,7 @@ const SignInButton = ({ variant = "desktop" }: { variant?: "desktop" | "mobile" 
 export const Navbar = () => {
 	const [isScrolled, setIsScrolled] = useState(false);
 
-	const navItems = [
-		// { name: "Home", link: "/" },
-		{ name: "Pricing", link: "/pricing" },
-		{ name: "Changelog", link: "/changelog" },
-		// { name: "Sign In", link: "/login" },
-		{ name: "Docs", link: "/docs" },
-	];
+	const navItems: any[] = [];
 
 	useEffect(() => {
 		if (typeof window === "undefined") return;
@@ -108,7 +101,6 @@ export const Navbar = () => {
 
 const DesktopNav = ({ navItems, isScrolled }: any) => {
 	const [hovered, setHovered] = useState<number | null>(null);
-	const { compactFormat: githubStars, loading: loadingGithubStars } = useGithubStars();
 	return (
 		<motion.div
 			onMouseLeave={() => {
@@ -145,37 +137,6 @@ const DesktopNav = ({ navItems, isScrolled }: any) => {
 				))}
 			</div>
 			<div className="flex flex-1 items-center justify-end gap-2">
-				<Link
-					href="https://discord.gg/ejRNvftDp9"
-					target="_blank"
-					rel="noopener noreferrer"
-					className="hidden rounded-full p-2 hover:bg-gray-100 dark:hover:bg-neutral-800 transition-colors md:flex items-center justify-center"
-				>
-					<IconBrandDiscord className="h-5 w-5 text-neutral-600 dark:text-neutral-300" />
-				</Link>
-				<Link
-					href="https://www.reddit.com/r/FinanceGPT/"
-					target="_blank"
-					rel="noopener noreferrer"
-					className="hidden rounded-full p-2 hover:bg-gray-100 dark:hover:bg-neutral-800 transition-colors md:flex items-center justify-center"
-				>
-					<IconBrandReddit className="h-5 w-5 text-neutral-600 dark:text-neutral-300" />
-				</Link>
-				<Link
-					href="https://github.com/MODSetter/FinanceGPT"
-					target="_blank"
-					rel="noopener noreferrer"
-					className="hidden rounded-full px-3 py-2 hover:bg-gray-100 dark:hover:bg-neutral-800 transition-colors md:flex items-center gap-1.5"
-				>
-					<IconBrandGithub className="h-5 w-5 text-neutral-600 dark:text-neutral-300" />
-					{loadingGithubStars ? (
-						<div className="w-6 h-5 dark:bg-neutral-800 animate-pulse"></div>
-					) : (
-						<span className="text-sm font-medium text-neutral-600 dark:text-neutral-300">
-							{githubStars}
-						</span>
-					)}
-				</Link>
 				<ThemeTogglerComponent />
 				<SignInButton variant="desktop" />
 			</div>
@@ -185,8 +146,6 @@ const DesktopNav = ({ navItems, isScrolled }: any) => {
 
 const MobileNav = ({ navItems, isScrolled }: any) => {
 	const [open, setOpen] = useState(false);
-	const { compactFormat: githubStars, loading: loadingGithubStars } = useGithubStars();
-
 	return (
 		<motion.div
 			animate={{ borderRadius: open ? "4px" : "2rem" }}
@@ -236,37 +195,6 @@ const MobileNav = ({ navItems, isScrolled }: any) => {
 							</Link>
 						))}
 						<div className="flex w-full items-center gap-2 pt-2">
-							<Link
-								href="https://discord.gg/ejRNvftDp9"
-								target="_blank"
-								rel="noopener noreferrer"
-								className="flex items-center justify-center rounded-lg p-2 hover:bg-gray-100 dark:hover:bg-neutral-800 transition-colors touch-manipulation"
-							>
-								<IconBrandDiscord className="h-5 w-5 text-neutral-600 dark:text-neutral-300" />
-							</Link>
-							<Link
-								href="https://www.reddit.com/r/FinanceGPT/"
-								target="_blank"
-								rel="noopener noreferrer"
-								className="flex items-center justify-center rounded-lg p-2 hover:bg-gray-100 dark:hover:bg-neutral-800 transition-colors touch-manipulation"
-							>
-								<IconBrandReddit className="h-5 w-5 text-neutral-600 dark:text-neutral-300" />
-							</Link>
-							<Link
-								href="https://github.com/MODSetter/FinanceGPT"
-								target="_blank"
-								rel="noopener noreferrer"
-								className="flex items-center gap-1.5 rounded-lg px-3 py-2 hover:bg-gray-100 dark:hover:bg-neutral-800 transition-colors touch-manipulation"
-							>
-								<IconBrandGithub className="h-5 w-5 text-neutral-600 dark:text-neutral-300" />
-								{loadingGithubStars ? (
-									<div className="w-6 h-5 dark:bg-neutral-800 animate-pulse"></div>
-								) : (
-									<span className="text-sm font-medium text-neutral-600 dark:text-neutral-300">
-										{githubStars}
-									</span>
-								)}
-							</Link>
 							<ThemeTogglerComponent />
 						</div>
 						<SignInButton variant="mobile" />

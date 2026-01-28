@@ -1,6 +1,4 @@
 import {
-	IconBrandDiscord,
-	IconBrandGithub,
 	IconBrandLinkedin,
 	IconBrandTwitter,
 } from "@tabler/icons-react";
@@ -9,26 +7,6 @@ import { Logo } from "@/components/Logo";
 
 export function FooterNew() {
 	const pages = [
-		// {
-		//   title: "All Products",
-		//   href: "#",
-		// },
-		// {
-		//   title: "Studio",
-		//   href: "#",
-		// },
-		// {
-		//   title: "Clients",
-		//   href: "#",
-		// },
-		{
-			title: "Pricing",
-			href: "/pricing",
-		},
-		{
-			title: "Docs",
-			href: "/docs",
-		},
 		{
 			title: "Contact Us",
 			href: "/contact",
@@ -45,16 +23,6 @@ export function FooterNew() {
 			title: "LinkedIn",
 			href: "https://www.linkedin.com/in/rohan-verma-sde/",
 			icon: IconBrandLinkedin,
-		},
-		{
-			title: "GitHub",
-			href: "https://github.com/MODSetter",
-			icon: IconBrandGithub,
-		},
-		{
-			title: "Discord",
-			href: "https://discord.gg/ejRNvftDp9",
-			icon: IconBrandDiscord,
 		},
 	];
 	const legals = [

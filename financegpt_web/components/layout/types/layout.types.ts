@@ -72,16 +72,10 @@ export interface ChatsSectionProps {
 	searchSpaceId?: string;
 }
 
-export interface PageUsageDisplayProps {
-	pagesUsed: number;
-	pagesLimit: number;
-}
-
 export interface SidebarUserProfileProps {
 	user: User;
 	searchSpaceId?: string;
 	onSettings?: () => void;
-	onManageMembers?: () => void;
 	onSwitchSearchSpace?: () => void;
 	onToggleTheme?: () => void;
 	onLogout?: () => void;
@@ -103,7 +97,6 @@ export interface SidebarProps {
 	user: User;
 	theme?: string;
 	onSettings?: () => void;
-	onManageMembers?: () => void;
 	onToggleTheme?: () => void;
 	onLogout?: () => void;
 	pageUsage?: PageUsage;

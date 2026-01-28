@@ -297,9 +297,7 @@ export function LayoutDataProvider({
 		router.push(`/dashboard/${searchSpaceId}/settings`);
 	}, [router, searchSpaceId]);
 
-	const handleManageMembers = useCallback(() => {
-		router.push(`/dashboard/${searchSpaceId}/team`);
-	}, [router, searchSpaceId]);
+
 
 	const handleLogout = useCallback(async () => {
 		try {
@@ -388,7 +386,7 @@ export function LayoutDataProvider({
 					avatarUrl: user?.avatar_url || undefined,
 				}}
 				onSettings={handleSettings}
-				onManageMembers={handleManageMembers}
+
 				onUserSettings={handleUserSettings}
 				onLogout={handleLogout}
 				pageUsage={pageUsage}
