@@ -14,7 +14,7 @@ from datetime import UTC, datetime, timedelta
 from typing import Any
 
 from langchain_core.tools import tool
-from sqlalchemy import and_, func, select
+from sqlalchemy import and_, func, or_, select
 from sqlalchemy.ext.asyncio import AsyncSession
 
 from app.db import Document
@@ -43,7 +43,10 @@ async def _get_latest_holdings_snapshot(
             and_(
                 Document.search_space_id == search_space_id,
                 Document.document_metadata["document_subtype"].as_string() == "investment_holdings",
-                Document.document_metadata["is_plaid_document"].as_string() == "true",
+                or_(
+                    Document.document_metadata["is_plaid_document"].as_string() == "true",
+                    Document.document_metadata["is_financial_document"].as_string() == "true",
+                ),
             )
         )
         .order_by(Document.document_metadata["snapshot_date"].as_string().desc())
@@ -77,7 +80,10 @@ async def _get_holdings_snapshot_near_date(
             and_(
                 Document.search_space_id == search_space_id,
                 Document.document_metadata["document_subtype"].as_string() == "investment_holdings",
-                Document.document_metadata["is_plaid_document"].as_string() == "true",
+                or_(
+                    Document.document_metadata["is_plaid_document"].as_string() == "true",
+                    Document.document_metadata["is_financial_document"].as_string() == "true",
+                ),
                 Document.document_metadata["snapshot_date"].as_string() <= target_iso,
             )
         )

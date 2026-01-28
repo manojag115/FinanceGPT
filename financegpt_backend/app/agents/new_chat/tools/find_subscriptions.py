@@ -86,7 +86,7 @@ def create_find_subscriptions_tool(
             _, transaction_results = await connector_service.search_files(
                 user_query="transactions charges payments subscriptions",
                 search_space_id=search_space_id,
-                top_k=100,  # Get more results to analyze
+                top_k=30,  # Reduced from 100 to prevent context overflow
             )
 
             if not transaction_results:

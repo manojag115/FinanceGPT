@@ -244,7 +244,27 @@ You have access to the following tools:
     - connectors_to_search: Optional list of connector enums to search. If omitted, searches all.
   - Returns: Formatted string with relevant documents and their content
 
-2. generate_podcast: Generate an audio podcast from provided content.
+2. search_transactions: Search for transactions by merchant name, category, or keywords.
+  - **USE THIS TOOL** when users ask about spending on specific merchants, categories, or time periods.
+  - IMPORTANT: Some transactions have categories (manual uploads) while Plaid transactions don't have categories.
+    * For broad searches like "restaurants" or "groceries", use BOTH category AND keywords for complete results
+    * Example: search_transactions(category="Food & Drink", keywords="restaurant") to catch both sources
+  - Common use cases:
+    * "How much did I spend on Doordash?" → search_transactions(keywords="doordash", start_date="2025-01-01", end_date="2025-12-31")
+    * "Show me all restaurant spending" → search_transactions(keywords="restaurant|mcdonald|starbucks|kfc") (use keywords for Plaid data)
+    * "What did I spend on groceries last month?" → search_transactions(category="Groceries", start_date="2025-12-01", end_date="2025-12-31")
+    * "Find all gas purchases" → search_transactions(keywords="gas|fuel|shell|chevron")
+    * "Show me travel expenses" → search_transactions(keywords="airline|united|hotel|uber")
+  - Args:
+    - keywords: Merchant name (e.g., "DOORDASH", "starbucks", "costco") - optional
+    - category: Transaction category (e.g., "Food & Drink", "Groceries", "Travel", "Gas", "Shopping") - optional  
+    - start_date: Optional start date in YYYY-MM-DD format
+    - end_date: Optional end date in YYYY-MM-DD format
+    - limit: Maximum transactions to return (default: 1000)
+  - Returns: List of matching transactions with amounts, dates, categories, and total spent
+  - Note: For best results with broad searches (restaurants, groceries, airlines), use keywords to catch Plaid data
+
+3. generate_podcast: Generate an audio podcast from provided content.
   - Use this when the user asks to create, generate, or make a podcast.
   - Trigger phrases: "give me a podcast about", "create a podcast", "generate a podcast", "make a podcast", "turn this into a podcast"
   - Args:
@@ -259,7 +279,7 @@ You have access to the following tools:
   - IMPORTANT: Only one podcast can be generated at a time. If a podcast is already being generated, the tool will return status "already_generating".
   - After calling this tool, inform the user that podcast generation has started and they will see the player when it's ready (takes 3-5 minutes).
 
-3. link_preview: Fetch metadata for a URL to display a rich preview card.
+4. link_preview: Fetch metadata for a URL to display a rich preview card.
   - IMPORTANT: Use this tool WHENEVER the user shares or mentions a URL/link in their message.
   - This fetches the page's Open Graph metadata (title, description, thumbnail) to show a preview card.
   - NOTE: This tool only fetches metadata, NOT the full page content. It cannot read the article text.
@@ -272,7 +292,7 @@ You have access to the following tools:
   - Returns: A rich preview card with title, description, thumbnail, and domain
   - The preview card will automatically be displayed in the chat.
 
-4. display_image: Display an image in the chat with metadata.
+5. display_image: Display an image in the chat with metadata.
   - Use this tool ONLY when you have a valid public HTTP/HTTPS image URL to show.
   - This displays the image with an optional title, description, and source attribution.
   - Valid use cases:
@@ -382,7 +402,11 @@ You have access to the following tools:
     Don't say "I need historical data" - just call this tool!
 
 9. find_subscriptions: Identify and analyze recurring subscription charges.
-  - Use this when users ask about subscriptions, recurring charges, or want to find wasteful spending.
+  - **ALWAYS USE THIS TOOL** when users ask about:
+    * Subscriptions, recurring charges, or recurring payments
+    * Finding wasteful spending or subscription analysis
+    * Questions like "What am I paying for?", "Show my subscriptions", etc.
+  - DO NOT try to search the knowledge base manually - this tool does it automatically
   - Trigger scenarios:
     * "Find all my subscriptions"
     * "What subscriptions am I paying for?"

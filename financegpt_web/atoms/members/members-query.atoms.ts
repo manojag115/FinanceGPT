@@ -8,15 +8,11 @@ export const membersAtom = atomWithQuery((get) => {
 
 	return {
 		queryKey: cacheKeys.members.all(searchSpaceId?.toString() ?? ""),
-		enabled: !!searchSpaceId,
+		enabled: false, // Disabled for single-user FinanceGPT
 		staleTime: 3 * 1000, // 3 seconds - short staleness for live collaboration
 		queryFn: async () => {
-			if (!searchSpaceId) {
-				return [];
-			}
-			return membersApiService.getMembers({
-				search_space_id: Number(searchSpaceId),
-			});
+			// Return empty array for single-user app
+			return [];
 		},
 	};
 });
@@ -26,15 +22,11 @@ export const myAccessAtom = atomWithQuery((get) => {
 
 	return {
 		queryKey: cacheKeys.members.myAccess(searchSpaceId?.toString() ?? ""),
-		enabled: !!searchSpaceId,
+		enabled: false, // Disabled for single-user FinanceGPT
 		staleTime: 5 * 60 * 1000, // 5 minutes
 		queryFn: async () => {
-			if (!searchSpaceId) {
-				return null;
-			}
-			return membersApiService.getMyAccess({
-				search_space_id: Number(searchSpaceId),
-			});
+			// Return null for single-user app
+			return null;
 		},
 	};
 });

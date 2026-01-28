@@ -51,6 +51,7 @@ from .mcp_tool import load_mcp_tools
 from .optimize_credit_card import create_optimize_credit_card_usage_tool
 from .portfolio_performance import create_portfolio_performance_tool
 from .search_financegpt_docs import create_search_financegpt_docs_tool
+from .search_transactions import create_search_transactions_tool
 from .user_memory import create_recall_memory_tool, create_save_memory_tool
 
 # =============================================================================
@@ -148,6 +149,16 @@ BUILTIN_TOOLS: list[ToolDefinition] = [
     # =========================================================================
     # FINANCIAL ANALYSIS TOOLS
     # =========================================================================
+    # Transaction search - keyword-based search for specific merchants/transactions
+    ToolDefinition(
+        name="search_transactions",
+        description="Search for specific transactions by merchant name or keywords using exact matching",
+        factory=lambda deps: create_search_transactions_tool(
+            search_space_id=deps["search_space_id"],
+            db_session=deps["db_session"],
+        ),
+        requires=["search_space_id", "db_session"],
+    ),
     # Portfolio performance tool - calculates investment returns
     ToolDefinition(
         name="calculate_portfolio_performance",
