@@ -93,6 +93,7 @@ class FidelityParser(BaseFinancialParser):
                 "metadata": {
                     "institution": self.institution_name,
                     "format": "positions" if is_positions else "transactions",
+                    "document_subtype": "investment_holdings" if is_positions else "investment_transactions",
                     "filename": filename,
                     "parsed_at": datetime.now().isoformat(),
                     "holding_count": len(holdings),
@@ -134,10 +135,12 @@ class FidelityParser(BaseFinancialParser):
                     self._parse_amount(cost_basis_str) if cost_basis_str else None
                 )
 
-                gain_loss_str = row.get("Gain/Loss Dollar", "")
+                # Try both "Gain/Loss Dollar" and "Total Gain/Loss Dollar"
+                gain_loss_str = row.get("Total Gain/Loss Dollar", "") or row.get("Gain/Loss Dollar", "")
                 gain_loss = self._parse_amount(gain_loss_str) if gain_loss_str else None
 
-                gain_loss_pct_str = row.get("Gain/Loss Percent", "")
+                # Try both "Gain/Loss Percent" and "Total Gain/Loss Percent"
+                gain_loss_pct_str = row.get("Total Gain/Loss Percent", "") or row.get("Gain/Loss Percent", "")
                 gain_loss_percent = None
                 if gain_loss_pct_str:
                     # Remove % sign and parse

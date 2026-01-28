@@ -470,5 +470,31 @@ def _extract_holdings_from_results(docs: list) -> list[dict]:
                     "cost_basis": cost_basis if cost_basis and cost_basis > 0 else None,
                 }
             )
+        
+        # Also try simpler format: - **TICKER**: quantity shares @ $value
+        # Example: - **MSFT**: 74.7661 shares @ $36009.59
+        # Or with gains: - **MSFT**: 74.7661 shares @ $36009.59 | Cost Basis: $20000.00 | Gain/Loss: +$16009.59 (+80.05%)
+        simple_pattern = r"- \*\*([A-Z0-9]+)\*\*(?:\*)?:\s*([\d.]+)\s+shares?\s+@\s+\$([\d,.]+)(?:\s+\|\s+Cost Basis:\s+\$([\d,.]+)\s+\|\s+Gain/Loss:\s+([+-])\$([\d,.]+)\s+\(([+-]?[\d,.]+)%\))?"
+        simple_matches = re.finditer(simple_pattern, content, re.MULTILINE)
+        
+        for match in simple_matches:
+            ticker = match.group(1).strip()
+            quantity = float(match.group(2).replace(",", ""))
+            value = float(match.group(3).replace(",", ""))
+            price = value / quantity if quantity > 0 else 0
+            
+            # Extract cost basis and gain/loss if present
+            cost_basis = None
+            if match.group(4):  # Has cost basis
+                cost_basis = float(match.group(4).replace(",", ""))
+            
+            holdings.append({
+                "name": ticker,
+                "ticker": ticker,
+                "quantity": quantity,
+                "price": price,
+                "value": value,
+                "cost_basis": cost_basis,
+            })
 
     return holdings

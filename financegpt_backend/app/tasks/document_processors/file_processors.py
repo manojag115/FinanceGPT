@@ -815,8 +815,21 @@ async def _process_financial_data(
             symbol = holding.symbol if hasattr(holding, 'symbol') else holding.get('symbol', '')
             quantity = holding.quantity if hasattr(holding, 'quantity') else holding.get('quantity', 0)
             value = holding.value if hasattr(holding, 'value') else holding.get('value', 0)
+            cost_basis = holding.cost_basis if hasattr(holding, 'cost_basis') else holding.get('cost_basis')
+            gain_loss = holding.gain_loss if hasattr(holding, 'gain_loss') else holding.get('gain_loss')
+            gain_loss_pct = holding.gain_loss_percent if hasattr(holding, 'gain_loss_percent') else holding.get('gain_loss_percent')
             
-            markdown_parts.append(f"- **{symbol}**: {quantity} shares @ ${value:.2f}\n")
+            # Basic info
+            markdown_parts.append(f"- **{symbol}**: {quantity} shares @ ${value:.2f}")
+            
+            # Add cost basis and gains if available
+            if cost_basis is not None and gain_loss is not None:
+                sign = "+" if gain_loss >= 0 else ""
+                markdown_parts.append(f" | Cost Basis: ${cost_basis:.2f} | Gain/Loss: {sign}${gain_loss:.2f}")
+                if gain_loss_pct is not None:
+                    markdown_parts.append(f" ({sign}{gain_loss_pct:.2f}%)")
+            
+            markdown_parts.append("\n")
     
     # Add balances
     balances = financial_data.get("balances", [])
@@ -849,6 +862,9 @@ async def _process_financial_data(
                 "symbol": h.symbol if hasattr(h, 'symbol') else h.get('symbol', ''),
                 "quantity": float(h.quantity) if hasattr(h, 'quantity') else float(h.get('quantity', 0)),
                 "value": float(h.value) if hasattr(h, 'value') else float(h.get('value', 0)),
+                "cost_basis": float(h.cost_basis) if (hasattr(h, 'cost_basis') and h.cost_basis is not None) else None,
+                "gain_loss": float(h.gain_loss) if (hasattr(h, 'gain_loss') and h.gain_loss is not None) else None,
+                "gain_loss_percent": float(h.gain_loss_percent) if (hasattr(h, 'gain_loss_percent') and h.gain_loss_percent is not None) else None,
             }
             for h in holdings
         ],
@@ -905,6 +921,7 @@ async def _process_financial_data(
             "financial_data": raw_financial_json,
             "institution": metadata.get("institution"),
             "format": metadata.get("format"),
+            "document_subtype": metadata.get("document_subtype"),  # Add to top level for tools
             "transaction_count": len(transactions),
             "holdings_count": len(holdings),
             "is_financial_document": True,  # Flag to identify as financial data
@@ -948,8 +965,9 @@ async def process_file_in_background(
     | None = None,  # Optional notification for progress updates
 ) -> Document | None:
     try:
-        # Check if the file is a financial statement (PDF, CSV, OFX)
-        if filename.lower().endswith((".csv", ".ofx", ".qfx", ".pdf")):
+        # Check if the file is a financial statement (CSV, OFX)
+        # Note: PDFs are checked separately and fall through to normal processing if not financial
+        if filename.lower().endswith((".csv", ".ofx", ".qfx")):
             from app.parsers.parser_factory import ParserFactory
             
             # Read file content
@@ -959,57 +977,8 @@ async def process_file_in_background(
             # Try to detect if this is a financial file
             detected_format = ParserFactory.detect_format(file_content, filename)
             
-            # Handle PDF specially - need to check if it's a bank statement
-            if filename.lower().endswith(".pdf"):
-                try:
-                    await task_logger.log_task_progress(
-                        log_entry,
-                        f"Checking if PDF is a bank statement: {filename}",
-                        {"file_type": "pdf", "processing_stage": "financial_detection"},
-                    )
-                    
-                    # Try to parse as financial PDF
-                    financial_data = await ParserFactory.parse_pdf_statement(file_content, filename)
-                    
-                    if financial_data and financial_data.get("transactions"):
-                        # This is a financial statement PDF!
-                        await task_logger.log_task_progress(
-                            log_entry,
-                            f"PDF detected as bank statement with {len(financial_data['transactions'])} transactions",
-                            {"file_type": "bank_statement_pdf", "transaction_count": len(financial_data['transactions'])},
-                        )
-                        
-                        # Process as financial document
-                        result = await _process_financial_data(
-                            session, filename, financial_data, search_space_id, user_id, file_path, task_logger, log_entry
-                        )
-                        
-                        # Clean up temp file
-                        import os
-                        with contextlib.suppress(Exception):
-                            os.unlink(file_path)
-                        
-                        return result
-                    else:
-                        # Not a financial PDF - log why
-                        institution = financial_data.get("metadata", {}).get("institution", "Unknown") if financial_data else "Unknown"
-                        await task_logger.log_task_progress(
-                            log_entry,
-                            f"PDF is not a bank statement (institution: {institution}, transactions: {len(financial_data.get('transactions', [])) if financial_data else 0})",
-                            {"file_type": "pdf", "processing_stage": "standard_processing", "institution": institution},
-                        )
-                        logger.info(f"PDF not recognized as bank statement: {filename}. Institution: {institution}. Please download CSV from your bank or try a different PDF.")
-                except Exception as e:
-                    # Failed to parse as financial PDF, fall through to normal processing
-                    logger.warning(f"Failed to parse PDF as bank statement: {e}, processing as normal PDF")
-                    await task_logger.log_task_progress(
-                        log_entry,
-                        f"Error checking PDF for transactions: {str(e)[:100]}",
-                        {"file_type": "pdf", "processing_stage": "error", "error": str(e)[:200]},
-                    )
-            
             # Handle CSV/OFX financial files
-            elif detected_format:
+            if detected_format:
                 await task_logger.log_task_progress(
                     log_entry,
                     f"Processing financial file: {filename} ({detected_format})",

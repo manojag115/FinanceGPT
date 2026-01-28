@@ -118,7 +118,9 @@ class PDFStatementParser(BaseFinancialParser):
         """Detect financial institution from PDF text."""
         text_lower = text.lower()
 
-        if "chase" in text_lower or "jpmorgan" in text_lower:
+        if "fidelity" in text_lower:
+            return "Fidelity"
+        elif "chase" in text_lower or "jpmorgan" in text_lower:
             return "Chase"
         elif "discover" in text_lower:
             return "Discover"
