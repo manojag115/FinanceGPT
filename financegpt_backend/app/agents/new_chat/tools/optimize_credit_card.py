@@ -5,14 +5,17 @@ This tool analyzes user's credit card transactions and recommends the optimal
 card to use for each purchase category based on rewards structures.
 """
 
+import json
 import logging
 import re
 from datetime import datetime, timedelta, UTC
 from typing import Any
 
 from langchain_core.tools import tool
+from sqlalchemy import and_, select
 from sqlalchemy.ext.asyncio import AsyncSession
 
+from app.db import Document
 from app.services.connector_service import ConnectorService
 from app.utils.credit_card_rewards_fetcher import CreditCardRewardsFetcher
 
@@ -85,10 +88,10 @@ def create_optimize_credit_card_usage_tool(
                 time_period.lower(), 30
             )
 
-            # Step 1: Find user's credit cards from Plaid accounts
+            # Step 1: Find user's credit cards from Plaid accounts and manual uploads
             logger.info("Fetching user's credit card accounts")
             cards_info = await _get_user_credit_cards(
-                connector_service, search_space_id
+                connector_service, search_space_id, db_session
             )
 
             if not cards_info:
@@ -155,7 +158,7 @@ def create_optimize_credit_card_usage_tool(
             # Step 3: Fetch recent transactions
             logger.info(f"Fetching transactions for last {days_back} days")
             transactions = await _get_user_transactions(
-                connector_service, search_space_id, days_back
+                db_session, search_space_id, days_back
             )
 
             if not transactions:
@@ -197,19 +200,57 @@ def create_optimize_credit_card_usage_tool(
 async def _get_user_credit_cards(
     connector_service: ConnectorService,
     search_space_id: int,
+    db_session: AsyncSession,
 ) -> list[dict[str, Any]]:
     """
-    Extract user's credit card accounts from Plaid account summaries.
+    Extract user's credit card accounts from Plaid account summaries and manual CSV uploads.
 
     Args:
         connector_service: Service for searching documents
         search_space_id: User's search space ID
+        db_session: Database session for direct queries
 
     Returns:
         List of credit card account dictionaries with name and account_id
     """
     try:
-        # Search for account summaries
+        cards = []
+        
+        # First, check for manual CSV uploads (financial documents)
+        logger.info("Checking for manually uploaded credit card CSVs")
+        query = (
+            select(Document.document_metadata)
+            .where(
+                and_(
+                    Document.search_space_id == search_space_id,
+                    Document.document_metadata.op("->>")("is_financial_document") == "true"
+                )
+            )
+        )
+        result = await db_session.execute(query)
+        financial_docs = result.scalars().all()
+        
+        for doc_metadata in financial_docs:
+            # Parse JSON if it's a string
+            if isinstance(doc_metadata, str):
+                try:
+                    doc_metadata = json.loads(doc_metadata)
+                except json.JSONDecodeError:
+                    continue
+            
+            institution = doc_metadata.get("institution", "")
+            if "credit card" in institution.lower():
+                # Extract card name from institution
+                cards.append({
+                    "name": institution,
+                    "account_id": institution,
+                    "user_id": "",
+                    "source": "manual_upload"
+                })
+                logger.info(f"Found manual upload credit card: {institution}")
+        
+        # Then search for Plaid account summaries
+        logger.info("Searching for Plaid credit card accounts")
         user_query = "credit card account balance"
         _, results = await connector_service.search_files(
             user_query=user_query,
@@ -217,11 +258,10 @@ async def _get_user_credit_cards(
             top_k=10,
         )
 
-        if not results:
+        if not results and not cards:
             return []
 
-        # Extract credit card accounts from results
-        cards = []
+        # Extract credit card accounts from Plaid results
         account_pattern = r"##\s+(.+?)\s*\n.*?-\s+\*\*Type:\*\*\s+credit"
 
         for doc in results:
@@ -248,6 +288,7 @@ async def _get_user_credit_cards(
                         "name": account_name,
                         "account_id": account_id,
                         "user_id": doc.get("user_id", ""),
+                        "source": "plaid"
                     }
                 )
 
@@ -267,15 +308,15 @@ async def _get_user_credit_cards(
 
 
 async def _get_user_transactions(
-    connector_service: ConnectorService,
+    db_session: AsyncSession,
     search_space_id: int,
     days_back: int,
 ) -> list[dict[str, Any]]:
     """
-    Extract user's recent credit card transactions.
+    Extract user's recent credit card transactions from both manual uploads and Plaid.
 
     Args:
-        connector_service: Service for searching documents
+        db_session: Database session for direct queries
         search_space_id: User's search space ID
         days_back: Number of days to look back
 
@@ -283,64 +324,125 @@ async def _get_user_transactions(
         List of transaction dictionaries
     """
     try:
-        # Search for transaction documents
-        user_query = "credit card transactions purchases"
-        _, results = await connector_service.search_files(
-            user_query=user_query,
-            search_space_id=search_space_id,
-            top_k=20,
-        )
-
-        if not results:
-            return []
-
-        # Extract transactions from results
-        transactions = []
-
-        # Pattern to match transaction lines
-        # Format: - **2024-12-15** - STARBUCKS: -$5.43 (Dining)
-        txn_pattern = r"-\s+\*\*(\d{4}-\d{2}-\d{2})\*\*\s+-\s+(.+?):\s+([-+]?\$[\d,]+\.\d{2})\s+\((.+?)\)"
-
-        for doc in results:
-            content = doc.get("content", "")
-
-            # Find all transactions in this document
-            matches = re.finditer(txn_pattern, content)
-
-            for match in matches:
-                date_str, merchant, amount_str, category_str = match.groups()
-
-                # Parse date
-                try:
-                    txn_date = datetime.strptime(date_str, "%Y-%m-%d")
-
-                    # Only include transactions within the lookback period
-                    if (datetime.now() - txn_date).days > days_back:
-                        continue
-
-                except ValueError:
-                    continue
-
-                # Parse amount (remove $ and commas, convert to float)
-                amount = float(amount_str.replace("$", "").replace(",", ""))
-
-                # Only include purchases (positive amounts = expenses in Plaid format)
-                if amount > 0:
-                    transactions.append(
-                        {
-                            "date": date_str,
-                            "merchant": merchant.strip(),
-                            "amount": amount,
-                            "category": category_str.strip(),
-                        }
+        # Calculate cutoff date
+        cutoff_date = (datetime.now(UTC) - timedelta(days=days_back)).date()
+        
+        # Get all financial documents (both manual uploads and Plaid)
+        query = (
+            select(Document.document_metadata, Document.content, Document.document_metadata.op("->>")("is_plaid_document"))
+            .where(
+                and_(
+                    Document.search_space_id == search_space_id,
+                    (
+                        (Document.document_metadata.op("->>")("is_financial_document") == "true") |
+                        (Document.document_metadata.op("->>")("is_plaid_document") == "true")
                     )
-
+                )
+            )
+        )
+        
+        result = await db_session.execute(query)
+        documents = result.all()
+        
+        if not documents:
+            return []
+        
+        transactions = []
+        
+        for doc_metadata, doc_content, is_plaid in documents:
+            doc_transactions = []
+            
+            # Handle Plaid documents (parse markdown)
+            if is_plaid == "true" and doc_content:
+                doc_transactions = _parse_plaid_markdown_transactions(doc_content)
+            else:
+                # Handle manual upload documents (JSON metadata)
+                if isinstance(doc_metadata, str):
+                    try:
+                        doc_metadata = json.loads(doc_metadata)
+                    except json.JSONDecodeError:
+                        continue
+                
+                financial_data = doc_metadata.get("financial_data", {})
+                
+                if isinstance(financial_data, str):
+                    try:
+                        financial_data = json.loads(financial_data)
+                    except json.JSONDecodeError:
+                        continue
+                
+                doc_transactions = financial_data.get("transactions", [])
+            
+            # Filter by date and add to results
+            for txn in doc_transactions:
+                txn_date_str = txn.get("date", "")
+                if not txn_date_str:
+                    continue
+                    
+                try:
+                    txn_date = datetime.fromisoformat(txn_date_str.replace("Z", "+00:00")).date()
+                    
+                    # Only include transactions within the lookback period
+                    if txn_date < cutoff_date:
+                        continue
+                        
+                except (ValueError, AttributeError):
+                    continue
+                
+                # Get amount (only include expenses)
+                amount = float(txn.get("amount", 0))
+                if amount >= 0:  # Skip deposits/credits
+                    continue
+                
+                transactions.append({
+                    "date": txn_date_str.split("T")[0],
+                    "merchant": txn.get("merchant") or txn.get("description", "Unknown"),
+                    "amount": abs(amount),  # Convert to positive for spending
+                    "category": txn.get("category", "Other"),
+                })
+        
         logger.info(f"Extracted {len(transactions)} credit card transactions")
         return transactions
 
     except Exception as e:
-        logger.error(f"Error extracting transactions: {e}")
+        logger.error(f"Error extracting transactions: {e}", exc_info=True)
         return []
+
+
+def _parse_plaid_markdown_transactions(content: str) -> list[dict[str, Any]]:
+    """
+    Parse transaction data from Plaid markdown format.
+    
+    Format: - **YYYY-MM-DD** - Description: +/-$amount (TransactionType.TYPE)
+    Example: - **2026-01-10** - SparkFun: -$89.40 (TransactionType.PURCHASE)
+    """
+    transactions = []
+    
+    # Pattern: - **2026-01-10** - SparkFun: -$89.40 (TransactionType.PURCHASE)
+    pattern = r'-\s+\*\*(\d{4}-\d{2}-\d{2})\*\*\s+-\s+([^:]+):\s+([-+]?\$[\d,]+\.?\d*)\s+\(TransactionType\.(\w+)\)'
+    
+    for match in re.finditer(pattern, content):
+        date_str = match.group(1)
+        description = match.group(2).strip()
+        amount_str = match.group(3).replace('$', '').replace(',', '')
+        txn_type = match.group(4)
+        
+        # Parse amount (negative for spending, positive for deposits)
+        try:
+            amount = float(amount_str)
+        except ValueError:
+            continue
+            
+        transactions.append({
+            "date": date_str,
+            "description": description,
+            "merchant": description,
+            "amount": amount,
+            "category": None,
+            "transaction_type": txn_type,
+        })
+    
+    return transactions
 
 
 async def _analyze_card_optimization(
