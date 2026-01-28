@@ -1,110 +1,57 @@
 "use client";
-import { IconMessageCircleQuestion } from "@tabler/icons-react";
 import Link from "next/link";
 import type React from "react";
-import { cn } from "@/lib/utils";
 
 export function CTAHomepage() {
 	return (
-		<section className="w-full grid grid-cols-1 md:grid-cols-3 my-4 md:my-6 justify-start relative z-20 max-w-7xl mx-auto bg-gradient-to-br from-gray-100 to-white dark:from-neutral-900 dark:to-neutral-950">
-			<GridLineHorizontal className="top-0" offset="200px" />
-			<GridLineHorizontal className="bottom-0 top-auto" offset="200px" />
-			<GridLineVertical className="left-0" offset="80px" />
-			<GridLineVertical className="left-auto right-0" offset="80px" />
-			<div className="md:col-span-2 p-6 md:p-8">
-				<h2 className="text-left text-neutral-500 dark:text-neutral-200 text-xl md:text-3xl tracking-tight font-medium">
-					Take control of your{" "}
-					<span className="font-bold text-black dark:text-white">financial future</span>
-				</h2>
-				<p className="text-left text-neutral-500 mt-4 max-w-lg dark:text-neutral-200 text-xl md:text-3xl tracking-tight font-medium">
-					Connect your <span className="text-emerald-700">accounts</span> and get
-					<span className="text-blue-700"> AI-powered insights</span> to optimize your finances.
-				</p>
+		<section className="relative py-20 md:py-32">
+			<div className="mx-auto max-w-7xl px-4 md:px-8">
+				<div className="relative overflow-hidden rounded-3xl border border-gray-200 bg-linear-to-br from-emerald-50 via-teal-50 to-blue-50 p-12 md:p-20 dark:border-gray-800 dark:from-emerald-950/50 dark:via-teal-950/50 dark:to-blue-950/50">
+					{/* Background decorative elements */}
+					<div className="pointer-events-none absolute inset-0 overflow-hidden">
+						<div className="absolute -right-1/4 top-0 h-96 w-96 rounded-full bg-linear-to-br from-emerald-400/20 to-teal-400/20 blur-3xl" />
+						<div className="absolute -left-1/4 bottom-0 h-96 w-96 rounded-full bg-linear-to-br from-blue-400/20 to-cyan-400/20 blur-3xl" />
+					</div>
 
-				<div className="flex items-start sm:items-center flex-col sm:flex-row sm:gap-4">
-					<Link href="/contact">
-						<button
-							type="button"
-							className="mt-8 flex space-x-2 items-center group text-base px-4 py-2 rounded-lg  text-black dark:text-white border border-neutral-200 dark:border-neutral-800 shadow-[0px_2px_0px_0px_rgba(255,255,255,0.3)_inset]"
-						>
-							<span>Talk to us</span>
-							<IconMessageCircleQuestion className="text-black dark:text-white group-hover:translate-x-1 stroke-[1px] h-3 w-3 mt-0.5 transition-transform duration-200" />
-						</button>
-					</Link>
+					{/* Content */}
+					<div className="relative z-10 mx-auto max-w-3xl text-center">
+						<h2 className="mb-6 text-4xl font-bold tracking-tight text-gray-900 md:text-5xl dark:text-white">
+							Ready to take control of your finances?
+						</h2>
+						<p className="mb-10 text-lg text-gray-700 md:text-xl dark:text-gray-200">
+							Join thousands of users who are already using FinanceGPT to make smarter financial
+							decisions. Get started in minutes.
+						</p>
+
+						<div className="flex flex-col items-center justify-center gap-4 sm:flex-row">
+							<Link
+								href="/register"
+							className="group flex h-12 items-center gap-2 rounded-xl bg-linear-to-r from-emerald-600 to-teal-600 px-8 py-3 text-base font-semibold text-white shadow-lg shadow-emerald-500/30 transition-all duration-300 hover:shadow-xl hover:shadow-emerald-500/40 dark:from-emerald-500 dark:to-teal-500"
+							>
+								Start Free Today
+								<svg
+									className="h-5 w-5 transition-transform group-hover:translate-x-1"
+									fill="none"
+									viewBox="0 0 24 24"
+									stroke="currentColor"
+								>
+									<path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M13 7l5 5m0 0l-5 5m5-5H6" />
+								</svg>
+							</Link>
+							<Link
+								href="/contact"
+								className="flex h-12 items-center gap-2 rounded-xl border-2 border-gray-300 bg-white px-8 py-3 text-base font-semibold text-gray-700 transition-all duration-300 hover:border-gray-400 hover:shadow-lg dark:border-gray-600 dark:bg-gray-900 dark:text-gray-200 dark:hover:border-gray-500"
+							>
+								Contact Sales
+							</Link>
+						</div>
+
+						<p className="mt-8 text-sm text-gray-600 dark:text-gray-400">
+							No credit card required • Free forever plan available
+						</p>
+					</div>
 				</div>
 			</div>
-			{/* <div className="border-t md:border-t-0 md:border-l border-dashed p-8 md:p-14">
-        <p className="text-base text-neutral-700 dark:text-neutral-200">
-          &quot;FinanceGPT has revolutionized how our team shares and discovers knowledge. 
-          Everyone can contribute and find what they need instantly. True collaboration at scale.&quot;
-        </p>
-        <div className="flex flex-col text-sm items-start mt-4 gap-1">
-          <p className="font-bold text-neutral-800 dark:text-neutral-200">
-            Sarah Chen
-          </p>
-          <p className="text-neutral-500 dark:text-neutral-400">
-            Research Lead
-          </p>
-        </div>
-      </div> */}
 		</section>
 	);
 }
-
-const GridLineHorizontal = ({ className, offset }: { className?: string; offset?: string }) => {
-	return (
-		<div
-			style={
-				{
-					"--background": "#ffffff",
-					"--color": "rgba(0, 0, 0, 0.2)",
-					"--height": "1px",
-					"--width": "5px",
-					"--fade-stop": "90%",
-					"--offset": offset || "200px", //-100px if you want to keep the line inside
-					"--color-dark": "rgba(255, 255, 255, 0.2)",
-					maskComposite: "exclude",
-				} as React.CSSProperties
-			}
-			className={cn(
-				"absolute w-[calc(100%+var(--offset))] h-[var(--height)] left-[calc(var(--offset)/2*-1)]",
-				"bg-[linear-gradient(to_right,var(--color),var(--color)_50%,transparent_0,transparent)]",
-				"[background-size:var(--width)_var(--height)]",
-				"[mask:linear-gradient(to_left,var(--background)_var(--fade-stop),transparent),_linear-gradient(to_right,var(--background)_var(--fade-stop),transparent),_linear-gradient(black,black)]",
-				"[mask-composite:exclude]",
-				"z-30",
-				"dark:bg-[linear-gradient(to_right,var(--color-dark),var(--color-dark)_50%,transparent_0,transparent)]",
-				className
-			)}
-		></div>
-	);
-};
-
-const GridLineVertical = ({ className, offset }: { className?: string; offset?: string }) => {
-	return (
-		<div
-			style={
-				{
-					"--background": "#ffffff",
-					"--color": "rgba(0, 0, 0, 0.2)",
-					"--height": "5px",
-					"--width": "1px",
-					"--fade-stop": "90%",
-					"--offset": offset || "150px", //-100px if you want to keep the line inside
-					"--color-dark": "rgba(255, 255, 255, 0.2)",
-					maskComposite: "exclude",
-				} as React.CSSProperties
-			}
-			className={cn(
-				"absolute h-[calc(100%+var(--offset))] w-[var(--width)] top-[calc(var(--offset)/2*-1)]",
-				"bg-[linear-gradient(to_bottom,var(--color),var(--color)_50%,transparent_0,transparent)]",
-				"[background-size:var(--width)_var(--height)]",
-				"[mask:linear-gradient(to_top,var(--background)_var(--fade-stop),transparent),_linear-gradient(to_bottom,var(--background)_var(--fade-stop),transparent),_linear-gradient(black,black)]",
-				"[mask-composite:exclude]",
-				"z-30",
-				"dark:bg-[linear-gradient(to_bottom,var(--color-dark),var(--color-dark)_50%,transparent_0,transparent)]",
-				className
-			)}
-		></div>
-	);
-};

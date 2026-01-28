@@ -13,18 +13,6 @@ export function FooterNew() {
 		},
 	];
 
-	const socials = [
-		{
-			title: "Twitter",
-			href: "https://x.com/mod_setter",
-			icon: IconBrandTwitter,
-		},
-		{
-			title: "LinkedIn",
-			href: "https://www.linkedin.com/in/rohan-verma-sde/",
-			icon: IconBrandLinkedin,
-		},
-	];
 	const legals = [
 		{
 			title: "Privacy Policy",
@@ -87,24 +75,6 @@ export function FooterNew() {
 						<p className="transition-colors hover:text-text-neutral-800 text-neutral-600 dark:text-neutral-300 font-bold">
 							Socials
 						</p>
-						<ul className="transition-colors hover:text-text-neutral-800 text-neutral-600 dark:text-neutral-300 list-none space-y-4">
-							{socials.map((social, idx) => {
-								const Icon = social.icon;
-								return (
-									<li key={"social" + idx} className="list-none">
-										<Link
-											className="transition-colors hover:text-text-neutral-800 flex items-center gap-2"
-											href={social.href}
-											target="_blank"
-											rel="noopener noreferrer"
-										>
-											<Icon className="h-5 w-5" />
-											{social.title}
-										</Link>
-									</li>
-								);
-							})}
-						</ul>
 					</div>
 
 					<div className="flex justify-center space-y-4 flex-col">

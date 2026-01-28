@@ -36,72 +36,166 @@ export function HeroSection() {
 	return (
 		<div
 			ref={parentRef}
-			className="relative flex min-h-screen flex-col items-center justify-center overflow-hidden px-4 py-10 md:px-8 md:py-20"
+			className="relative min-h-screen overflow-hidden bg-linear-to-br from-emerald-50 via-teal-50/50 to-blue-50 dark:from-gray-950 dark:via-emerald-950/10 dark:to-blue-950/10"
 		>
-			<BackgroundGrids />
-			<FloatingCurrency
-				symbol="$"
-				delay={0}
-				duration={15}
-				initialX={-100}
-				initialY={100}
-				className="text-green-500/20 dark:text-green-400/10"
-			/>
-			<FloatingCurrency
-				symbol="€"
-				delay={2}
-				duration={18}
-				initialX={200}
-				initialY={-50}
-				className="text-blue-500/20 dark:text-blue-400/10"
-			/>
-			<FloatingCurrency
-				symbol="£"
-				delay={4}
-				duration={20}
-				initialX={-200}
-				initialY={200}
-				className="text-purple-500/20 dark:text-purple-400/10"
-			/>
-			<FloatingCurrency
-				symbol="¥"
-				delay={1}
-				duration={16}
-				initialX={100}
-				initialY={50}
-				className="text-orange-500/20 dark:text-orange-400/10"
-			/>
-			<FloatingCurrency
-				symbol="₿"
-				delay={3}
-				duration={22}
-				initialX={-50}
-				initialY={-100}
-				className="text-yellow-500/20 dark:text-yellow-400/10"
-			/>
+			<div className="mx-auto grid min-h-screen max-w-7xl grid-cols-1 items-center gap-12 px-4 py-12 md:px-8 lg:grid-cols-2 lg:gap-16">
+				{/* Left side - Content */}
+				<div className="relative z-10 space-y-8 lg:pr-8">
+					{/* Badge */}
+					<motion.div
+						initial={{ opacity: 0, x: -20 }}
+						animate={{ opacity: 1, x: 0 }}
+						transition={{ duration: 0.6 }}
+						className="inline-flex items-center gap-2 rounded-full border border-emerald-200 bg-emerald-50 px-4 py-1.5 text-sm font-medium text-emerald-700 dark:border-emerald-900 dark:bg-emerald-950/50 dark:text-emerald-300"
+					>
+						<span className="h-1.5 w-1.5 rounded-full bg-emerald-500" />
+						AI-Powered Finance Management
+					</motion.div>
 
-			<h2 className="relative z-50 mx-auto mb-4 mt-4 max-w-4xl text-balance text-center text-3xl font-semibold tracking-tight text-gray-700 md:text-7xl dark:text-neutral-300">
-				<Balancer>
-					Your AI-Powered{" "}
-					<div className="relative mx-auto inline-block w-max filter-[drop-shadow(0px_1px_3px_rgba(27,37,80,0.14))]">
-						<div className="text-black [text-shadow:0_0_rgba(0,0,0,0.1)] dark:text-white">
-							<span className="">Financial Assistant</span>
+					{/* Main heading */}
+					<motion.h1
+						initial={{ opacity: 0, x: -20 }}
+						animate={{ opacity: 1, x: 0 }}
+						transition={{ duration: 0.6, delay: 0.1 }}
+						className="text-5xl font-bold leading-tight tracking-tight text-gray-900 md:text-6xl lg:text-7xl dark:text-white"
+					>
+						<Balancer>
+							Your Money,{" "}
+							<span className="bg-linear-to-r from-emerald-600 via-teal-600 to-blue-600 bg-clip-text text-transparent dark:from-emerald-400 dark:via-teal-400 dark:to-blue-400">
+								Simplified
+							</span>{" "}
+							by AI
+						</Balancer>
+					</motion.h1>
+
+					{/* Description */}
+					<motion.p
+						initial={{ opacity: 0, x: -20 }}
+						animate={{ opacity: 1, x: 0 }}
+						transition={{ duration: 0.6, delay: 0.2 }}
+						className="text-lg leading-relaxed text-gray-600 md:text-xl dark:text-gray-300"
+					>
+						Connect all your financial accounts in one place. Get personalized insights, track
+						spending patterns, and maximize your wealth with AI-powered recommendations.
+					</motion.p>
+
+					{/* CTA Buttons */}
+					<motion.div
+						initial={{ opacity: 0, x: -20 }}
+						animate={{ opacity: 1, x: 0 }}
+						transition={{ duration: 0.6, delay: 0.3 }}
+						className="flex flex-col gap-4 sm:flex-row"
+					>
+						<GetStartedButton />
+						<Link
+							href="#features"
+							className="group flex h-11 items-center justify-center gap-2 rounded-xl border-2 border-gray-200 bg-white px-6 py-2.5 text-sm font-semibold text-gray-700 transition-all duration-300 hover:border-gray-300 hover:shadow-lg dark:border-gray-700 dark:bg-gray-900 dark:text-gray-200 dark:hover:border-gray-600"
+						>
+							Learn More
+							<svg
+								className="h-4 w-4 transition-transform group-hover:translate-x-1"
+								fill="none"
+								viewBox="0 0 24 24"
+								stroke="currentColor"
+							>
+								<path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5l7 7-7 7" />
+							</svg>
+						</Link>
+					</motion.div>
+
+					{/* Trust indicators */}
+					<motion.div
+						initial={{ opacity: 0, x: -20 }}
+						animate={{ opacity: 1, x: 0 }}
+						transition={{ duration: 0.6, delay: 0.4 }}
+						className="flex flex-wrap gap-6 text-sm text-gray-500 dark:text-gray-400"
+					>
+						<div className="flex items-center gap-2">
+							<svg className="h-5 w-5 text-emerald-600" fill="currentColor" viewBox="0 0 20 20">
+								<path fillRule="evenodd" d="M2.166 4.999A11.954 11.954 0 0010 1.944 11.954 11.954 0 0017.834 5c.11.65.166 1.32.166 2.001 0 5.225-3.34 9.67-8 11.317C5.34 16.67 2 12.225 2 7c0-.682.057-1.35.166-2.001zm11.541 3.708a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clipRule="evenodd" />
+							</svg>
+							<span>Bank-Level Security</span>
 						</div>
-					</div>
-				</Balancer>
-			</h2>
-			<p className="relative z-50 mx-auto mt-4 max-w-lg px-4 text-center text-base/6 text-gray-600 dark:text-gray-200">
-				Connect your bank accounts, investments, and credit cards. Get AI-powered insights,
-				optimize spending, and make smarter financial decisions.
-			</p>
-			<div className="mb-10 mt-8 flex w-full flex-col items-center justify-center gap-4 px-8 sm:flex-row md:mb-20">
-				<GetStartedButton />
-				{/* <Link
-					href="/pricing"
-					className="shadow-input group relative z-20 flex h-10 w-full cursor-pointer items-center justify-center space-x-2 rounded-lg bg-white p-px px-4 py-2 text-sm font-semibold leading-6 text-black no-underline transition duration-200 hover:-translate-y-0.5 sm:w-52 dark:bg-neutral-800 dark:text-white"
+						<div className="flex items-center gap-2">
+							<svg className="h-5 w-5 text-emerald-600" fill="currentColor" viewBox="0 0 20 20">
+								<path fillRule="evenodd" d="M11.3 1.046A1 1 0 0112 2v5h4a1 1 0 01.82 1.573l-7 10A1 1 0 018 18v-5H4a1 1 0 01-.82-1.573l7-10a1 1 0 011.12-.38z" clipRule="evenodd" />
+							</svg>
+							<span>AI-Powered</span>
+						</div>
+					</motion.div>
+				</div>
+
+				{/* Right side - Visual */}
+				<motion.div
+					initial={{ opacity: 0, x: 20 }}
+					animate={{ opacity: 1, x: 0 }}
+					transition={{ duration: 0.8, delay: 0.2 }}
+					className="relative hidden lg:block"
 				>
-					Start Free Trial
-				</Link> */}
+					{/* Gradient orbs background */}
+					<div className="pointer-events-none absolute inset-0">
+						<div className="absolute left-0 top-0 h-72 w-72 rounded-full bg-linear-to-br from-emerald-400/30 to-teal-400/30 blur-3xl dark:from-emerald-600/20 dark:to-teal-600/20" />
+						<div className="absolute right-0 top-1/4 h-72 w-72 rounded-full bg-linear-to-br from-blue-400/30 to-cyan-400/30 blur-3xl dark:from-blue-600/20 dark:to-cyan-600/20" />
+					</div>
+
+					{/* Floating cards */}
+					<div className="relative space-y-4">
+						<motion.div
+							animate={{ y: [0, -10, 0] }}
+							transition={{ duration: 4, repeat: Infinity, ease: "easeInOut" }}
+							className="rounded-2xl border border-gray-200 bg-white p-6 shadow-lg dark:border-gray-800 dark:bg-gray-900"
+						>
+							<div className="mb-3 flex items-center gap-3">
+								<div className="flex h-12 w-12 items-center justify-center rounded-xl bg-linear-to-br from-emerald-500 to-teal-500 text-2xl">
+									💰
+								</div>
+								<div>
+									<p className="text-sm font-semibold text-gray-900 dark:text-white">Total Balance</p>
+									<p className="text-xs text-gray-500 dark:text-gray-400">All Accounts</p>
+								</div>
+							</div>
+							<p className="text-3xl font-bold text-gray-900 dark:text-white">$124,567</p>
+							<p className="mt-1 text-sm text-emerald-600">+12.5% this month</p>
+						</motion.div>
+
+						<motion.div
+							animate={{ y: [0, 10, 0] }}
+							transition={{ duration: 5, repeat: Infinity, ease: "easeInOut", delay: 0.5 }}
+							className="ml-auto w-4/5 rounded-2xl border border-gray-200 bg-white p-6 shadow-lg dark:border-gray-800 dark:bg-gray-900"
+						>
+							<div className="mb-3 flex items-center gap-3">
+								<div className="flex h-12 w-12 items-center justify-center rounded-xl bg-linear-to-br from-blue-500 to-cyan-500 text-2xl">
+									📊
+								</div>
+								<div>
+									<p className="text-sm font-semibold text-gray-900 dark:text-white">AI Insight</p>
+									<p className="text-xs text-gray-500 dark:text-gray-400">Just now</p>
+								</div>
+							</div>
+							<p className="text-sm text-gray-600 dark:text-gray-300">
+								You could save $240/mo by switching to the Sapphire card for groceries
+							</p>
+						</motion.div>
+
+						<motion.div
+							animate={{ y: [0, -8, 0] }}
+							transition={{ duration: 4.5, repeat: Infinity, ease: "easeInOut", delay: 1 }}
+							className="w-3/4 rounded-2xl border border-gray-200 bg-white p-6 shadow-lg dark:border-gray-800 dark:bg-gray-900"
+						>
+							<div className="mb-3 flex items-center gap-3">
+								<div className="flex h-12 w-12 items-center justify-center rounded-xl bg-linear-to-br from-violet-500 to-purple-500 text-2xl">
+									💳
+								</div>
+								<div>
+									<p className="text-sm font-semibold text-gray-900 dark:text-white">Rewards Earned</p>
+									<p className="text-xs text-gray-500 dark:text-gray-400">This quarter</p>
+								</div>
+							</div>
+							<p className="text-2xl font-bold text-gray-900 dark:text-white">$1,847</p>
+							<p className="mt-1 text-xs text-gray-500 dark:text-gray-400">Cashback & Points</p>
+						</motion.div>
+					</div>
+				</motion.div>
 			</div>
 		</div>
 	);
@@ -123,22 +217,12 @@ function GetStartedButton() {
 				whileHover="hover"
 				whileTap={{ scale: 0.98 }}
 				initial="idle"
-				className="group relative z-20 flex h-11 w-full cursor-pointer items-center justify-center gap-3 overflow-hidden rounded-xl bg-white px-6 py-2.5 text-sm font-semibold text-neutral-700 shadow-lg ring-1 ring-neutral-200/50 transition-shadow duration-300 hover:shadow-xl sm:w-56 dark:bg-neutral-900 dark:text-neutral-200 dark:ring-neutral-700/50"
+					className="group relative z-20 flex h-11 w-full cursor-pointer items-center justify-center gap-3 overflow-hidden rounded-xl bg-linear-to-r from-emerald-600 to-teal-600 px-6 py-2.5 text-sm font-semibold text-white shadow-lg shadow-emerald-500/30 transition-shadow duration-300 hover:shadow-xl hover:shadow-emerald-500/40 sm:w-56 dark:from-emerald-500 dark:to-teal-500 dark:shadow-emerald-500/20"
 				variants={{
 					idle: { scale: 1, y: 0 },
 					hover: { scale: 1.02, y: -2 },
 				}}
 			>
-				{/* Animated gradient background on hover */}
-				<motion.div
-					className="absolute inset-0 bg-linear-to-r from-blue-50 via-green-50 to-yellow-50 dark:from-blue-950/30 dark:via-green-950/30 dark:to-yellow-950/30"
-					variants={{
-						idle: { opacity: 0 },
-						hover: { opacity: 1 },
-					}}
-					transition={{ duration: 0.3 }}
-				/>
-				{/* Google logo with subtle animation */}
 				<motion.div
 					className="relative"
 					variants={{
@@ -158,28 +242,34 @@ function GetStartedButton() {
 		<motion.div whileHover={{ scale: 1.02, y: -2 }} whileTap={{ scale: 0.98 }}>
 			<Link
 				href="/register"
-				className="group relative z-20 flex h-11 w-full cursor-pointer items-center justify-center gap-2 rounded-xl bg-black px-6 py-2.5 text-sm font-semibold text-white shadow-lg transition-shadow duration-300 hover:shadow-xl sm:w-56 dark:bg-white dark:text-black"
+				className="group relative z-20 flex h-11 w-full cursor-pointer items-center justify-center gap-2 rounded-xl bg-linear-to-r from-emerald-600 to-teal-600 px-6 py-2.5 text-sm font-semibold text-white shadow-lg shadow-emerald-500/30 transition-shadow duration-300 hover:shadow-xl hover:shadow-emerald-500/40 sm:w-56 dark:from-emerald-500 dark:to-teal-500"
 			>
-				Get Started
+				Get Started Free
+				<svg
+					className="h-4 w-4 transition-transform group-hover:translate-x-1"
+					fill="none"
+					viewBox="0 0 24 24"
+					stroke="currentColor"
+				>
+					<path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M13 7l5 5m0 0l-5 5m5-5H6" />
+				</svg>
 			</Link>
 		</motion.div>
 	);
-};
+}
 
-const FloatingCurrency = ({
-	symbol,
+const FloatingIcon = ({
+	icon,
 	delay = 0,
 	duration = 20,
 	initialX = 0,
 	initialY = 0,
-	className = "",
 }: {
-	symbol: string;
+	icon: string;
 	delay?: number;
 	duration?: number;
 	initialX?: number;
 	initialY?: number;
-	className?: string;
 }) => {
 	return (
 		<motion.div
@@ -190,11 +280,11 @@ const FloatingCurrency = ({
 				scale: 0.5,
 			}}
 			animate={{
-				x: [initialX, initialX + 100, initialX - 50, initialX + 150, initialX],
-				y: [initialY, initialY - 200, initialY - 100, initialY - 300, initialY],
-				opacity: [0, 0.3, 0.5, 0.3, 0],
-				scale: [0.5, 1.2, 1, 1.5, 0.5],
-				rotate: [0, 180, 360, 540, 720],
+				x: [initialX, initialX + 80, initialX - 40, initialX + 120, initialX],
+				y: [initialY, initialY - 150, initialY - 80, initialY - 200, initialY],
+				opacity: [0, 0.4, 0.6, 0.4, 0],
+				scale: [0.5, 1, 0.9, 1.1, 0.5],
+				rotate: [0, 90, 180, 270, 360],
 			}}
 			transition={{
 				duration: duration,
@@ -202,12 +292,9 @@ const FloatingCurrency = ({
 				delay: delay,
 				ease: "easeInOut",
 			}}
-			className={cn(
-				"pointer-events-none absolute left-1/2 top-1/2 text-6xl font-bold md:text-8xl",
-				className
-			)}
+			className="pointer-events-none absolute left-1/2 top-1/2 text-5xl opacity-30 md:text-6xl"
 		>
-			{symbol}
+			{icon}
 		</motion.div>
 	);
 };

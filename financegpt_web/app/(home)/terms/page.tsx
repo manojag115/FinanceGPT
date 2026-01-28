@@ -211,14 +211,6 @@ export default function TermsOfService() {
 						any other terms.
 					</p>
 				</section>
-
-				<section className="mb-8">
-					<h2 className="text-2xl font-semibold mb-4">12. Contact Us</h2>
-					<p>If you have any questions about these Terms, please contact us at:</p>
-					<p className="mt-2">
-						<strong>Email:</strong> rohan@financegpt.com
-					</p>
-				</section>
 			</div>
 		</div>
 	);

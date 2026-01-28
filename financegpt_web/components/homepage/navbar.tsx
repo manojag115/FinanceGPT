@@ -50,8 +50,8 @@ const SignInButton = ({ variant = "desktop" }: { variant?: "desktop" | "mobile" 
 				className={cn(
 					"flex items-center justify-center gap-2 font-semibold transition-all duration-200",
 					variant === "desktop"
-						? "hidden rounded-full bg-white px-5 py-2 text-sm text-neutral-700 shadow-md ring-1 ring-neutral-200/50 hover:shadow-lg md:flex dark:bg-neutral-900 dark:text-neutral-200 dark:ring-neutral-700/50"
-						: "w-full rounded-lg bg-white px-8 py-2.5 text-neutral-700 shadow-md ring-1 ring-neutral-200/50 dark:bg-neutral-900 dark:text-neutral-200 dark:ring-neutral-700/50 touch-manipulation"
+						? "hidden rounded-xl bg-linear-to-r from-emerald-600 to-teal-600 px-5 py-2 text-sm text-white shadow-md shadow-emerald-500/20 hover:shadow-lg hover:shadow-emerald-500/30 md:flex dark:from-emerald-500 dark:to-teal-500"
+						: "w-full rounded-xl bg-linear-to-r from-emerald-600 to-teal-600 px-8 py-2.5 text-white shadow-md shadow-emerald-500/20 dark:from-emerald-500 dark:to-teal-500 touch-manipulation"
 				)}
 			>
 				<GoogleLogo className="h-4 w-4" />
@@ -65,8 +65,8 @@ const SignInButton = ({ variant = "desktop" }: { variant?: "desktop" | "mobile" 
 			href="/login"
 			className={cn(
 				variant === "desktop"
-					? "hidden rounded-full bg-black px-8 py-2 text-sm font-bold text-white shadow-[0px_-2px_0px_0px_rgba(255,255,255,0.4)_inset] md:block dark:bg-white dark:text-black"
-					: "w-full rounded-lg bg-black px-8 py-2 font-medium text-white shadow-[0px_-2px_0px_0px_rgba(255,255,255,0.4)_inset] dark:bg-white dark:text-black text-center touch-manipulation"
+					? "hidden rounded-xl bg-gradient-to-r from-emerald-600 to-teal-600 px-8 py-2 text-sm font-bold text-white shadow-md shadow-emerald-500/20 hover:shadow-lg hover:shadow-emerald-500/30 md:block dark:from-emerald-500 dark:to-teal-500"
+					: "w-full rounded-xl bg-gradient-to-r from-emerald-600 to-teal-600 px-8 py-2 font-medium text-white shadow-md shadow-emerald-500/20 dark:from-emerald-500 dark:to-teal-500 text-center touch-manipulation"
 			)}
 		>
 			Sign In
@@ -92,7 +92,7 @@ export const Navbar = () => {
 	}, []);
 
 	return (
-		<div className="fixed top-1 left-0 right-0 z-[60] w-full">
+		<div className="fixed top-1 left-0 right-0 z-60 w-full">
 			<DesktopNav navItems={navItems} isScrolled={isScrolled} />
 			<MobileNav navItems={navItems} isScrolled={isScrolled} />
 		</div>

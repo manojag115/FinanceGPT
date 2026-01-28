@@ -173,17 +173,6 @@ export default function PrivacyPolicy() {
 						practices of any third-party sites or services.
 					</p>
 				</section>
-
-				<section className="mb-8">
-					<h2 className="text-2xl font-semibold mb-4">8. Contact Us</h2>
-					<p>
-						If you have any questions about this privacy policy or our privacy practices, please
-						contact us at:
-					</p>
-					<p className="mt-2">
-						<strong>Email:</strong> rohan@financegpt.com
-					</p>
-				</section>
 			</div>
 		</div>
 	);
