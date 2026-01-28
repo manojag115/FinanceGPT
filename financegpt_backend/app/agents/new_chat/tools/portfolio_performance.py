@@ -4,8 +4,8 @@ Portfolio performance analysis tool for FinanceGPT.
 This tool calculates historical portfolio performance by:
 1. Searching for current holdings in the knowledge base
 2. Extracting ticker symbols and quantities
-3. Looking up historical prices via web search (future enhancement)
-4. Calculating performance metrics based on cost basis
+3. Fetching real-time prices from Yahoo Finance
+4. Calculating performance metrics based on historical data
 """
 
 import logging
@@ -13,6 +13,7 @@ import re
 from datetime import UTC, datetime, timedelta
 from typing import Any
 
+import aiohttp
 from langchain_core.tools import tool
 from sqlalchemy import and_, func, or_, select
 from sqlalchemy.ext.asyncio import AsyncSession
@@ -94,6 +95,108 @@ async def _get_holdings_snapshot_near_date(
     return result.scalar_one_or_none()
 
 
+async def _fetch_stock_price(ticker: str, days_ago: int = 0) -> dict[str, Any] | None:
+    """
+    Fetch stock price from Yahoo Finance API.
+    
+    Args:
+        ticker: Stock ticker symbol (e.g., "AAPL", "MSFT")
+        days_ago: Number of days in the past to get price for (0 = current)
+        
+    Returns:
+        Dictionary with price data or None if fetch fails
+    """
+    try:
+        # Yahoo Finance query API (free, no key required)
+        # For current price, use quote endpoint
+        # For historical, use chart endpoint
+        
+        if days_ago == 0:
+            # Get current/latest price
+            url = f"https://query1.finance.yahoo.com/v8/finance/chart/{ticker}"
+            params = {"interval": "1d", "range": "1d"}
+        else:
+            # Get historical price
+            end_date = datetime.now(UTC)
+            start_date = end_date - timedelta(days=days_ago + 2)  # Add buffer
+            url = f"https://query1.finance.yahoo.com/v8/finance/chart/{ticker}"
+            params = {
+                "interval": "1d",
+                "period1": int(start_date.timestamp()),
+                "period2": int(end_date.timestamp()),
+            }
+        
+        headers = {
+            "User-Agent": "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36"
+        }
+        
+        async with aiohttp.ClientSession() as session:
+            async with session.get(url, params=params, headers=headers, timeout=10) as response:
+                if response.status != 200:
+                    logger.warning(f"Failed to fetch price for {ticker}: HTTP {response.status}")
+                    return None
+                
+                data = await response.json()
+                
+                # Parse response
+                chart = data.get("chart", {})
+                result = chart.get("result", [])
+                
+                if not result:
+                    logger.warning(f"No data returned for {ticker}")
+                    return None
+                
+                quote = result[0]
+                meta = quote.get("meta", {})
+                timestamps = quote.get("timestamp", [])
+                indicators = quote.get("indicators", {})
+                quotes = indicators.get("quote", [{}])[0]
+                
+                if days_ago == 0:
+                    # Return current price
+                    current_price = meta.get("regularMarketPrice") or meta.get("previousClose")
+                    return {
+                        "ticker": ticker,
+                        "price": current_price,
+                        "currency": meta.get("currency", "USD"),
+                        "timestamp": datetime.now(UTC).isoformat(),
+                    }
+                else:
+                    # Return historical price (closest to target date)
+                    if timestamps and quotes.get("close"):
+                        # Calculate target timestamp (days_ago from now)
+                        target_date = datetime.now(UTC) - timedelta(days=days_ago)
+                        target_timestamp = target_date.timestamp()
+                        
+                        close_prices = quotes["close"]
+                        
+                        # Find the closest timestamp to our target that's not after it
+                        best_idx = 0
+                        best_diff = float('inf')
+                        
+                        for i, ts in enumerate(timestamps):
+                            diff = target_timestamp - ts
+                            # We want the closest date that's not after target (diff >= 0)
+                            if 0 <= diff < best_diff:
+                                best_diff = diff
+                                best_idx = i
+                        
+                        # Return the price from that date
+                        if close_prices[best_idx] is not None:
+                            return {
+                                "ticker": ticker,
+                                "price": close_prices[best_idx],
+                                "currency": meta.get("currency", "USD"),
+                                "timestamp": datetime.fromtimestamp(timestamps[best_idx], UTC).isoformat(),
+                            }
+                    
+                    return None
+                    
+    except Exception as e:
+        logger.error(f"Error fetching price for {ticker}: {e}")
+        return None
+
+
 def create_portfolio_performance_tool(
     search_space_id: int,
     db_session: AsyncSession,
@@ -118,10 +221,12 @@ def create_portfolio_performance_tool(
         """Calculate portfolio performance over a specified time period.
 
         This tool analyzes your investment portfolio's performance by looking up
-        current holdings and comparing them to historical prices.
+        current holdings and comparing them to historical prices. If historical
+        snapshots are not available, it will fetch live market data from Yahoo Finance.
 
         Args:
             time_period: The time period for performance calculation. Options:
+                - "today" or "day": Today's performance (since market open)
                 - "week" or "wow": Week-over-week (last 7 days)
                 - "month" or "mom": Month-over-month (last 30 days)
                 - "quarter" or "qtd": Quarter-to-date (last 90 days)
@@ -136,6 +241,7 @@ def create_portfolio_performance_tool(
             - total_change_dollars: Total dollar change
             - total_change_percent: Total percentage change
             - period: The time period analyzed
+            - data_source: Where the data came from (snapshot or Yahoo Finance)
             - note: Any important notes or limitations
 
         Example:
@@ -158,7 +264,10 @@ def create_portfolio_performance_tool(
         try:
             # Normalize time period
             period_lower = time_period.lower().strip()
-            if period_lower in ["week", "wow", "w"]:
+            if period_lower in ["today", "day", "d", "intraday"]:
+                days_back = 1
+                period_label = "Today"
+            elif period_lower in ["week", "wow", "w"]:
                 days_back = 7
                 period_label = "Week-over-Week"
             elif period_lower in ["month", "mom", "m"]:
@@ -205,7 +314,7 @@ def create_portfolio_performance_tool(
                     "note": "Holdings data may not be in the expected format. Please sync your accounts.",
                 }
 
-            # Step 2: Get historical snapshot for comparison
+            # Step 2: Get historical snapshot for comparison OR fetch live prices
             target_date = datetime.now(UTC) - timedelta(days=days_back)
             logger.info(f"Target date for comparison: {target_date.strftime('%Y-%m-%d')} ({days_back} days ago)")
             
@@ -215,6 +324,8 @@ def create_portfolio_performance_tool(
             
             # Extract historical holdings if available
             historical_holdings_map = {}
+            use_live_prices = False
+            
             if historical_snapshot:
                 historical_holdings = _extract_holdings_from_results([historical_snapshot])
                 # Create a map by ticker for easy lookup
@@ -226,20 +337,35 @@ def create_portfolio_performance_tool(
                     f"with {len(historical_holdings)} holdings"
                 )
             else:
-                logger.info(f"No historical snapshot found for {target_date.strftime('%Y-%m-%d')}")
+                logger.info(f"No historical snapshot found - will use live prices from Yahoo Finance")
+                use_live_prices = True
             
-            # Step 3: Calculate performance by comparing snapshots
+            # Step 3: Calculate performance by comparing snapshots or using live prices
             performance_holdings = []
             total_current_value = 0
             total_historical_value = 0
             has_historical_data = len(historical_holdings_map) > 0
 
             for holding in current_holdings:
-                current_value = holding.get("value", 0)
-                current_price = holding.get("price", 0)
                 quantity = holding.get("quantity", 0)
                 ticker = holding.get("ticker", "")
                 name = holding.get("name", "Unknown")
+                
+                # If using live prices, fetch current real-time price
+                if use_live_prices and ticker:
+                    logger.info(f"Fetching current price for {ticker} from Yahoo Finance")
+                    current_price_data = await _fetch_stock_price(ticker, days_ago=0)
+                    if current_price_data:
+                        current_price = current_price_data.get("price", 0)
+                        current_value = quantity * current_price
+                    else:
+                        # Fall back to uploaded values
+                        current_price = holding.get("price", 0)
+                        current_value = holding.get("value", 0)
+                        logger.warning(f"Could not fetch current price for {ticker}, using uploaded value")
+                else:
+                    current_value = holding.get("value", 0)
+                    current_price = holding.get("price", 0)
                 
                 total_current_value += current_value
                 
@@ -274,7 +400,40 @@ def create_portfolio_performance_tool(
                         "value_change_percent": value_change_pct,
                     })
                 else:
-                    # Position didn't exist in historical snapshot (newly added)
+                    # Position didn't exist in historical snapshot
+                    # Try fetching live historical price from Yahoo Finance if enabled
+                    if use_live_prices and ticker:
+                        logger.info(f"Fetching historical price for {ticker} from Yahoo Finance ({days_back} days ago)")
+                        historical_price_data = await _fetch_stock_price(ticker, days_back)
+                        
+                        if historical_price_data:
+                            historical_price = historical_price_data.get("price", 0)
+                            if historical_price > 0:
+                                # Calculate performance using live historical price
+                                historical_value = quantity * historical_price
+                                total_historical_value += historical_value
+                                
+                                value_change = current_value - historical_value
+                                price_change = current_price - historical_price
+                                price_change_pct = (price_change / historical_price) * 100
+                                value_change_pct = (value_change / historical_value) * 100 if historical_value > 0 else 0
+                                
+                                performance_holdings.append({
+                                    "name": name,
+                                    "ticker": ticker,
+                                    "quantity": quantity,
+                                    "current_price": current_price,
+                                    "current_value": current_value,
+                                    "historical_price": historical_price,
+                                    "historical_value": historical_value,
+                                    "price_change_dollars": price_change,
+                                    "price_change_percent": price_change_pct,
+                                    "value_change_dollars": value_change,
+                                    "value_change_percent": value_change_pct,
+                                    "data_source": "Yahoo Finance",
+                                })
+                                continue
+                    
                     # Fall back to cost basis if available
                     cost_basis = holding.get("cost_basis", 0)
                     if cost_basis and cost_basis > 0:
@@ -302,20 +461,25 @@ def create_portfolio_performance_tool(
                         })
 
             # Calculate total portfolio performance
-            if has_historical_data and total_historical_value > 0:
-                # Period-specific performance available from snapshot comparison
+            if (has_historical_data or use_live_prices) and total_historical_value > 0:
+                # Period-specific performance available from snapshot comparison or live prices
                 total_change = total_current_value - total_historical_value
                 total_change_pct = (total_change / total_historical_value) * 100
 
-                snapshot_date = historical_snapshot.document_metadata.get("snapshot_date", "unknown")
-                if isinstance(snapshot_date, str) and "T" in snapshot_date:
-                    snapshot_date_str = datetime.fromisoformat(snapshot_date).strftime('%Y-%m-%d')
+                if historical_snapshot:
+                    snapshot_date = historical_snapshot.document_metadata.get("snapshot_date", "unknown")
+                    if isinstance(snapshot_date, str) and "T" in snapshot_date:
+                        snapshot_date_str = datetime.fromisoformat(snapshot_date).strftime('%Y-%m-%d')
+                    else:
+                        snapshot_date_str = str(snapshot_date)
+                    data_source = f"historical snapshot from {snapshot_date_str}"
                 else:
-                    snapshot_date_str = str(snapshot_date)
+                    snapshot_date_str = target_date.strftime('%Y-%m-%d')
+                    data_source = "Yahoo Finance live market data"
 
                 summary = (
                     f"Your portfolio {period_label} performance: ${total_change:+,.2f} ({total_change_pct:+.2f}%). "
-                    f"Current value: ${total_current_value:,.2f}, on {snapshot_date_str}: ${total_historical_value:,.2f}."
+                    f"Current value: ${total_current_value:,.2f}, {days_back} days ago: ${total_historical_value:,.2f}."
                 )
                 
                 return {
@@ -326,9 +490,10 @@ def create_portfolio_performance_tool(
                     "total_change_dollars": total_change,
                     "total_change_percent": total_change_pct,
                     "period_requested": period_label,
-                    "calculation_method": "snapshot_comparison",
-                    "historical_snapshot_date": snapshot_date_str,
-                    "note": f"Performance calculated by comparing current snapshot to historical snapshot from {snapshot_date_str}",
+                    "calculation_method": "live_prices" if use_live_prices else "snapshot_comparison",
+                    "data_source": data_source,
+                    "target_date": snapshot_date_str,
+                    "note": f"Performance calculated using {data_source}",
                 }
             else:
                 # Fall back to cost basis for total return
