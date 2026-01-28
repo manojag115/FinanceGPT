@@ -14,11 +14,78 @@ from datetime import UTC, datetime, timedelta
 from typing import Any
 
 from langchain_core.tools import tool
+from sqlalchemy import and_, func, select
 from sqlalchemy.ext.asyncio import AsyncSession
 
+from app.db import Document
 from app.services.connector_service import ConnectorService
 
 logger = logging.getLogger(__name__)
+
+
+async def _get_latest_holdings_snapshot(
+    session: AsyncSession,
+    search_space_id: int,
+) -> Document | None:
+    """
+    Get the most recent investment holdings snapshot.
+    
+    Args:
+        session: Database session
+        search_space_id: User's search space ID
+        
+    Returns:
+        Latest holdings document or None
+    """
+    stmt = (
+        select(Document)
+        .where(
+            and_(
+                Document.search_space_id == search_space_id,
+                Document.document_metadata["document_subtype"].as_string() == "investment_holdings",
+                Document.document_metadata["is_plaid_document"].as_string() == "true",
+            )
+        )
+        .order_by(Document.document_metadata["snapshot_date"].as_string().desc())
+        .limit(1)
+    )
+    result = await session.execute(stmt)
+    return result.scalar_one_or_none()
+
+
+async def _get_holdings_snapshot_near_date(
+    session: AsyncSession,
+    search_space_id: int,
+    target_date: datetime,
+) -> Document | None:
+    """
+    Get the holdings snapshot closest to a target date (not after it).
+    
+    Args:
+        session: Database session
+        search_space_id: User's search space ID
+        target_date: Target date to find snapshot for
+        
+    Returns:
+        Closest holdings document on or before target date, or None
+    """
+    target_iso = target_date.isoformat()
+    
+    stmt = (
+        select(Document)
+        .where(
+            and_(
+                Document.search_space_id == search_space_id,
+                Document.document_metadata["document_subtype"].as_string() == "investment_holdings",
+                Document.document_metadata["is_plaid_document"].as_string() == "true",
+                Document.document_metadata["snapshot_date"].as_string() <= target_iso,
+            )
+        )
+        .order_by(Document.document_metadata["snapshot_date"].as_string().desc())
+        .limit(1)
+    )
+    result = await session.execute(stmt)
+    return result.scalar_one_or_none()
 
 
 def create_portfolio_performance_tool(
@@ -101,19 +168,12 @@ def create_portfolio_performance_tool(
                 days_back = 7
                 period_label = "Week-over-Week"
 
-            # Step 1: Search for current holdings
-            logger.info(f"Searching for investment holdings in search_space_id={search_space_id}")
+            # Step 1: Get current holdings snapshot
+            logger.info(f"Getting latest holdings snapshot for search_space_id={search_space_id}")
 
-            # Search for investment holdings documents (Plaid data is stored as FILE type)
-            _, holdings_results = await connector_service.search_files(
-                user_query="investment holdings portfolio stocks",
-                search_space_id=search_space_id,
-                top_k=20,
-            )
+            current_snapshot = await _get_latest_holdings_snapshot(db_session, search_space_id)
             
-            logger.info(f"Found {len(holdings_results) if holdings_results else 0} holding documents")
-
-            if not holdings_results:
+            if not current_snapshot:
                 return {
                     "summary": "No investment holdings found in your accounts.",
                     "holdings": [],
@@ -124,12 +184,11 @@ def create_portfolio_performance_tool(
                     "note": "Please connect your investment accounts or sync your holdings data.",
                 }
 
-            # Step 2: Extract holdings data from search results
-            holdings_data = _extract_holdings_from_results(holdings_results)
-            
-            logger.info(f"Extracted {len(holdings_data)} holdings from results")
+            # Extract current holdings data
+            current_holdings = _extract_holdings_from_results([current_snapshot])
+            logger.info(f"Extracted {len(current_holdings)} holdings from current snapshot")
 
-            if not holdings_data:
+            if not current_holdings:
                 return {
                     "summary": "Could not extract holdings information from your accounts.",
                     "holdings": [],
@@ -140,44 +199,65 @@ def create_portfolio_performance_tool(
                     "note": "Holdings data may not be in the expected format. Please sync your accounts.",
                 }
 
-            # Step 3: Get historical prices for period-specific performance (future enhancement)
+            # Step 2: Get historical snapshot for comparison
             target_date = datetime.now(UTC) - timedelta(days=days_back)
             logger.info(f"Target date for comparison: {target_date.strftime('%Y-%m-%d')} ({days_back} days ago)")
             
-            # TODO: Implement web search for historical prices
-            # For now, use cost basis for total return calculation
-            historical_prices = {}  # Empty for now - will be populated via web search in future
+            historical_snapshot = await _get_holdings_snapshot_near_date(
+                db_session, search_space_id, target_date
+            )
             
-            # Step 4: Calculate performance
+            # Extract historical holdings if available
+            historical_holdings_map = {}
+            if historical_snapshot:
+                historical_holdings = _extract_holdings_from_results([historical_snapshot])
+                # Create a map by ticker for easy lookup
+                historical_holdings_map = {
+                    h["ticker"]: h for h in historical_holdings if h.get("ticker")
+                }
+                logger.info(
+                    f"Found historical snapshot from {historical_snapshot.document_metadata.get('snapshot_date', 'unknown')} "
+                    f"with {len(historical_holdings)} holdings"
+                )
+            else:
+                logger.info(f"No historical snapshot found for {target_date.strftime('%Y-%m-%d')}")
+            
+            # Step 3: Calculate performance by comparing snapshots
             performance_holdings = []
             total_current_value = 0
             total_historical_value = 0
-            has_historical_data = len(historical_prices) > 0
+            has_historical_data = len(historical_holdings_map) > 0
 
-            for holding in holdings_data:
+            for holding in current_holdings:
                 current_value = holding.get("value", 0)
                 current_price = holding.get("price", 0)
                 quantity = holding.get("quantity", 0)
                 ticker = holding.get("ticker", "")
+                name = holding.get("name", "Unknown")
                 
                 total_current_value += current_value
                 
-                # Try to use historical price for period-specific performance
-                historical_price = historical_prices.get(ticker)
+                # Try to find this holding in historical snapshot
+                historical_holding = historical_holdings_map.get(ticker) if ticker else None
                 
-                if historical_price and quantity > 0:
-                    # Calculate period-specific performance
-                    historical_value = quantity * historical_price
+                if historical_holding:
+                    # Calculate period-specific performance from snapshot comparison
+                    historical_value = historical_holding.get("value", 0)
+                    historical_price = historical_holding.get("price", 0)
+                    historical_quantity = historical_holding.get("quantity", 0)
                     total_historical_value += historical_value
                     
-                    price_change = current_price - historical_price
-                    price_change_pct = (price_change / historical_price) * 100
                     value_change = current_value - historical_value
+                    price_change = current_price - historical_price if historical_price > 0 else 0
+                    price_change_pct = (price_change / historical_price) * 100 if historical_price > 0 else 0
+                    value_change_pct = (value_change / historical_value) * 100 if historical_value > 0 else 0
                     
                     performance_holdings.append({
-                        "name": holding.get("name", "Unknown"),
+                        "name": name,
                         "ticker": ticker,
-                        "quantity": quantity,
+                        "current_quantity": quantity,
+                        "historical_quantity": historical_quantity,
+                        "quantity_change": quantity - historical_quantity,
                         "current_price": current_price,
                         "current_value": current_value,
                         "historical_price": historical_price,
@@ -185,9 +265,10 @@ def create_portfolio_performance_tool(
                         "price_change_dollars": price_change,
                         "price_change_percent": price_change_pct,
                         "value_change_dollars": value_change,
-                        "value_change_percent": (value_change / historical_value) * 100 if historical_value > 0 else 0,
+                        "value_change_percent": value_change_pct,
                     })
                 else:
+                    # Position didn't exist in historical snapshot (newly added)
                     # Fall back to cost basis if available
                     cost_basis = holding.get("cost_basis", 0)
                     if cost_basis and cost_basis > 0:
@@ -195,34 +276,40 @@ def create_portfolio_performance_tool(
                         gain_loss_pct = (gain_loss / cost_basis) * 100
                         
                         performance_holdings.append({
-                            "name": holding.get("name", "Unknown"),
+                            "name": name,
                             "ticker": ticker,
                             "quantity": quantity,
                             "current_value": current_value,
                             "cost_basis": cost_basis,
                             "gain_loss_dollars": gain_loss,
                             "gain_loss_percent": gain_loss_pct,
-                            "note": "Using cost basis (historical price not available)",
+                            "note": "New position (not in historical snapshot) - showing total return",
                         })
                     else:
                         # No historical or cost basis data
                         performance_holdings.append({
-                            "name": holding.get("name", "Unknown"),
+                            "name": name,
                             "ticker": ticker,
                             "quantity": quantity,
                             "current_value": current_value,
-                            "note": "Performance data not available",
+                            "note": "New position - performance data not available",
                         })
 
             # Calculate total portfolio performance
             if has_historical_data and total_historical_value > 0:
-                # Period-specific performance available
+                # Period-specific performance available from snapshot comparison
                 total_change = total_current_value - total_historical_value
                 total_change_pct = (total_change / total_historical_value) * 100
 
+                snapshot_date = historical_snapshot.document_metadata.get("snapshot_date", "unknown")
+                if isinstance(snapshot_date, str) and "T" in snapshot_date:
+                    snapshot_date_str = datetime.fromisoformat(snapshot_date).strftime('%Y-%m-%d')
+                else:
+                    snapshot_date_str = str(snapshot_date)
+
                 summary = (
                     f"Your portfolio {period_label} performance: ${total_change:+,.2f} ({total_change_pct:+.2f}%). "
-                    f"Current value: ${total_current_value:,.2f}, {period_label.lower()} ago: ${total_historical_value:,.2f}."
+                    f"Current value: ${total_current_value:,.2f}, on {snapshot_date_str}: ${total_historical_value:,.2f}."
                 )
                 
                 return {
@@ -233,8 +320,9 @@ def create_portfolio_performance_tool(
                     "total_change_dollars": total_change,
                     "total_change_percent": total_change_pct,
                     "period_requested": period_label,
-                    "calculation_method": "historical_prices",
-                    "note": f"Performance calculated using historical prices from {target_date.strftime('%Y-%m-%d')}",
+                    "calculation_method": "snapshot_comparison",
+                    "historical_snapshot_date": snapshot_date_str,
+                    "note": f"Performance calculated by comparing current snapshot to historical snapshot from {snapshot_date_str}",
                 }
             else:
                 # Fall back to cost basis for total return
@@ -267,8 +355,9 @@ def create_portfolio_performance_tool(
                     "period_requested": period_label,
                     "calculation_method": "cost_basis",
                     "note": (
-                        f"Historical prices for {period_label} not available. "
-                        "Showing total return since purchase based on cost basis."
+                        f"No historical snapshot available for {period_label} comparison. "
+                        f"Showing total return since purchase based on cost basis. "
+                        f"Historical snapshots will be available after syncing data for {days_back}+ days."
                     ),
                 }
 
@@ -288,9 +377,9 @@ def create_portfolio_performance_tool(
     return calculate_portfolio_performance
 
 
-def _extract_holdings_from_results(langchain_docs: list) -> list[dict]:
+def _extract_holdings_from_results(docs: list) -> list[dict]:
     """
-    Extract holdings data from LangChain documents returned by search.
+    Extract holdings data from documents.
 
     Parses markdown-formatted holdings documents to extract:
     - Security name and ticker
@@ -299,18 +388,22 @@ def _extract_holdings_from_results(langchain_docs: list) -> list[dict]:
     - Cost basis and gain/loss
 
     Args:
-        langchain_docs: List of LangChain documents from connector service search
+        docs: List of Document objects (SQLAlchemy) or LangChain documents
 
     Returns:
         List of holding dictionaries with extracted data
     """
     holdings = []
 
-    for doc in langchain_docs:
-        # Handle both dict format and LangChain document format
-        if isinstance(doc, dict):
+    for doc in docs:
+        # Handle different document formats
+        if hasattr(doc, "content"):
+            # SQLAlchemy Document object
+            content = doc.content
+        elif isinstance(doc, dict):
             content = doc.get('content', '')
         elif hasattr(doc, "page_content"):
+            # LangChain document
             content = doc.page_content
         else:
             content = str(doc)

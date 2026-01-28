@@ -395,29 +395,18 @@ class PlaidBaseIndexer:
 
         markdown_content = "".join(markdown_parts)
 
-        # Generate unique identifier
+        # Generate unique identifier with timestamp for historical tracking
         from hashlib import sha256
 
-        # Use current date + connector ID for uniqueness (updates daily)
-        unique_id = f"{connector_id}_accounts_{datetime.now(UTC).date()}"
+        snapshot_timestamp = datetime.now(UTC)
+        # Use timestamp for uniqueness - preserves all snapshots over time
+        unique_id = f"{connector_id}_accounts_{snapshot_timestamp.isoformat()}"
         content_hash = sha256(unique_id.encode()).hexdigest()
 
-        # Check for existing document (delete old one to update)
-        stmt = select(Document).where(
-            Document.search_space_id == search_space_id,
-            Document.document_metadata["connector_id"].as_string() == str(connector_id),
-            Document.document_metadata["document_subtype"].as_string()
-            == "account_summary",
-        )
-        result = await session.execute(stmt)
-        existing_doc = result.scalar_one_or_none()
-
-        if existing_doc:
-            await session.delete(existing_doc)
-            await session.commit()
-            logger.info(
-                f"Deleted old account summary for {self.connector_name} before creating new one"
-            )
+        # Note: We DO NOT delete old snapshots - we keep historical data for:
+        # - Account balance tracking over time
+        # - Cash flow analysis
+        # - Spending pattern detection
 
         # Get LLM for embeddings
         user_llm = await get_user_long_context_llm(session, user_id, search_space_id)
@@ -439,12 +428,13 @@ class PlaidBaseIndexer:
         # Create document
         doc = Document(
             search_space_id=search_space_id,
-            title=f"{self.connector_name} - Account Summary",
+            title=f"{self.connector_name} - Account Summary ({snapshot_timestamp.strftime('%Y-%m-%d %H:%M UTC')})",
             document_type=DocumentType.FILE,
             document_metadata={
                 "connector_id": connector_id,
                 "connector_name": self.connector_name,
                 "document_subtype": "account_summary",
+                "snapshot_date": snapshot_timestamp.isoformat(),
                 "total_balance": total_balance,
                 "account_count": len(accounts),
                 "is_plaid_document": True,
@@ -565,29 +555,18 @@ class PlaidBaseIndexer:
 
         markdown_content = "".join(markdown_parts)
 
-        # Generate unique identifier
+        # Generate unique identifier with timestamp for historical tracking
         from hashlib import sha256
 
-        # Use current date + connector ID for uniqueness (updates daily)
-        unique_id = f"{connector_id}_holdings_{datetime.now(UTC).date()}"
+        snapshot_timestamp = datetime.now(UTC)
+        # Use timestamp for uniqueness - preserves all snapshots over time
+        unique_id = f"{connector_id}_holdings_{snapshot_timestamp.isoformat()}"
         content_hash = sha256(unique_id.encode()).hexdigest()
 
-        # Check for existing document (delete old one to update)
-        stmt = select(Document).where(
-            Document.search_space_id == search_space_id,
-            Document.document_metadata["connector_id"].as_string() == str(connector_id),
-            Document.document_metadata["document_subtype"].as_string()
-            == "investment_holdings",
-        )
-        result = await session.execute(stmt)
-        existing_doc = result.scalar_one_or_none()
-
-        if existing_doc:
-            await session.delete(existing_doc)
-            await session.commit()
-            logger.info(
-                f"Deleted old holdings document for {self.connector_name} before creating new one"
-            )
+        # Note: We DO NOT delete old snapshots - we keep historical data for:
+        # - Portfolio performance tracking over time
+        # - Tax loss harvesting analysis (need historical positions)
+        # - Trend analysis and reporting
 
         # Get LLM for embeddings
         user_llm = await get_user_long_context_llm(session, user_id, search_space_id)
@@ -609,12 +588,13 @@ class PlaidBaseIndexer:
         # Create document
         doc = Document(
             search_space_id=search_space_id,
-            title=f"{self.connector_name} - Investment Holdings",
+            title=f"{self.connector_name} - Investment Holdings ({snapshot_timestamp.strftime('%Y-%m-%d %H:%M UTC')})",
             document_type=DocumentType.FILE,
             document_metadata={
                 "connector_id": connector_id,
                 "connector_name": self.connector_name,
                 "document_subtype": "investment_holdings",
+                "snapshot_date": snapshot_timestamp.isoformat(),
                 "total_value": total_value,
                 "positions_count": len(holdings),
                 "is_plaid_document": True,
