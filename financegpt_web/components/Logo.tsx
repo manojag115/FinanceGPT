@@ -8,7 +8,7 @@ export const Logo = ({ className }: { className?: string }) => {
 	return (
 		<Link href="/">
 			<Image
-				src="/icon-128.svg"
+				src="/financegpt.svg"
 				className={cn("dark:invert", className)}
 				alt="logo"
 				width={128}

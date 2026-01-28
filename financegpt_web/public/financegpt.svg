@@ -1,0 +1,36 @@
+<svg width="240" height="240" viewBox="0 0 240 240" fill="none"
+     xmlns="http://www.w3.org/2000/svg">
+
+  <!-- Gradient definitions -->
+  <defs>
+    <linearGradient id="primaryGradient" x1="0" y1="0" x2="1" y2="1">
+      <stop offset="0%" stop-color="#0F172A"/>
+      <stop offset="100%" stop-color="#1E3A8A"/>
+    </linearGradient>
+
+    <linearGradient id="accentGradient" x1="0" y1="0" x2="0" y2="1">
+      <stop offset="0%" stop-color="#10B981"/>
+      <stop offset="100%" stop-color="#059669"/>
+    </linearGradient>
+  </defs>
+
+  <!-- Outer circle (trust / stability) -->
+  <circle cx="120" cy="120" r="96"
+          stroke="url(#primaryGradient)"
+          stroke-width="12"
+          fill="none"/>
+
+  <!-- Stylized upward bars (growth / finance) -->
+  <rect x="86" y="124" width="14" height="32" rx="3"
+        fill="url(#accentGradient)"/>
+  <rect x="113" y="108" width="14" height="48" rx="3"
+        fill="url(#accentGradient)"/>
+  <rect x="140" y="88" width="14" height="68" rx="3"
+        fill="url(#accentGradient)"/>
+
+  <!-- Abstract "AI / Advisor" apex -->
+  <path d="M120 60 L156 156 H84 L120 60 Z"
+        fill="url(#primaryGradient)"
+        opacity="0.9"/>
+
+</svg>

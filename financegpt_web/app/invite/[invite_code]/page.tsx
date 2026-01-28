@@ -379,7 +379,7 @@ export default function InviteAcceptPage() {
 						href="/"
 						className="inline-flex items-center gap-2 text-muted-foreground hover:text-foreground transition-colors"
 					>
-						<Image src="/icon-128.svg" alt="FinanceGPT" width={24} height={24} className="rounded" />
+						<Image src="/financegpt.svg" alt="FinanceGPT" width={24} height={24} className="rounded" />
 						<span className="text-sm font-medium">FinanceGPT</span>
 					</Link>
 				</motion.div>
