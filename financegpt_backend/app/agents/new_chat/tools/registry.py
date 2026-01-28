@@ -49,7 +49,7 @@ from .knowledge_base import create_search_knowledge_base_tool
 from .link_preview import create_link_preview_tool
 from .mcp_tool import load_mcp_tools
 from .optimize_credit_card import create_optimize_credit_card_usage_tool
-from .portfolio_analysis import create_portfolio_analysis_tool
+from .portfolio_analysis import create_portfolio_analysis_tool, create_tax_loss_harvesting_tool
 from .portfolio_performance import create_portfolio_performance_tool
 from .search_financegpt_docs import create_search_financegpt_docs_tool
 from .search_transactions import create_search_transactions_tool
@@ -176,6 +176,17 @@ BUILTIN_TOOLS: list[ToolDefinition] = [
         name="analyze_portfolio_allocation",
         description="Analyze portfolio allocation, compare to investment philosophies (Bogleheads, etc.), and get rebalancing recommendations",
         factory=lambda deps: create_portfolio_analysis_tool(
+            search_space_id=deps["search_space_id"],
+            db_session=deps["db_session"],
+            connector_service=deps["connector_service"],
+        ),
+        requires=["search_space_id", "db_session", "connector_service"],
+    ),
+    # Tax loss harvesting tool - identifies opportunities to harvest losses for tax savings
+    ToolDefinition(
+        name="analyze_tax_loss_harvesting",
+        description="Identify tax loss harvesting opportunities and suggest replacement securities",
+        factory=lambda deps: create_tax_loss_harvesting_tool(
             search_space_id=deps["search_space_id"],
             db_session=deps["db_session"],
             connector_service=deps["connector_service"],

@@ -148,8 +148,8 @@ def _extract_holdings_from_content(content: str) -> list[dict[str, Any]]:
     """Extract holdings from markdown content."""
     holdings = []
     
-    # Pattern: - **TICKER**: quantity shares @ $value | Cost Basis: $X | Gain/Loss: $Y
-    pattern = r"- \*\*([A-Z0-9]+)\*\*(?:\*)?:\s*([\d.]+)\s+shares?\s+@\s+\$([\d,.]+)"
+    # Pattern: - **TICKER**: quantity shares @ $value | Cost Basis: $X | Gain/Loss: +/-$Y (+/-Z%)
+    pattern = r"- \*\*([A-Z0-9]+)\*\*(?:\*)?:\s*([\d.]+)\s+shares?\s+@\s+\$([\d,.]+)(?:\s+\|\s+Cost Basis:\s+\$([\d,.]+)\s+\|\s+Gain/Loss:\s+([+-])\$([\d,.]+)\s+\(([+-]?[\d,.]+)%\))?"
     matches = re.finditer(pattern, content, re.MULTILINE)
     
     for match in matches:
@@ -157,10 +157,25 @@ def _extract_holdings_from_content(content: str) -> list[dict[str, Any]]:
         quantity = float(match.group(2).replace(",", ""))
         value = float(match.group(3).replace(",", ""))
         
+        # Extract cost basis and gain/loss if present
+        cost_basis = None
+        gain_loss = None
+        gain_loss_percent = None
+        
+        if match.group(4):  # Has cost basis
+            cost_basis = float(match.group(4).replace(",", ""))
+            sign = match.group(5)  # + or -
+            gain_amount = float(match.group(6).replace(",", ""))
+            gain_loss = gain_amount if sign == "+" else -gain_amount
+            gain_loss_percent = float(match.group(7).replace(",", ""))
+        
         holdings.append({
             "ticker": ticker,
             "quantity": quantity,
             "value": value,
+            "cost_basis": cost_basis,
+            "gain_loss": gain_loss,
+            "gain_loss_percent": gain_loss_percent,
         })
     
     return holdings
@@ -357,6 +372,119 @@ def _compare_to_philosophy(
     }
 
 
+# Tax loss harvesting replacement suggestions
+TAX_LOSS_REPLACEMENTS = {
+    # S&P 500 alternatives
+    "VOO": ["IVV", "SPLG"],  # iShares or SPDR alternatives
+    "SPY": ["VOO", "IVV"],
+    "IVV": ["VOO", "SPY"],
+    
+    # Total market alternatives
+    "VTI": ["ITOT", "SCHB"],  # iShares or Schwab alternatives
+    "ITOT": ["VTI", "SCHB"],
+    
+    # International alternatives
+    "VXUS": ["IXUS", "SCHF"],
+    "VEA": ["IEFA", "SCHF"],
+    
+    # Sector-specific: similar companies in same sector
+    "MSFT": ["GOOGL", "AAPL", "NVDA"],  # Other large-cap tech
+    "AAPL": ["MSFT", "GOOGL", "NVDA"],
+    "GOOGL": ["MSFT", "META", "AMZN"],
+    "AMZN": ["GOOGL", "WMT", "SHOP"],
+}
+
+
+def _analyze_tax_loss_harvesting(
+    holdings: list[dict[str, Any]],
+    tax_rate: float = 0.20,  # Default 20% (long-term capital gains for most)
+) -> dict[str, Any]:
+    """
+    Analyze portfolio for tax loss harvesting opportunities.
+    
+    Args:
+        holdings: List of holdings with cost_basis and current value
+        tax_rate: Marginal tax rate for capital gains (default 20%)
+        
+    Returns:
+        Dictionary with tax loss harvesting analysis
+    """
+    opportunities = []
+    total_harvestable_loss = 0
+    total_tax_benefit = 0
+    
+    for holding in holdings:
+        ticker = holding.get("ticker", "")
+        cost_basis = holding.get("cost_basis")
+        value = holding.get("value", 0)
+        gain_loss = holding.get("gain_loss")
+        
+        # Skip if no cost basis data or not a taxable position
+        if cost_basis is None or cost_basis <= 0:
+            continue
+        
+        # Calculate loss (negative gain)
+        if gain_loss is not None and gain_loss < 0:
+            loss_amount = abs(gain_loss)
+        elif value < cost_basis:
+            loss_amount = cost_basis - value
+        else:
+            # No loss to harvest
+            continue
+        
+        # Calculate tax benefit
+        tax_savings = loss_amount * tax_rate
+        total_harvestable_loss += loss_amount
+        total_tax_benefit += tax_savings
+        
+        # Get replacement suggestions
+        replacements = TAX_LOSS_REPLACEMENTS.get(ticker, [])
+        if not replacements:
+            # If ticker not in map, suggest similar asset class
+            classification = _classify_holding(ticker)
+            if classification["category"] == "large_cap":
+                replacements = ["VTI (Total Market)", "QQQ (Nasdaq)"]
+            elif classification["category"] == "total_market":
+                replacements = ["VOO (S&P 500)", "VUG (Growth)"]
+            else:
+                replacements = ["Similar ETF or individual stock"]
+        
+        opportunities.append({
+            "ticker": ticker,
+            "current_value": value,
+            "cost_basis": cost_basis,
+            "unrealized_loss": loss_amount,
+            "loss_percent": (loss_amount / cost_basis * 100) if cost_basis > 0 else 0,
+            "tax_savings": tax_savings,
+            "replacement_options": replacements,
+            "recommendation": (
+                f"Sell {ticker} to harvest ${loss_amount:,.2f} loss (saves ${tax_savings:,.2f} in taxes). "
+                f"Replace with: {', '.join(replacements[:2])} to maintain market exposure."
+            ),
+        })
+    
+    # Sort by tax savings (largest first)
+    opportunities.sort(key=lambda x: x["tax_savings"], reverse=True)
+    
+    return {
+        "has_opportunities": len(opportunities) > 0,
+        "total_harvestable_loss": total_harvestable_loss,
+        "total_tax_benefit": total_tax_benefit,
+        "tax_rate_used": tax_rate,
+        "opportunities": opportunities,
+        "wash_sale_warning": (
+            "⚠️ WASH SALE RULE: Do not buy the same or 'substantially identical' security "
+            "within 30 days before or after the sale, or the loss will be disallowed. "
+            "Consider the suggested replacement options instead."
+        ),
+        "summary": (
+            f"Found {len(opportunities)} tax loss harvesting opportunities totaling "
+            f"${total_harvestable_loss:,.2f} in losses, which could save ${total_tax_benefit:,.2f} "
+            f"in taxes (assuming {tax_rate*100:.0f}% tax rate)."
+        ) if opportunities else "No tax loss harvesting opportunities found. All positions are in gains!",
+    }
+
+
 def create_portfolio_analysis_tool(
     search_space_id: int,
     db_session: AsyncSession,
@@ -487,3 +615,111 @@ def create_portfolio_analysis_tool(
             }
 
     return analyze_portfolio_allocation
+
+
+def create_tax_loss_harvesting_tool(
+    search_space_id: int,
+    db_session: AsyncSession,
+    connector_service: ConnectorService,
+):
+    """
+    Create a tax loss harvesting advisory tool.
+
+    Args:
+        search_space_id: The user's search space ID
+        db_session: Database session for queries
+        connector_service: Service for searching knowledge base
+
+    Returns:
+        Langchain tool for tax loss harvesting analysis
+    """
+
+    @tool
+    async def analyze_tax_loss_harvesting(
+        tax_rate: float = 0.20,
+    ) -> dict[str, Any]:
+        """Identify tax loss harvesting opportunities in your portfolio.
+
+        This tool analyzes your holdings to find positions with unrealized losses
+        that could be sold to offset capital gains and reduce your tax liability.
+        It also suggests replacement securities to maintain market exposure while
+        avoiding wash sale rules.
+
+        Args:
+            tax_rate: Your marginal tax rate for capital gains. Options:
+                - 0.15 (15% - most common for long-term capital gains)
+                - 0.20 (20% - higher income brackets, DEFAULT)
+                - 0.238 (23.8% - highest bracket + NIIT)
+                - Custom value between 0.0 and 0.5
+
+        Returns:
+            A dictionary containing:
+            - summary: Overview of tax loss harvesting opportunities
+            - total_harvestable_loss: Total dollar amount of losses available
+            - total_tax_benefit: Estimated tax savings
+            - opportunities: List of specific positions to harvest with replacements
+            - wash_sale_warning: Important rules about wash sales
+
+        Example:
+            User: "Can I harvest any tax losses?"
+            User: "What stocks should I sell for tax losses?"
+            User: "How much can I save in taxes by tax loss harvesting?"
+        """
+        try:
+            # Validate tax rate
+            if tax_rate < 0 or tax_rate > 0.5:
+                return {
+                    "summary": "Invalid tax rate. Please use a value between 0.0 and 0.5 (0% to 50%).",
+                    "error": "Invalid tax_rate parameter",
+                }
+            
+            # Get current holdings
+            holdings = await _get_latest_holdings(db_session, search_space_id)
+            
+            if not holdings:
+                return {
+                    "summary": "No investment holdings found in your accounts.",
+                    "note": "Please connect your investment accounts or upload portfolio data to analyze for tax loss harvesting.",
+                }
+            
+            # Analyze for tax loss harvesting opportunities
+            tlh_analysis = _analyze_tax_loss_harvesting(holdings, tax_rate)
+            
+            # Build comprehensive summary
+            summary = f"Tax Loss Harvesting Analysis\n"
+            summary += f"Tax Rate: {tax_rate*100:.1f}%\n\n"
+            summary += f"{tlh_analysis['summary']}\n\n"
+            
+            if tlh_analysis["opportunities"]:
+                summary += "Harvesting Opportunities:\n"
+                for opp in tlh_analysis["opportunities"]:
+                    summary += f"\n{opp['ticker']}:\n"
+                    summary += f"  • Unrealized Loss: ${opp['unrealized_loss']:,.2f} ({opp['loss_percent']:.1f}%)\n"
+                    summary += f"  • Tax Savings: ${opp['tax_savings']:,.2f}\n"
+                    summary += f"  • Current Value: ${opp['current_value']:,.2f}\n"
+                    summary += f"  • Cost Basis: ${opp['cost_basis']:,.2f}\n"
+                    summary += f"  • Replacement Options: {', '.join(opp['replacement_options'][:3])}\n"
+                
+                summary += f"\n{tlh_analysis['wash_sale_warning']}\n"
+                summary += "\n💡 Strategy: Sell losing positions, immediately buy suggested replacements to stay invested.\n"
+            else:
+                summary += "\n✓ Congratulations! All your positions are showing gains.\n"
+                summary += "Tax loss harvesting is not applicable when positions are profitable.\n"
+            
+            return {
+                "summary": summary,
+                "has_opportunities": tlh_analysis["has_opportunities"],
+                "total_harvestable_loss": tlh_analysis["total_harvestable_loss"],
+                "total_tax_benefit": tlh_analysis["total_tax_benefit"],
+                "opportunities": tlh_analysis["opportunities"],
+                "wash_sale_warning": tlh_analysis["wash_sale_warning"],
+            }
+            
+        except Exception as e:
+            logger.error(f"Error analyzing tax loss harvesting: {e}", exc_info=True)
+            return {
+                "summary": f"Error analyzing tax loss harvesting: {str(e)}",
+                "error": str(e),
+            }
+
+    return analyze_tax_loss_harvesting
