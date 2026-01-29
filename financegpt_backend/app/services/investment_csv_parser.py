@@ -59,13 +59,27 @@ class FidelityCSVParser:
                 # Validate row using Pydantic
                 row = FidelityHoldingCSVRow(**row_data)
                 
+                # Get market value (try both field names)
+                market_value = row.market_value if row.market_value is not None else row.current_value
+                
+                # Calculate cost basis if not directly provided
+                cost_basis = row.cost_basis_total
+                if cost_basis is None and row.cost_basis_gain_loss is not None and market_value is not None:
+                    # cost_basis = market_value - gain_loss
+                    cost_basis = market_value - row.cost_basis_gain_loss
+                
+                # Calculate average cost basis if not provided
+                average_cost_basis = row.average_cost_basis
+                if average_cost_basis is None and cost_basis is not None and row.quantity and row.quantity > 0:
+                    average_cost_basis = cost_basis / row.quantity
+                
                 # Extract basic holding data
                 holding_data = {
                     "symbol": row.symbol.strip(),
                     "description": row.description.strip(),
                     "quantity": row.quantity,
-                    "cost_basis": row.cost_basis_total,
-                    "average_cost_basis": row.average_cost_basis,
+                    "cost_basis": cost_basis,
+                    "average_cost_basis": average_cost_basis,
                 }
                 holdings_data.append(holding_data)
                 
@@ -147,15 +161,48 @@ class GenericHoldingsParser:
     """Parser for generic holdings CSV (Symbol, Quantity, Cost Basis, Average Cost)."""
     
     @staticmethod
+    def _fuzzy_match_column(columns: list[str], possible_names: list[str]) -> str | None:
+        """
+        Find a column name using fuzzy matching.
+        
+        Tries in order:
+        1. Exact match (case-insensitive)
+        2. Substring match (case-insensitive)
+        
+        Args:
+            columns: List of actual column names from CSV
+            possible_names: List of possible column names to search for
+            
+        Returns:
+            Matched column name or None if not found
+        """
+        columns_lower = {col.lower(): col for col in columns}
+        
+        # Try exact match first
+        for name in possible_names:
+            if name.lower() in columns_lower:
+                return columns_lower[name.lower()]
+        
+        # Try substring match
+        for name in possible_names:
+            name_lower = name.lower()
+            for col_lower, col_original in columns_lower.items():
+                if name_lower in col_lower:
+                    return col_original
+        
+        return None
+    
+    @staticmethod
     async def parse_minimal_csv(
         csv_content: str | bytes,
         account_id: UUID,
     ) -> list[InvestmentHoldingCreate]:
         """
         Parse minimal CSV with just Symbol, Quantity, Cost Basis, Average Cost.
+        Uses fuzzy column matching to handle different CSV formats.
         
         Args:
-            csv_content: CSV with columns: Symbol, Quantity, Cost Basis Total, Average Cost Basis
+            csv_content: CSV with columns for symbol, quantity, cost basis, etc.
             account_id: UUID of the account these holdings belong to
             
         Returns:
@@ -167,26 +214,87 @@ class GenericHoldingsParser:
         
         # Parse CSV
         reader = csv.DictReader(io.StringIO(csv_content))
+        rows = list(reader)
+        
+        if not rows:
+            raise ValueError("CSV file is empty")
+        
+        # Get column names and find matches
+        columns = list(rows[0].keys())
+        
+        # Define possible column names for each field (in order of preference)
+        symbol_col = GenericHoldingsParser._fuzzy_match_column(
+            columns, ["Symbol", "Ticker", "Stock Symbol"]
+        )
+        quantity_col = GenericHoldingsParser._fuzzy_match_column(
+            columns, ["Quantity", "Shares", "Qty", "Units"]
+        )
+        value_col = GenericHoldingsParser._fuzzy_match_column(
+            columns, ["Current Value", "Market Value", "Value", "Total Value"]
+        )
+        cost_basis_col = GenericHoldingsParser._fuzzy_match_column(
+            columns, ["Cost Basis Total", "Cost Basis", "Total Cost", "Original Cost"]
+        )
+        gain_loss_col = GenericHoldingsParser._fuzzy_match_column(
+            columns, ["Cost Basis Gain/Loss", "Gain/Loss", "Total Gain/Loss Dollar", "Total Gain/Loss"]
+        )
+        avg_cost_col = GenericHoldingsParser._fuzzy_match_column(
+            columns, ["Average Cost Basis", "Average Cost", "Avg Cost", "Cost Per Share"]
+        )
+        
+        # Require symbol and quantity at minimum
+        if not symbol_col:
+            raise ValueError("Could not find Symbol column in CSV")
+        if not quantity_col:
+            raise ValueError("Could not find Quantity column in CSV")
         
         holdings = []
-        for row in reader:
+        for row in rows:
             try:
-                symbol = row["Symbol"].strip().upper()
-                quantity = Decimal(row["Quantity"])
-                cost_basis = Decimal(row.get("Cost Basis Total", row.get("Cost Basis", 0)))
-                average_cost = Decimal(row.get("Average Cost Basis", row.get("Average Cost", 0)))
+                symbol = row[symbol_col].strip().upper()
+                if not symbol:
+                    continue
+                    
+                quantity = Decimal(row[quantity_col] or 0)
+                if quantity <= 0:
+                    continue
+                
+                # Get market value if available
+                market_value = None
+                if value_col and row.get(value_col):
+                    market_value = Decimal(row[value_col])
+                
+                # Calculate cost basis
+                cost_basis = None
+                if cost_basis_col and row.get(cost_basis_col):
+                    cost_basis = Decimal(row[cost_basis_col])
+                elif gain_loss_col and value_col and row.get(gain_loss_col) and row.get(value_col):
+                    # Calculate: cost_basis = market_value - gain_loss
+                    market_value = Decimal(row[value_col])
+                    gain_loss = Decimal(row[gain_loss_col])
+                    cost_basis = market_value - gain_loss
+                
+                # Get average cost basis
+                average_cost = None
+                if avg_cost_col and row.get(avg_cost_col):
+                    average_cost = Decimal(row[avg_cost_col])
+                elif cost_basis and quantity > 0:
+                    average_cost = cost_basis / quantity
                 
                 holding = InvestmentHoldingCreate(
                     account_id=account_id,
                     symbol=symbol,
                     quantity=quantity,
-                    cost_basis=cost_basis,
-                    average_cost_basis=average_cost if average_cost > 0 else None,
+                    cost_basis=cost_basis if cost_basis and cost_basis > 0 else None,
+                    average_cost_basis=average_cost if average_cost and average_cost > 0 else None,
                 )
                 holdings.append(holding)
                 
-            except (KeyError, ValueError, Decimal.InvalidOperation) as e:
+            except (ValueError, Decimal.InvalidOperation) as e:
                 print(f"Warning: Skipped row due to error: {e}")
                 continue
+        
+        if not holdings:
+            raise ValueError("No valid holdings found in CSV")
         
         return holdings

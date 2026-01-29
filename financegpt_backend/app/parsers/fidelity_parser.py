@@ -105,11 +105,43 @@ class FidelityParser(BaseFinancialParser):
             logger.error(f"Error parsing Fidelity CSV: {e}", exc_info=True)
             raise
 
+    def _fuzzy_match_column(self, row: dict, possible_names: list[str]) -> str:
+        """
+        Find a value using fuzzy column name matching.
+        
+        Tries in order:
+        1. Exact match (case-insensitive)
+        2. Substring match (case-insensitive)
+        
+        Args:
+            row: CSV row dict
+            possible_names: List of possible column names to search for
+            
+        Returns:
+            Value from matched column or empty string if not found
+        """
+        columns_lower = {k.lower(): k for k in row.keys()}
+        
+        # Try exact match first
+        for name in possible_names:
+            if name.lower() in columns_lower:
+                return row[columns_lower[name.lower()]]
+        
+        # Try substring match
+        for name in possible_names:
+            name_lower = name.lower()
+            for col_lower, col_original in columns_lower.items():
+                if name_lower in col_lower:
+                    return row[col_original]
+        
+        return ""
+
     async def _parse_positions(
         self, csv_reader: csv.DictReader
     ) -> list[InvestmentHolding]:
         """
         Parse Fidelity positions/holdings CSV.
+        Uses fuzzy column matching to handle different CSV formats.
 
         Format includes: Symbol, Description, Quantity, Last Price, Current Value,
         Cost Basis Total, Gain/Loss Dollar, Gain/Loss Percent
@@ -119,28 +151,42 @@ class FidelityParser(BaseFinancialParser):
         for row in csv_reader:
             try:
                 # Skip empty or header rows
-                symbol = row.get("Symbol", "").strip()
+                symbol = self._fuzzy_match_column(row, ["Symbol", "Ticker"]).strip()
                 if not symbol or symbol == "Symbol":
                     continue
 
                 # Parse basic info
-                description = row.get("Description", "").strip()
-                quantity = self._parse_amount(row.get("Quantity", "0"))
-                price = self._parse_amount(row.get("Last Price", "0"))
-                value = self._parse_amount(row.get("Current Value", "0"))
+                description = self._fuzzy_match_column(row, ["Description", "Security Description"]).strip()
+                quantity_str = self._fuzzy_match_column(row, ["Quantity", "Shares", "Qty"])
+                quantity = self._parse_amount(quantity_str or "0")
+                
+                price_str = self._fuzzy_match_column(row, ["Last Price", "Price", "Current Price"])
+                price = self._parse_amount(price_str or "0")
+                
+                value_str = self._fuzzy_match_column(row, ["Current Value", "Market Value", "Value", "Total Value"])
+                value = self._parse_amount(value_str or "0")
 
                 # Parse cost basis and gains
-                cost_basis_str = row.get("Cost Basis Total", "")
+                cost_basis_str = self._fuzzy_match_column(row, ["Cost Basis Total", "Cost Basis", "Total Cost", "Original Cost"])
                 cost_basis = (
                     self._parse_amount(cost_basis_str) if cost_basis_str else None
                 )
 
-                # Try both "Gain/Loss Dollar" and "Total Gain/Loss Dollar"
-                gain_loss_str = row.get("Total Gain/Loss Dollar", "") or row.get("Gain/Loss Dollar", "")
+                # Try to get gain/loss
+                gain_loss_str = self._fuzzy_match_column(row, [
+                    "Total Gain/Loss Dollar", "Gain/Loss Dollar", "Cost Basis Gain/Loss", 
+                    "Gain/Loss", "Total Gain/Loss"
+                ])
                 gain_loss = self._parse_amount(gain_loss_str) if gain_loss_str else None
+                
+                # Calculate cost basis if not directly provided but we have value and gain/loss
+                if cost_basis is None and value and gain_loss is not None:
+                    cost_basis = value - gain_loss
 
-                # Try both "Gain/Loss Percent" and "Total Gain/Loss Percent"
-                gain_loss_pct_str = row.get("Total Gain/Loss Percent", "") or row.get("Gain/Loss Percent", "")
+                # Try to get gain/loss percent
+                gain_loss_pct_str = self._fuzzy_match_column(row, [
+                    "Total Gain/Loss Percent", "Gain/Loss Percent", "Gain/Loss %"
+                ])
                 gain_loss_percent = None
                 if gain_loss_pct_str:
                     # Remove % sign and parse
@@ -149,11 +195,12 @@ class FidelityParser(BaseFinancialParser):
                         gain_loss_percent = self._parse_amount(pct_cleaned)
 
                 # Determine account type from Account Name if available
-                account_name = row.get("Account Name", "").upper()
+                account_name = self._fuzzy_match_column(row, ["Account Name", "Account"]).upper()
                 account_type = self._determine_account_type(account_name)
 
                 # Determine asset type
-                asset_type = row.get("Security Type", "").lower() or None
+                asset_type_str = self._fuzzy_match_column(row, ["Security Type", "Type", "Asset Type"]).lower()
+                asset_type = asset_type_str if asset_type_str else None
                 if not asset_type:
                     # Guess from symbol
                     if len(symbol) <= 5:

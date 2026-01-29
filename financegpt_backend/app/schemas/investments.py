@@ -204,21 +204,28 @@ class PortfolioAllocationTargetsUpdate(BaseModel):
 class FidelityHoldingCSVRow(BaseModel):
     """Schema for parsing Fidelity CSV row."""
     account_number: str = Field(..., alias="Account Number")
-    account_name: str = Field(..., alias="Account Name")
+    account_name: str | None = Field(None, alias="Account Name")
     symbol: str = Field(..., alias="Symbol")
     description: str = Field(..., alias="Description")
     quantity: Decimal = Field(..., alias="Quantity")
-    last_price: Decimal = Field(..., alias="Last Price")
-    last_price_change: Decimal = Field(..., alias="Last Price Change")
-    current_value: Decimal = Field(..., alias="Current Value")
-    todays_gain_loss_dollar: Decimal = Field(..., alias="Today's Gain/Loss Dollar")
-    todays_gain_loss_percent: Decimal = Field(..., alias="Today's Gain/Loss Percent")
-    total_gain_loss_dollar: Decimal = Field(..., alias="Total Gain/Loss Dollar")
-    total_gain_loss_percent: Decimal = Field(..., alias="Total Gain/Loss Percent")
-    percent_of_account: Decimal = Field(..., alias="Percent Of Account")
-    cost_basis_total: Decimal = Field(..., alias="Cost Basis Total")
-    average_cost_basis: Decimal = Field(..., alias="Average Cost Basis")
-    type_field: str = Field(..., alias="Type")
+    last_price: Decimal | None = Field(None, alias="Last Price")
+    price: Decimal | None = Field(None, alias="Price")  # Alternative field name
+    last_price_change: Decimal | None = Field(None, alias="Last Price Change")
+    current_value: Decimal | None = Field(None, alias="Current Value")
+    market_value: Decimal | None = Field(None, alias="Market Value")  # Alternative field name
+    todays_gain_loss_dollar: Decimal | None = Field(None, alias="Today's Gain/Loss Dollar")
+    day_change: Decimal | None = Field(None, alias="Day Change")  # Alternative field name
+    todays_gain_loss_percent: Decimal | None = Field(None, alias="Today's Gain/Loss Percent")
+    day_change_percent: Decimal | None = Field(None, alias="Day Change %")  # Alternative field name
+    total_gain_loss_dollar: Decimal | None = Field(None, alias="Total Gain/Loss Dollar")
+    cost_basis_gain_loss: Decimal | None = Field(None, alias="Cost Basis Gain/Loss")  # Alternative field name
+    total_gain_loss_percent: Decimal | None = Field(None, alias="Total Gain/Loss Percent")
+    gain_loss_percent: Decimal | None = Field(None, alias="Gain/Loss %")  # Alternative field name
+    percent_of_account: Decimal | None = Field(None, alias="Percent Of Account")
+    cost_basis_total: Decimal | None = Field(None, alias="Cost Basis Total")
+    average_cost_basis: Decimal | None = Field(None, alias="Average Cost Basis")
+    type_field: str | None = Field(None, alias="Type")
+    price_as_of_date: str | None = Field(None, alias="Price As Of Date")
     
     model_config = ConfigDict(populate_by_name=True)
 
