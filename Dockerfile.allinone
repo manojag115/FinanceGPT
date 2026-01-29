@@ -43,13 +43,12 @@ COPY financegpt_web/ ./
 # Run fumadocs-mdx postinstall now that source files are available
 RUN pnpm fumadocs-mdx
 
-# Build with placeholder values that will be replaced at runtime
-# These unique strings allow runtime substitution via entrypoint script
-ENV NEXT_PUBLIC_FASTAPI_BACKEND_URL=__NEXT_PUBLIC_FASTAPI_BACKEND_URL__
-ENV NEXT_PUBLIC_FASTAPI_BACKEND_AUTH_TYPE=__NEXT_PUBLIC_FASTAPI_BACKEND_AUTH_TYPE__
-ENV NEXT_PUBLIC_ETL_SERVICE=__NEXT_PUBLIC_ETL_SERVICE__
-ENV NEXT_PUBLIC_ELECTRIC_URL=__NEXT_PUBLIC_ELECTRIC_URL__
-ENV NEXT_PUBLIC_ELECTRIC_AUTH_MODE=__NEXT_PUBLIC_ELECTRIC_AUTH_MODE__
+# Build with localhost URLs (all services run in same container)
+ENV NEXT_PUBLIC_FASTAPI_BACKEND_URL=http://localhost:8000
+ENV NEXT_PUBLIC_FASTAPI_BACKEND_AUTH_TYPE=LOCAL
+ENV NEXT_PUBLIC_ETL_SERVICE=DOCLING
+ENV NEXT_PUBLIC_ELECTRIC_URL=http://localhost:5133
+ENV NEXT_PUBLIC_ELECTRIC_AUTH_MODE=insecure
 
 # Build
 RUN pnpm run build

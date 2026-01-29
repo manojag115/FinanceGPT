@@ -158,31 +158,9 @@ fi
 # ================================================
 # Runtime Environment Variable Replacement
 # ================================================
-# Next.js NEXT_PUBLIC_* vars are baked in at build time.
-# This replaces placeholder values with actual runtime env vars.
-echo "🔧 Applying runtime environment configuration..."
-
-# Set defaults if not provided
-NEXT_PUBLIC_FASTAPI_BACKEND_URL="${NEXT_PUBLIC_FASTAPI_BACKEND_URL:-http://localhost:8000}"
-NEXT_PUBLIC_FASTAPI_BACKEND_AUTH_TYPE="${NEXT_PUBLIC_FASTAPI_BACKEND_AUTH_TYPE:-LOCAL}"
-NEXT_PUBLIC_ETL_SERVICE="${NEXT_PUBLIC_ETL_SERVICE:-DOCLING}"
-NEXT_PUBLIC_ELECTRIC_URL="${NEXT_PUBLIC_ELECTRIC_URL:-http://localhost:5133}"
-NEXT_PUBLIC_ELECTRIC_AUTH_MODE="${NEXT_PUBLIC_ELECTRIC_AUTH_MODE:-insecure}"
-
-# Replace placeholders in all JS files
-find /app/frontend -type f \( -name "*.js" -o -name "*.json" \) -exec sed -i \
-    -e "s|__NEXT_PUBLIC_FASTAPI_BACKEND_URL__|${NEXT_PUBLIC_FASTAPI_BACKEND_URL}|g" \
-    -e "s|__NEXT_PUBLIC_FASTAPI_BACKEND_AUTH_TYPE__|${NEXT_PUBLIC_FASTAPI_BACKEND_AUTH_TYPE}|g" \
-    -e "s|__NEXT_PUBLIC_ETL_SERVICE__|${NEXT_PUBLIC_ETL_SERVICE}|g" \
-    -e "s|__NEXT_PUBLIC_ELECTRIC_URL__|${NEXT_PUBLIC_ELECTRIC_URL}|g" \
-    -e "s|__NEXT_PUBLIC_ELECTRIC_AUTH_MODE__|${NEXT_PUBLIC_ELECTRIC_AUTH_MODE}|g" \
-    {} +
-
-echo "✅ Environment configuration applied"
-echo "   Backend URL:   ${NEXT_PUBLIC_FASTAPI_BACKEND_URL}"
-echo "   Auth Type:     ${NEXT_PUBLIC_FASTAPI_BACKEND_AUTH_TYPE}"
-echo "   ETL Service:   ${NEXT_PUBLIC_ETL_SERVICE}"
-echo "   Electric URL:  ${NEXT_PUBLIC_ELECTRIC_URL}"
+# Note: For all-in-one containers, frontend is built with localhost URLs
+# since all services run in the same container. No runtime replacement needed.
+echo "✅ Using built-in localhost configuration for all services"
 
 # ================================================
 # Run database migrations
@@ -223,11 +201,11 @@ echo "==========================================="
 echo "  📋 Configuration"
 echo "==========================================="
 echo "  Frontend URL:    http://localhost:3000"
-echo "  Backend API:     ${NEXT_PUBLIC_FASTAPI_BACKEND_URL}"
-echo "  API Docs:        ${NEXT_PUBLIC_FASTAPI_BACKEND_URL}/docs"
-echo "  Electric URL:    ${NEXT_PUBLIC_ELECTRIC_URL:-http://localhost:5133}"
-echo "  Auth Type:       ${NEXT_PUBLIC_FASTAPI_BACKEND_AUTH_TYPE}"
-echo "  ETL Service:     ${NEXT_PUBLIC_ETL_SERVICE}"
+echo "  Backend API:     http://localhost:8000"
+echo "  API Docs:        http://localhost:8000/docs"
+echo "  Electric URL:    http://localhost:5133"
+echo "  Auth Type:       ${AUTH_TYPE:-LOCAL}"
+echo "  ETL Service:     ${ETL_SERVICE:-DOCLING}"
 echo "  TTS Service:     ${TTS_SERVICE}"
 echo "  STT Service:     ${STT_SERVICE}"
 echo "==========================================="
