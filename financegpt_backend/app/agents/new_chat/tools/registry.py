@@ -45,6 +45,11 @@ from langchain_core.tools import BaseTool
 
 from .display_image import create_display_image_tool
 from .find_subscriptions import create_find_subscriptions_tool
+from .investment_holdings import (
+    create_analyze_portfolio_allocation_tool,
+    create_check_portfolio_performance_tool,
+    create_find_tax_loss_harvesting_tool,
+)
 from .knowledge_base import create_search_knowledge_base_tool
 from .link_preview import create_link_preview_tool
 from .mcp_tool import load_mcp_tools
@@ -148,7 +153,40 @@ BUILTIN_TOOLS: list[ToolDefinition] = [
         requires=["user_id", "search_space_id", "db_session"],
     ),
     # =========================================================================
-    # FINANCIAL ANALYSIS TOOLS
+    # FINANCIAL ANALYSIS TOOLS - STRUCTURED INVESTMENT DATA
+    # =========================================================================
+    # Portfolio performance from uploaded holdings - real-time stock performance
+    ToolDefinition(
+        name="check_portfolio_performance",
+        description="Get real-time portfolio performance from uploaded investment holdings (today's gains/losses, top performers)",
+        factory=lambda deps: create_check_portfolio_performance_tool(
+            user_id=deps["user_id"],
+            db_session=deps["db_session"],
+        ),
+        requires=["user_id", "db_session"],
+    ),
+    # Portfolio allocation analysis from uploaded holdings
+    ToolDefinition(
+        name="analyze_holdings_allocation",
+        description="Analyze portfolio allocation by asset class and sector from uploaded investment holdings",
+        factory=lambda deps: create_analyze_portfolio_allocation_tool(
+            user_id=deps["user_id"],
+            db_session=deps["db_session"],
+        ),
+        requires=["user_id", "db_session"],
+    ),
+    # Tax loss harvesting from uploaded holdings
+    ToolDefinition(
+        name="find_holdings_tax_loss_harvesting",
+        description="Find tax loss harvesting opportunities from uploaded investment holdings in taxable accounts",
+        factory=lambda deps: create_find_tax_loss_harvesting_tool(
+            user_id=deps["user_id"],
+            db_session=deps["db_session"],
+        ),
+        requires=["user_id", "db_session"],
+    ),
+    # =========================================================================
+    # FINANCIAL ANALYSIS TOOLS - PLAID INTEGRATION
     # =========================================================================
     # Transaction search - keyword-based search for specific merchants/transactions
     ToolDefinition(

@@ -53,6 +53,88 @@ LLAMACLOUD_RETRYABLE_EXCEPTIONS = (
 )
 
 
+async def _save_investment_holdings(
+    session: AsyncSession,
+    user_id: str,
+    holdings_data: list,
+    metadata: dict,
+    filename: str,
+) -> None:
+    """
+    Save investment holdings to structured database table.
+    
+    Args:
+        session: Database session
+        user_id: User ID
+        holdings_data: List of holdings from parser
+        metadata: Metadata from parser (institution, account info, etc.)
+        filename: Original filename
+    """
+    from uuid import UUID
+    from app.db import InvestmentAccount, InvestmentHolding
+    import uuid
+    
+    try:
+        # Create or get investment account
+        account = InvestmentAccount(
+            user_id=UUID(user_id),
+            account_number=metadata.get("account_number", f"FILE-{uuid.uuid4().hex[:8]}"),
+            account_name=metadata.get("account_name", filename),
+            account_type=metadata.get("account_type", "brokerage"),
+            account_tax_type=metadata.get("account_tax_type", "taxable"),
+            institution=metadata.get("institution", "Unknown"),
+            total_value=0.0,  # Will be calculated from holdings
+            source_type="document",  # Uploaded from file
+        )
+        session.add(account)
+        await session.flush()  # Get account ID
+        
+        # Process each holding
+        total_value = 0.0
+        for holding_data in holdings_data:
+            symbol = holding_data.symbol if hasattr(holding_data, 'symbol') else holding_data.get('symbol', '')
+            
+            # Handle None values from CSV parsing
+            quantity_raw = holding_data.quantity if hasattr(holding_data, 'quantity') else holding_data.get('quantity')
+            cost_basis_raw = holding_data.cost_basis if hasattr(holding_data, 'cost_basis') else holding_data.get('cost_basis')
+            current_value_raw = holding_data.value if hasattr(holding_data, 'value') else holding_data.get('value')
+            
+            quantity = float(quantity_raw or 0)
+            cost_basis = float(cost_basis_raw or 0)
+            current_value = float(current_value_raw or 0)
+            
+            if not symbol or quantity == 0:
+                continue
+            
+            # Calculate average cost basis
+            average_cost_basis = cost_basis / quantity if quantity > 0 and cost_basis > 0 else 0
+            
+            # Save holding with basic data only (no enrichment during upload)
+            # Prices will be fetched on-demand when user queries their portfolio
+            holding = InvestmentHolding(
+                account_id=account.id,
+                symbol=symbol,
+                quantity=quantity,
+                cost_basis=cost_basis,
+                average_cost_basis=average_cost_basis,
+                market_value=current_value,  # Use current_value from CSV as fallback
+            )
+            
+            total_value += current_value
+            session.add(holding)
+        
+        # Update account total value
+        account.total_value = total_value
+        await session.flush()
+        
+        logger.info(f"Saved {len(holdings_data)} investment holdings for user {user_id}")
+        
+    except Exception as e:
+        logger.error(f"Failed to save investment holdings: {e}")
+        # Don't fail the entire document upload if holdings save fails
+        # The document will still be searchable, just won't have structured data
+
+
 def get_google_drive_unique_identifier(
     connector: dict | None,
     filename: str,
@@ -894,6 +976,16 @@ async def _process_financial_data(
         return existing_doc
     
     # Create new document with embeddings and chunks for search
+    
+    # Save investment holdings to structured table if this is an investment file
+    if holdings:
+        await _save_investment_holdings(
+            session=session,
+            user_id=user_id,
+            holdings_data=holdings,
+            metadata=metadata,
+            filename=filename,
+        )
     
     # Get user's LLM for summary generation
     user_llm = await get_user_long_context_llm(session, user_id, search_space_id)
