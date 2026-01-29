@@ -8,7 +8,8 @@ services:
     volumes:
       - postgres_data:/var/lib/postgresql/data
       - ./scripts/docker/postgresql.conf:/etc/postgresql/postgresql.conf:ro
-      - ./scripts/docker/init-electric-user.sh:/docker-entrypoint-initdb.d/init-electric-user.sh:ro
+      - ./scripts/docker/init-pgvector.sh:/docker-entrypoint-initdb.d/01-init-pgvector.sh:ro
+      - ./scripts/docker/init-electric-user.sh:/docker-entrypoint-initdb.d/02-init-electric-user.sh:ro
     environment:
       - POSTGRES_USER=${POSTGRES_USER:-postgres}
       - POSTGRES_PASSWORD=${POSTGRES_PASSWORD:-postgres}
@@ -61,9 +62,20 @@ services:
       - ELECTRIC_DB_USER=${ELECTRIC_DB_USER:-electric}
       - ELECTRIC_DB_PASSWORD=${ELECTRIC_DB_PASSWORD:-electric_password}
       - NEXT_FRONTEND_URL=http://frontend:3000
+      - POSTGRES_HOST=${POSTGRES_HOST:-db}
+      - POSTGRES_PORT=${POSTGRES_PORT:-5432}
+      - POSTGRES_USER=${POSTGRES_USER:-postgres}
+      - POSTGRES_PASSWORD=${POSTGRES_PASSWORD:-postgres}
+      - POSTGRES_DB=${POSTGRES_DB:-financegpt}
     depends_on:
       - db
       - redis
+    healthcheck:
+      test: ["CMD-SHELL", "python -c 'import socket; s=socket.socket(); s.connect((\"localhost\", 8000))' || exit 1"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+      start_period: 30s
 
   # Run these services separately in production
   # celery_worker:
@@ -129,8 +141,9 @@ services:
       - ELECTRIC_INSECURE=true
       - ELECTRIC_WRITE_TO_PG_MODE=direct
     restart: unless-stopped
-    # depends_on:
-    #   - db
+    depends_on:
+      backend:
+        condition: service_healthy
     healthcheck:
       test: ["CMD", "curl", "-f", "http://localhost:3000/v1/health"]
       interval: 10s

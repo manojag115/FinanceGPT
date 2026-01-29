@@ -40,14 +40,17 @@ psql -v ON_ERROR_STOP=1 --username "$POSTGRES_USER" --dbname "$POSTGRES_DB" <<-E
     GRANT USAGE ON SCHEMA public TO $ELECTRIC_DB_USER;
     GRANT SELECT ON ALL TABLES IN SCHEMA public TO $ELECTRIC_DB_USER;
     GRANT SELECT ON ALL SEQUENCES IN SCHEMA public TO $ELECTRIC_DB_USER;
-    ALTER DEFAULT PRIVILEGES IN SCHEMA public GRANT SELECT ON TABLES TO $ELECTRIC_DB_USER;
-    ALTER DEFAULT PRIVILEGES IN SCHEMA public GRANT SELECT ON SEQUENCES TO $ELECTRIC_DB_USER;
+    
+    -- Grant SELECT on future tables created by postgres user (for migrations)
+    ALTER DEFAULT PRIVILEGES FOR ROLE postgres IN SCHEMA public GRANT SELECT ON TABLES TO $ELECTRIC_DB_USER;
+    ALTER DEFAULT PRIVILEGES FOR ROLE postgres IN SCHEMA public GRANT SELECT ON SEQUENCES TO $ELECTRIC_DB_USER;
 
     -- Create the publication for Electric SQL (if not exists)
+    -- FOR ALL TABLES ensures all current and future tables are included
     DO \$\$
     BEGIN
         IF NOT EXISTS (SELECT FROM pg_publication WHERE pubname = 'electric_publication_default') THEN
-            CREATE PUBLICATION electric_publication_default;
+            CREATE PUBLICATION electric_publication_default FOR ALL TABLES;
         END IF;
     END
     \$\$;

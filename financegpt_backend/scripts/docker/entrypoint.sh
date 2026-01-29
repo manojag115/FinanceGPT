@@ -26,6 +26,47 @@ done
 # Run migrations with timeout (60 seconds max)
 if timeout 60 alembic upgrade head 2>&1; then
     echo "Migrations completed successfully."
+    
+    # Rebuild Electric publication with explicit table list (Electric SQL doesn't detect FOR ALL TABLES properly)
+    echo "Updating Electric publication with explicit table list..."
+    python -c "
+import os
+import asyncpg
+import asyncio
+
+async def update_publication():
+    # Connect as electric user (who has REPLICATION and ALTER PUBLICATION privileges)
+    conn = await asyncpg.connect(
+        host=os.getenv('POSTGRES_HOST', 'db'),
+        port=int(os.getenv('POSTGRES_PORT', 5432)),
+        user='postgres',
+        password=os.getenv('POSTGRES_PASSWORD', 'postgres'),
+        database=os.getenv('POSTGRES_DB', 'financegpt')
+    )
+    
+    try:
+        # Get all user tables (exclude alembic_version and postgis tables)
+        tables = await conn.fetch('''
+            SELECT tablename 
+            FROM pg_tables 
+            WHERE schemaname = 'public' 
+              AND tablename NOT IN ('alembic_version', 'spatial_ref_sys')
+            ORDER BY tablename
+        ''')
+        
+        if tables:
+            table_list = ', '.join([f'public.{t[\"tablename\"]}' for t in tables])
+            await conn.execute(f'DROP PUBLICATION IF EXISTS electric_publication_default')
+            await conn.execute(f'CREATE PUBLICATION electric_publication_default FOR TABLE {table_list}')
+            print(f'Updated publication with {len(tables)} tables')
+        else:
+            print('No tables found to add to publication')
+    finally:
+        await conn.close()
+
+asyncio.run(update_publication())
+" 2>&1 || echo "WARNING: Could not update Electric publication"
+    
 else
     echo "WARNING: Migration failed or timed out. Continuing anyway..."
     echo "You may need to run migrations manually: alembic upgrade head"

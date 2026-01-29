@@ -26,7 +26,6 @@ en-core-web-sm @ https://github.com/explosion/spacy-models/releases/download/en_
 static-ffmpeg>=2.13
 tavily-python>=0.3.2
 unstructured-client>=0.30.0
-unstructured[all-docs]>=0.16.25
 uvicorn[standard]>=0.34.0
 validators>=0.34.0
 youtube-transcript-api>=1.0.3

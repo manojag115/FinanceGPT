@@ -18,6 +18,7 @@ from app.config import config
 from app.db import (
     NewLLMConfig,
     Permission,
+    SearchSpace,
     User,
     get_async_session,
 )
@@ -131,6 +132,28 @@ async def create_new_llm_config(
         session.add(db_config)
         await session.commit()
         await session.refresh(db_config)
+
+        # Auto-assign to roles that don't have an LLM configured yet
+        result = await session.execute(
+            select(SearchSpace).where(SearchSpace.id == config_data.search_space_id)
+        )
+        search_space = result.scalars().first()
+        
+        if search_space:
+            assigned_roles = []
+            if not search_space.agent_llm_id:
+                search_space.agent_llm_id = db_config.id
+                assigned_roles.append("agent")
+            if not search_space.document_summary_llm_id:
+                search_space.document_summary_llm_id = db_config.id
+                assigned_roles.append("document_summary")
+            
+            if assigned_roles:
+                await session.commit()
+                logger.info(
+                    f"Auto-assigned LLM config {db_config.id} to {', '.join(assigned_roles)} role(s) "
+                    f"for search space {config_data.search_space_id}"
+                )
 
         return db_config
 

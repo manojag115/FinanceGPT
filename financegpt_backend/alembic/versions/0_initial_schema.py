@@ -7,10 +7,12 @@ Create Date: 2026-01-26 00:36:53.760694
 """
 from typing import Sequence, Union
 
-from alembic import op
 import sqlalchemy as sa
-from sqlalchemy.dialects import postgresql
 from pgvector.sqlalchemy import Vector
+from sqlalchemy.dialects import postgresql
+from sqlalchemy.dialects.postgresql import UUID
+
+from alembic import op
 
 # revision identifiers, used by Alembic.
 revision: str = '0'
@@ -43,7 +45,7 @@ def upgrade() -> None:
     sa.Column('pages_used', sa.Integer(), server_default='0', nullable=False),
     sa.Column('display_name', sa.String(), nullable=True),
     sa.Column('avatar_url', sa.String(), nullable=True),
-    sa.Column('id', fastapi_users_db_sqlalchemy.generics.GUID(), nullable=False),
+    sa.Column('id', UUID(as_uuid=True), nullable=False),
     sa.Column('email', sa.String(length=320), nullable=False),
     sa.Column('hashed_password', sa.String(length=1024), nullable=False),
     sa.Column('is_active', sa.Boolean(), nullable=False),
@@ -358,6 +360,24 @@ def upgrade() -> None:
     op.create_index(op.f('ix_chat_comment_mentions_id'), 'chat_comment_mentions', ['id'], unique=False)
     op.create_index(op.f('ix_chat_comment_mentions_mentioned_user_id'), 'chat_comment_mentions', ['mentioned_user_id'], unique=False)
     # ### end Alembic commands ###
+    
+    # Set REPLICA IDENTITY FULL for Electric SQL sync
+    # This is required for Electric to track changes on all columns
+    op.execute("""
+        DO $$
+        DECLARE
+            r RECORD;
+        BEGIN
+            FOR r IN 
+                SELECT tablename 
+                FROM pg_tables 
+                WHERE schemaname = 'public' 
+                AND tablename NOT IN ('alembic_version', 'spatial_ref_sys')
+            LOOP
+                EXECUTE 'ALTER TABLE public.' || quote_ident(r.tablename) || ' REPLICA IDENTITY FULL';
+            END LOOP;
+        END $$;
+    """)
 
 
 def downgrade() -> None:

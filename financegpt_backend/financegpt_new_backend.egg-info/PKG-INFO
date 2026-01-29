@@ -31,7 +31,6 @@ Requires-Dist: en-core-web-sm @ https://github.com/explosion/spacy-models/releas
 Requires-Dist: static-ffmpeg>=2.13
 Requires-Dist: tavily-python>=0.3.2
 Requires-Dist: unstructured-client>=0.30.0
-Requires-Dist: unstructured[all-docs]>=0.16.25
 Requires-Dist: uvicorn[standard]>=0.34.0
 Requires-Dist: validators>=0.34.0
 Requires-Dist: youtube-transcript-api>=1.0.3
