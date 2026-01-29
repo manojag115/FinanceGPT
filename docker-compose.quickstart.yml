@@ -21,7 +21,7 @@ version: "3.8"
 services:
   # All-in-one FinanceGPT container
   financegpt:
-    image: ghcr.io/modsetter/financegpt:latest
+    image: ghcr.io/manojag115/financegpt:latest
     container_name: financegpt
     ports:
       - "${FRONTEND_PORT:-3000}:3000"
