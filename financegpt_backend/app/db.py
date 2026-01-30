@@ -961,6 +961,361 @@ class PortfolioAllocationTarget(BaseModel, TimestampMixin):
     metadata_ = Column("metadata", JSONB, nullable=True)
 
 
+# ============================================================================
+# Tax Forms Models
+# ============================================================================
+
+
+class TaxForm(BaseModel):
+    """Base tax form model for all tax-related documents."""
+
+    __tablename__ = "tax_forms"
+
+    id = Column(UUID(as_uuid=True), primary_key=True, server_default=text('gen_random_uuid()'), index=True)
+    user_id = Column(
+        UUID(as_uuid=True), ForeignKey("user.id", ondelete="CASCADE"), nullable=False, index=True
+    )
+    search_space_id = Column(
+        Integer, ForeignKey("searchspaces.id", ondelete="CASCADE"), nullable=False, index=True
+    )
+    form_type = Column(String(20), nullable=False, index=True)  # W2, 1099-MISC, 1099-INT, etc.
+    tax_year = Column(Integer, nullable=False, index=True)
+    document_id = Column(
+        Integer, ForeignKey("documents.id", ondelete="SET NULL"), nullable=True
+    )
+    uploaded_at = Column(TIMESTAMP(timezone=True), server_default=text('now()'), nullable=False)
+    processed_at = Column(TIMESTAMP(timezone=True), nullable=True)
+    processing_status = Column(
+        String(20), server_default='pending', nullable=False
+    )  # pending, processing, completed, failed, needs_review
+    extraction_method = Column(
+        String(50), nullable=True
+    )  # structured_pdf, unstructured, ocr, llm_assisted
+    confidence_score = Column(Numeric(3, 2), nullable=True)  # 0.00 to 1.00
+    needs_review = Column(Boolean, server_default='false', nullable=False)
+    created_at = Column(TIMESTAMP(timezone=True), server_default=text('now()'), nullable=False)
+    updated_at = Column(
+        TIMESTAMP(timezone=True),
+        server_default=text('now()'),
+        onupdate=text('now()'),
+        nullable=False,
+    )
+
+    # Relationships
+    w2_form = relationship("W2Form", back_populates="tax_form", uselist=False, cascade="all, delete-orphan")
+    form_1099_misc = relationship("Form1099Misc", back_populates="tax_form", uselist=False, cascade="all, delete-orphan")
+    form_1099_int = relationship("Form1099Int", back_populates="tax_form", uselist=False, cascade="all, delete-orphan")
+    form_1099_div = relationship("Form1099Div", back_populates="tax_form", uselist=False, cascade="all, delete-orphan")
+    form_1099_b = relationship("Form1099B", back_populates="tax_form", uselist=False, cascade="all, delete-orphan")
+
+
+class W2Form(BaseModel):
+    """W2 wage and tax statement model."""
+
+    __tablename__ = "w2_forms"
+
+    id = Column(UUID(as_uuid=True), primary_key=True, server_default=text('gen_random_uuid()'), index=True)
+    tax_form_id = Column(
+        UUID(as_uuid=True),
+        ForeignKey("tax_forms.id", ondelete="CASCADE"),
+        nullable=False,
+        unique=True,
+        index=True,
+    )
+
+    # Employer Information (masked for privacy)
+    employer_name = Column(String(255), nullable=True)
+    employer_ein_hash = Column(String(64), nullable=True)  # SHA256 hashed
+    employer_address = Column(Text, nullable=True)
+
+    # Employee Information (masked)
+    employee_ssn_hash = Column(String(64), nullable=True)  # SHA256 hashed, never plain text
+    employee_name_masked = Column(String(255), nullable=True)  # [EMPLOYEE_NAME] for UI
+
+    # Wage Information - Box 1-9
+    wages_tips_compensation = Column(Numeric(12, 2), nullable=True)  # Box 1
+    federal_income_tax_withheld = Column(Numeric(12, 2), nullable=True)  # Box 2
+    social_security_wages = Column(Numeric(12, 2), nullable=True)  # Box 3
+    social_security_tax_withheld = Column(Numeric(12, 2), nullable=True)  # Box 4
+    medicare_wages = Column(Numeric(12, 2), nullable=True)  # Box 5
+    medicare_tax_withheld = Column(Numeric(12, 2), nullable=True)  # Box 6
+    social_security_tips = Column(Numeric(12, 2), nullable=True)  # Box 7
+    allocated_tips = Column(Numeric(12, 2), nullable=True)  # Box 8
+
+    # Other Compensation - Box 10-11
+    dependent_care_benefits = Column(Numeric(12, 2), nullable=True)  # Box 10
+    nonqualified_plans = Column(Numeric(12, 2), nullable=True)  # Box 11
+
+    # Box 12 codes (multiple entries)
+    box_12_codes = Column(JSONB, nullable=True)  # [{code: 'D', amount: 5000.00}, ...]
+
+    # Box 13 checkboxes
+    statutory_employee = Column(Boolean, server_default='false', nullable=False)
+    retirement_plan = Column(Boolean, server_default='false', nullable=False)
+    third_party_sick_pay = Column(Boolean, server_default='false', nullable=False)
+
+    # State/Local Tax - Box 15-20
+    state_code = Column(String(2), nullable=True)  # Box 15
+    state_wages = Column(Numeric(12, 2), nullable=True)  # Box 16
+    state_income_tax = Column(Numeric(12, 2), nullable=True)  # Box 17
+    local_wages = Column(Numeric(12, 2), nullable=True)  # Box 18
+    local_income_tax = Column(Numeric(12, 2), nullable=True)  # Box 19
+    locality_name = Column(String(100), nullable=True)  # Box 20
+
+    # Field-level confidence scores
+    field_confidence_scores = Column(JSONB, nullable=True)  # {wages: 0.95, federal_tax: 0.88, ...}
+
+    # Raw OCR/extraction data (for debugging/re-processing)
+    raw_extraction_data = Column(JSONB, nullable=True)
+
+    created_at = Column(TIMESTAMP(timezone=True), server_default=text('now()'), nullable=False)
+    updated_at = Column(
+        TIMESTAMP(timezone=True),
+        server_default=text('now()'),
+        onupdate=text('now()'),
+        nullable=False,
+    )
+
+    # Relationships
+    tax_form = relationship("TaxForm", back_populates="w2_form")
+
+
+class Form1099Misc(BaseModel):
+    """1099-MISC miscellaneous income form model."""
+
+    __tablename__ = "form_1099_misc"
+
+    id = Column(UUID(as_uuid=True), primary_key=True, server_default=text('gen_random_uuid()'), index=True)
+    tax_form_id = Column(
+        UUID(as_uuid=True),
+        ForeignKey("tax_forms.id", ondelete="CASCADE"),
+        nullable=False,
+        unique=True,
+        index=True,
+    )
+
+    # Payer Information
+    payer_name = Column(String(255), nullable=True)
+    payer_tin_hash = Column(String(64), nullable=True)
+    payer_address = Column(Text, nullable=True)
+
+    # Recipient (masked)
+    recipient_tin_hash = Column(String(64), nullable=True)
+
+    # Income Boxes
+    rents = Column(Numeric(12, 2), nullable=True)  # Box 1
+    royalties = Column(Numeric(12, 2), nullable=True)  # Box 2
+    other_income = Column(Numeric(12, 2), nullable=True)  # Box 3
+    federal_income_tax_withheld = Column(Numeric(12, 2), nullable=True)  # Box 4
+    fishing_boat_proceeds = Column(Numeric(12, 2), nullable=True)  # Box 5
+    medical_health_payments = Column(Numeric(12, 2), nullable=True)  # Box 6
+    substitute_payments = Column(Numeric(12, 2), nullable=True)  # Box 8
+    crop_insurance_proceeds = Column(Numeric(12, 2), nullable=True)  # Box 10
+    gross_proceeds_attorney = Column(Numeric(12, 2), nullable=True)  # Box 14
+    section_409a_deferrals = Column(Numeric(12, 2), nullable=True)  # Box 15
+    state_tax_withheld = Column(Numeric(12, 2), nullable=True)  # Box 16
+    state_payer_number = Column(String(50), nullable=True)
+    state_income = Column(Numeric(12, 2), nullable=True)  # Box 18
+
+    # Field confidence scores
+    field_confidence_scores = Column(JSONB, nullable=True)
+    raw_extraction_data = Column(JSONB, nullable=True)
+
+    created_at = Column(TIMESTAMP(timezone=True), server_default=text('now()'), nullable=False)
+    updated_at = Column(
+        TIMESTAMP(timezone=True),
+        server_default=text('now()'),
+        onupdate=text('now()'),
+        nullable=False,
+    )
+
+    # Relationships
+    tax_form = relationship("TaxForm", back_populates="form_1099_misc")
+
+
+class Form1099Int(BaseModel):
+    """1099-INT interest income form model."""
+
+    __tablename__ = "form_1099_int"
+
+    id = Column(UUID(as_uuid=True), primary_key=True, server_default=text('gen_random_uuid()'), index=True)
+    tax_form_id = Column(
+        UUID(as_uuid=True),
+        ForeignKey("tax_forms.id", ondelete="CASCADE"),
+        nullable=False,
+        unique=True,
+        index=True,
+    )
+
+    # Payer Information
+    payer_name = Column(String(255), nullable=True)
+    payer_tin_hash = Column(String(64), nullable=True)
+    payer_address = Column(Text, nullable=True)
+
+    # Recipient (masked)
+    recipient_tin_hash = Column(String(64), nullable=True)
+
+    # Interest Income Boxes
+    interest_income = Column(Numeric(12, 2), nullable=True)  # Box 1
+    early_withdrawal_penalty = Column(Numeric(12, 2), nullable=True)  # Box 2
+    interest_on_us_savings_bonds = Column(Numeric(12, 2), nullable=True)  # Box 3
+    federal_income_tax_withheld = Column(Numeric(12, 2), nullable=True)  # Box 4
+    investment_expenses = Column(Numeric(12, 2), nullable=True)  # Box 5
+    foreign_tax_paid = Column(Numeric(12, 2), nullable=True)  # Box 6
+    foreign_country = Column(String(100), nullable=True)  # Box 7
+    tax_exempt_interest = Column(Numeric(12, 2), nullable=True)  # Box 8
+    specified_private_activity_bond_interest = Column(Numeric(12, 2), nullable=True)  # Box 9
+    market_discount = Column(Numeric(12, 2), nullable=True)  # Box 10
+    bond_premium = Column(Numeric(12, 2), nullable=True)  # Box 11
+    bond_premium_on_treasury = Column(Numeric(12, 2), nullable=True)  # Box 12
+    bond_premium_on_tax_exempt = Column(Numeric(12, 2), nullable=True)  # Box 13
+    state_code = Column(String(2), nullable=True)  # Box 15
+    state_id = Column(String(50), nullable=True)  # Box 16
+    state_tax_withheld = Column(Numeric(12, 2), nullable=True)  # Box 17
+
+    # Field confidence scores
+    field_confidence_scores = Column(JSONB, nullable=True)
+    raw_extraction_data = Column(JSONB, nullable=True)
+
+    created_at = Column(TIMESTAMP(timezone=True), server_default=text('now()'), nullable=False)
+    updated_at = Column(
+        TIMESTAMP(timezone=True),
+        server_default=text('now()'),
+        onupdate=text('now()'),
+        nullable=False,
+    )
+
+    # Relationships
+    tax_form = relationship("TaxForm", back_populates="form_1099_int")
+
+
+class Form1099Div(BaseModel):
+    """1099-DIV dividend income form model."""
+
+    __tablename__ = "form_1099_div"
+
+    id = Column(UUID(as_uuid=True), primary_key=True, server_default=text('gen_random_uuid()'), index=True)
+    tax_form_id = Column(
+        UUID(as_uuid=True),
+        ForeignKey("tax_forms.id", ondelete="CASCADE"),
+        nullable=False,
+        unique=True,
+        index=True,
+    )
+
+    # Payer Information
+    payer_name = Column(String(255), nullable=True)
+    payer_tin_hash = Column(String(64), nullable=True)
+    payer_address = Column(Text, nullable=True)
+
+    # Recipient (masked)
+    recipient_tin_hash = Column(String(64), nullable=True)
+
+    # Dividend Income Boxes
+    total_ordinary_dividends = Column(Numeric(12, 2), nullable=True)  # Box 1a
+    qualified_dividends = Column(Numeric(12, 2), nullable=True)  # Box 1b
+    total_capital_gain_distributions = Column(Numeric(12, 2), nullable=True)  # Box 2a
+    unrecaptured_section_1250_gain = Column(Numeric(12, 2), nullable=True)  # Box 2b
+    section_1202_gain = Column(Numeric(12, 2), nullable=True)  # Box 2c
+    collectibles_28_gain = Column(Numeric(12, 2), nullable=True)  # Box 2d
+    section_897_ordinary_dividends = Column(Numeric(12, 2), nullable=True)  # Box 2e
+    section_897_capital_gain = Column(Numeric(12, 2), nullable=True)  # Box 2f
+    nondividend_distributions = Column(Numeric(12, 2), nullable=True)  # Box 3
+    federal_income_tax_withheld = Column(Numeric(12, 2), nullable=True)  # Box 4
+    section_199a_dividends = Column(Numeric(12, 2), nullable=True)  # Box 5
+    investment_expenses = Column(Numeric(12, 2), nullable=True)  # Box 6
+    foreign_tax_paid = Column(Numeric(12, 2), nullable=True)  # Box 7
+    foreign_country = Column(String(100), nullable=True)  # Box 8
+    cash_liquidation_distributions = Column(Numeric(12, 2), nullable=True)  # Box 9
+    noncash_liquidation_distributions = Column(Numeric(12, 2), nullable=True)  # Box 10
+    exempt_interest_dividends = Column(Numeric(12, 2), nullable=True)  # Box 11
+    specified_private_activity_bond_interest_dividends = Column(Numeric(12, 2), nullable=True)  # Box 12
+    state_code = Column(String(2), nullable=True)  # Box 14
+    state_id = Column(String(50), nullable=True)  # Box 15
+    state_tax_withheld = Column(Numeric(12, 2), nullable=True)  # Box 16
+
+    # Field confidence scores
+    field_confidence_scores = Column(JSONB, nullable=True)
+    raw_extraction_data = Column(JSONB, nullable=True)
+
+    created_at = Column(TIMESTAMP(timezone=True), server_default=text('now()'), nullable=False)
+    updated_at = Column(
+        TIMESTAMP(timezone=True),
+        server_default=text('now()'),
+        onupdate=text('now()'),
+        nullable=False,
+    )
+
+    # Relationships
+    tax_form = relationship("TaxForm", back_populates="form_1099_div")
+
+
+class Form1099B(BaseModel):
+    """1099-B broker transaction form model."""
+
+    __tablename__ = "form_1099_b"
+
+    id = Column(UUID(as_uuid=True), primary_key=True, server_default=text('gen_random_uuid()'), index=True)
+    tax_form_id = Column(
+        UUID(as_uuid=True),
+        ForeignKey("tax_forms.id", ondelete="CASCADE"),
+        nullable=False,
+        unique=True,
+        index=True,
+    )
+
+    # Payer/Broker Information
+    payer_name = Column(String(255), nullable=True)
+    payer_tin_hash = Column(String(64), nullable=True)
+    payer_address = Column(Text, nullable=True)
+
+    # Recipient (masked)
+    recipient_tin_hash = Column(String(64), nullable=True)
+
+    # Transaction Details
+    description_of_property = Column(Text, nullable=True)  # Box 1a
+    date_acquired = Column(String(50), nullable=True)  # Box 1b (can be "VARIOUS")
+    date_sold = Column(String(50), nullable=True)  # Box 1c
+    proceeds = Column(Numeric(12, 2), nullable=True)  # Box 1d
+    cost_basis = Column(Numeric(12, 2), nullable=True)  # Box 1e
+    accrued_market_discount = Column(Numeric(12, 2), nullable=True)  # Box 1f
+    wash_sale_loss_disallowed = Column(Numeric(12, 2), nullable=True)  # Box 1g
+    federal_income_tax_withheld = Column(Numeric(12, 2), nullable=True)  # Box 4
+    
+    # Form 8949 checkboxes
+    short_term_box_a = Column(Boolean, server_default='false', nullable=False)
+    short_term_box_b = Column(Boolean, server_default='false', nullable=False)
+    short_term_box_c = Column(Boolean, server_default='false', nullable=False)
+    long_term_box_d = Column(Boolean, server_default='false', nullable=False)
+    long_term_box_e = Column(Boolean, server_default='false', nullable=False)
+    long_term_box_f = Column(Boolean, server_default='false', nullable=False)
+    
+    # Applicable checkbox
+    loss_not_allowed = Column(Boolean, server_default='false', nullable=False)
+    noncovered_security = Column(Boolean, server_default='false', nullable=False)
+    basis_reported_to_irs = Column(Boolean, server_default='false', nullable=False)
+    
+    # State tax information
+    state_code = Column(String(2), nullable=True)
+    state_id = Column(String(50), nullable=True)
+    state_tax_withheld = Column(Numeric(12, 2), nullable=True)
+
+    # Field confidence scores
+    field_confidence_scores = Column(JSONB, nullable=True)
+    raw_extraction_data = Column(JSONB, nullable=True)
+
+    created_at = Column(TIMESTAMP(timezone=True), server_default=text('now()'), nullable=False)
+    updated_at = Column(
+        TIMESTAMP(timezone=True),
+        server_default=text('now()'),
+        onupdate=text('now()'),
+        nullable=False,
+    )
+
+    # Relationships
+    tax_form = relationship("TaxForm", back_populates="form_1099_b")
+
+
 class NewLLMConfig(BaseModel, TimestampMixin):
     """
     New LLM configuration table that combines model settings with prompt configuration.
