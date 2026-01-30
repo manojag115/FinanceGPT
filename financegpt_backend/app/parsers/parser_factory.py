@@ -7,9 +7,6 @@ from typing import Any
 
 from app.db import SearchSourceConnectorType
 from app.parsers.base_financial_parser import BaseFinancialParser
-from app.parsers.chase_parser import ChaseBankParser, ChaseCreditParser, ChaseParser
-from app.parsers.discover_parser import DiscoverParser
-from app.parsers.fidelity_parser import FidelityParser
 from app.parsers.llm_csv_parser import LLMCSVParser
 from app.parsers.ofx_parser import OFXParser
 from app.parsers.pdf_statement_parser import PDFStatementParser
@@ -37,14 +34,10 @@ class ParserFactory:
             ValueError: If connector type not supported
         """
         parser_map = {
-            SearchSourceConnectorType.CHASE_BANK: ChaseBankParser(),
-            SearchSourceConnectorType.CHASE_CREDIT: ChaseCreditParser(),
-            SearchSourceConnectorType.FIDELITY_INVESTMENTS: FidelityParser(),
-            SearchSourceConnectorType.DISCOVER_CREDIT: DiscoverParser(),
             SearchSourceConnectorType.OFX_UPLOAD: OFXParser(),
-            # Generic parsers
-            SearchSourceConnectorType.GENERIC_BANK_CSV: ChaseParser(),  # Use Chase format as default
-            SearchSourceConnectorType.GENERIC_INVESTMENT_CSV: LLMCSVParser(),  # Use LLM for unknown investment CSVs
+            # LLM parser handles ALL CSV formats (holdings and transactions)
+            SearchSourceConnectorType.GENERIC_INVESTMENT_CSV: LLMCSVParser(),
+            SearchSourceConnectorType.GENERIC_BANK_CSV: LLMCSVParser(),
         }
 
         parser = parser_map.get(connector_type)
@@ -91,48 +84,9 @@ class ParserFactory:
         if filename_lower.endswith((".ofx", ".qfx")):
             return SearchSourceConnectorType.OFX_UPLOAD
 
-        # For CSV, try to detect from content
+        # Use LLM parser for ALL CSV files (privacy-first universal parser)
         if filename_lower.endswith(".csv"):
-            try:
-                # Decode first few lines
-                text_preview = file_content[:1000].decode("utf-8-sig")
-
-                # Check for institution-specific headers
-                if "Chase" in text_preview or "Transaction Date,Post Date" in text_preview:
-                    if "Transaction Date" in text_preview:
-                        return SearchSourceConnectorType.CHASE_CREDIT
-                    return SearchSourceConnectorType.CHASE_BANK
-
-                if "Fidelity" in text_preview or "Symbol,Description,Quantity" in text_preview:
-                    return SearchSourceConnectorType.FIDELITY_INVESTMENTS
-
-                if "Discover" in text_preview or "Trans. Date,Post Date" in text_preview:
-                    return SearchSourceConnectorType.DISCOVER_CREDIT
-
-                # Check if it looks like investment holdings (has Symbol/Ticker + Quantity columns)
-                headers_lower = text_preview.lower()
-                has_symbol = any(word in headers_lower for word in ["symbol", "ticker"])
-                has_quantity = any(word in headers_lower for word in ["quantity", "shares", "qty"])
-                
-                if has_symbol and has_quantity:
-                    # Unknown investment CSV - use LLM parser
-                    return SearchSourceConnectorType.GENERIC_INVESTMENT_CSV
-                
-                # Check if it looks like transactions (has Date + Amount/Description)
-                has_date = any(word in headers_lower for word in ["date", "transaction date", "trans. date"])
-                has_amount = any(word in headers_lower for word in ["amount", "price", "$"])
-                
-                if has_date and has_amount:
-                    # Unknown transaction CSV - use generic bank parser
-                    return SearchSourceConnectorType.GENERIC_BANK_CSV
-
-                # Default: try LLM parser for any CSV
-                return SearchSourceConnectorType.GENERIC_INVESTMENT_CSV
-
-            except Exception as e:
-                logger.warning("Error detecting CSV format: %s", e)
-                # Fallback to LLM parser
-                return SearchSourceConnectorType.GENERIC_INVESTMENT_CSV
+            return SearchSourceConnectorType.GENERIC_INVESTMENT_CSV
 
         # Not a recognized financial file format
         return None
