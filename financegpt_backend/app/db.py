@@ -7,6 +7,7 @@ from fastapi_users.db import SQLAlchemyBaseUserTableUUID, SQLAlchemyUserDatabase
 from pgvector.sqlalchemy import Vector
 from sqlalchemy import (
     ARRAY,
+    Date,
     JSON,
     TIMESTAMP,
     Boolean,
@@ -14,6 +15,7 @@ from sqlalchemy import (
     Enum as SQLAlchemyEnum,
     ForeignKey,
     Integer,
+    Numeric,
     String,
     Text,
     UniqueConstraint,
@@ -829,6 +831,134 @@ class SearchSourceConnector(BaseModel, TimestampMixin):
     user_id = Column(
         UUID(as_uuid=True), ForeignKey("user.id", ondelete="CASCADE"), nullable=False
     )
+
+
+class InvestmentAccount(BaseModel, TimestampMixin):
+    """Investment account model for tracking user's investment accounts."""
+
+    __tablename__ = "investment_accounts"
+
+    id = Column(UUID(as_uuid=True), primary_key=True, server_default=text('gen_random_uuid()'), index=True)
+    user_id = Column(
+        UUID(as_uuid=True), ForeignKey("user.id", ondelete="CASCADE"), nullable=False
+    )
+    account_number = Column(String(255), nullable=True, index=True)
+    account_name = Column(String(255), nullable=False)
+    account_type = Column(String(100), nullable=False)  # brokerage, 401k, IRA, etc.
+    account_tax_type = Column(
+        String(50), nullable=False
+    )  # taxable, tax_deferred, tax_free
+    institution = Column(String(255), nullable=True)
+    total_value = Column(Numeric(20, 2), nullable=True)
+    cash_balance = Column(Numeric(20, 2), nullable=True)
+    last_synced_at = Column(TIMESTAMP(timezone=True), nullable=True)
+    source_type = Column(String(50), nullable=False, default="manual")  # plaid, document, manual
+    source_id = Column(String(255), nullable=True)  # plaid account_id or document_id
+    metadata_ = Column("metadata", JSONB, nullable=True)
+
+    # Relationships
+    holdings = relationship(
+        "InvestmentHolding",
+        back_populates="account",
+        cascade="all, delete-orphan",
+    )
+    transactions = relationship(
+        "InvestmentTransaction",
+        back_populates="account",
+        cascade="all, delete-orphan",
+    )
+
+
+class InvestmentHolding(BaseModel, TimestampMixin):
+    """Investment holding model for tracking individual securities."""
+
+    __tablename__ = "investment_holdings"
+
+    id = Column(UUID(as_uuid=True), primary_key=True, server_default=text('gen_random_uuid()'), index=True)
+    account_id = Column(
+        UUID(as_uuid=True),
+        ForeignKey("investment_accounts.id", ondelete="CASCADE"),
+        nullable=False,
+        index=True,
+    )
+    symbol = Column(String(20), nullable=False, index=True)
+    description = Column(String(500), nullable=True)
+    
+    # Quantities and values
+    quantity = Column(Numeric(20, 8), nullable=False)
+    cost_basis = Column(Numeric(20, 2), nullable=False)
+    average_cost_basis = Column(Numeric(20, 2), nullable=True)
+    current_price = Column(Numeric(20, 2), nullable=True)
+    market_value = Column(Numeric(20, 2), nullable=True)
+    
+    # Performance metrics
+    unrealized_gain_loss = Column(Numeric(20, 2), nullable=True)
+    unrealized_gain_loss_pct = Column(Numeric(10, 4), nullable=True)
+    day_change = Column(Numeric(20, 2), nullable=True)
+    day_change_pct = Column(Numeric(10, 4), nullable=True)
+    previous_close = Column(Numeric(20, 2), nullable=True)
+    
+    # Classification
+    asset_type = Column(String(50), nullable=True)
+    sector = Column(String(100), nullable=True)
+    industry = Column(String(100), nullable=True)
+    geographic_region = Column(String(100), nullable=True)
+    
+    # Tax data
+    acquisition_date = Column(Date, nullable=True)
+    holding_period_days = Column(Integer, nullable=True)
+    is_long_term = Column(Boolean, default=False, nullable=False)
+    
+    # Metadata
+    price_as_of_timestamp = Column(TIMESTAMP(timezone=True), nullable=True)
+    extraction_confidence = Column(Numeric(3, 2), nullable=True)
+    metadata_ = Column("metadata", JSONB, nullable=True)
+
+    # Relationships
+    account = relationship("InvestmentAccount", back_populates="holdings")
+
+
+class InvestmentTransaction(BaseModel, TimestampMixin):
+    """Investment transaction model for tracking buy/sell history."""
+
+    __tablename__ = "investment_transactions"
+
+    id = Column(UUID(as_uuid=True), primary_key=True, server_default=text('gen_random_uuid()'), index=True)
+    account_id = Column(
+        UUID(as_uuid=True),
+        ForeignKey("investment_accounts.id", ondelete="CASCADE"),
+        nullable=False,
+        index=True,
+    )
+    symbol = Column(String(20), nullable=False, index=True)
+    transaction_type = Column(String(50), nullable=False)  # buy, sell, dividend, etc.
+    transaction_date = Column(Date, nullable=False, index=True)
+    quantity = Column(Numeric(20, 8), nullable=False)
+    price = Column(Numeric(20, 2), nullable=False)
+    amount = Column(Numeric(20, 2), nullable=False)
+    fees = Column(Numeric(20, 2), nullable=True)
+    description = Column(String(500), nullable=True)
+    metadata_ = Column("metadata", JSONB, nullable=True)
+
+    # Relationships
+    account = relationship("InvestmentAccount", back_populates="transactions")
+
+
+class PortfolioAllocationTarget(BaseModel, TimestampMixin):
+    """Portfolio allocation targets for rebalancing recommendations."""
+
+    __tablename__ = "portfolio_allocation_targets"
+
+    id = Column(UUID(as_uuid=True), primary_key=True, server_default=text('gen_random_uuid()'), index=True)
+    user_id = Column(
+        UUID(as_uuid=True), ForeignKey("user.id", ondelete="CASCADE"), nullable=False
+    )
+    target_name = Column(String(100), nullable=False)
+    target_stocks_pct = Column(JSONB, nullable=True)
+    target_bonds_pct = Column(JSONB, nullable=True)
+    target_cash_pct = Column(JSONB, nullable=True)
+    target_other_pct = Column(JSONB, nullable=True)
+    metadata_ = Column("metadata", JSONB, nullable=True)
 
 
 class NewLLMConfig(BaseModel, TimestampMixin):

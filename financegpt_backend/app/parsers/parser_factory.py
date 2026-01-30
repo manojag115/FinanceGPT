@@ -7,9 +7,7 @@ from typing import Any
 
 from app.db import SearchSourceConnectorType
 from app.parsers.base_financial_parser import BaseFinancialParser
-from app.parsers.chase_parser import ChaseBankParser, ChaseCreditParser, ChaseParser
-from app.parsers.discover_parser import DiscoverParser
-from app.parsers.fidelity_parser import FidelityParser
+from app.parsers.llm_csv_parser import LLMCSVParser
 from app.parsers.ofx_parser import OFXParser
 from app.parsers.pdf_statement_parser import PDFStatementParser
 
@@ -36,14 +34,10 @@ class ParserFactory:
             ValueError: If connector type not supported
         """
         parser_map = {
-            SearchSourceConnectorType.CHASE_BANK: ChaseBankParser(),
-            SearchSourceConnectorType.CHASE_CREDIT: ChaseCreditParser(),
-            SearchSourceConnectorType.FIDELITY_INVESTMENTS: FidelityParser(),
-            SearchSourceConnectorType.DISCOVER_CREDIT: DiscoverParser(),
             SearchSourceConnectorType.OFX_UPLOAD: OFXParser(),
-            # Generic parsers
-            SearchSourceConnectorType.GENERIC_BANK_CSV: ChaseParser(),  # Use Chase format as default
-            SearchSourceConnectorType.GENERIC_INVESTMENT_CSV: FidelityParser(),  # Use Fidelity format
+            # LLM parser handles ALL CSV formats (holdings and transactions)
+            SearchSourceConnectorType.GENERIC_INVESTMENT_CSV: LLMCSVParser(),
+            SearchSourceConnectorType.GENERIC_BANK_CSV: LLMCSVParser(),
         }
 
         parser = parser_map.get(connector_type)
@@ -90,30 +84,9 @@ class ParserFactory:
         if filename_lower.endswith((".ofx", ".qfx")):
             return SearchSourceConnectorType.OFX_UPLOAD
 
-        # For CSV, try to detect from content
+        # Use LLM parser for ALL CSV files (privacy-first universal parser)
         if filename_lower.endswith(".csv"):
-            try:
-                # Decode first few lines
-                text_preview = file_content[:1000].decode("utf-8-sig")
-
-                # Check for institution-specific headers
-                if "Chase" in text_preview or "Transaction Date,Post Date" in text_preview:
-                    if "Transaction Date" in text_preview:
-                        return SearchSourceConnectorType.CHASE_CREDIT
-                    return SearchSourceConnectorType.CHASE_BANK
-
-                if "Fidelity" in text_preview or "Symbol,Description,Quantity" in text_preview:
-                    return SearchSourceConnectorType.FIDELITY_INVESTMENTS
-
-                if "Discover" in text_preview or "Trans. Date,Post Date" in text_preview:
-                    return SearchSourceConnectorType.DISCOVER_CREDIT
-
-                # Default to generic bank CSV
-                return SearchSourceConnectorType.GENERIC_BANK_CSV
-
-            except Exception as e:
-                logger.warning(f"Error detecting CSV format: {e}")
-                return SearchSourceConnectorType.GENERIC_BANK_CSV
+            return SearchSourceConnectorType.GENERIC_INVESTMENT_CSV
 
         # Not a recognized financial file format
         return None

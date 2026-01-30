@@ -1,6 +1,7 @@
 pyproject.toml
 alembic/env.py
 alembic/versions/0_initial_schema.py
+alembic/versions/1_add_investment_holdings_tables.py
 app/__init__.py
 app/app.py
 app/celery_app.py
@@ -17,6 +18,7 @@ app/agents/new_chat/utils.py
 app/agents/new_chat/tools/__init__.py
 app/agents/new_chat/tools/display_image.py
 app/agents/new_chat/tools/find_subscriptions.py
+app/agents/new_chat/tools/investment_holdings.py
 app/agents/new_chat/tools/knowledge_base.py
 app/agents/new_chat/tools/link_preview.py
 app/agents/new_chat/tools/mcp_client.py
@@ -35,6 +37,7 @@ app/agents/podcaster/nodes.py
 app/agents/podcaster/prompts.py
 app/agents/podcaster/state.py
 app/agents/podcaster/utils.py
+app/agents/tools/investment_tools.py
 app/config/__init__.py
 app/config/uvicorn.py
 app/connectors/google_drive/__init__.py
@@ -62,6 +65,7 @@ app/routes/composio_routes.py
 app/routes/documents_routes.py
 app/routes/editor_routes.py
 app/routes/financegpt_docs_routes.py
+app/routes/investments.py
 app/routes/logs_routes.py
 app/routes/new_chat_routes.py
 app/routes/new_llm_config_routes.py
@@ -82,6 +86,7 @@ app/schemas/discord_auth_credentials.py
 app/schemas/documents.py
 app/schemas/financegpt_docs.py
 app/schemas/google_drive.py
+app/schemas/investments.py
 app/schemas/linear_auth_credentials.py
 app/schemas/logs.py
 app/schemas/new_chat.py
@@ -100,7 +105,9 @@ app/services/chat_session_state_service.py
 app/services/composio_service.py
 app/services/connector_service.py
 app/services/docling_service.py
+app/services/investment_csv_parser.py
 app/services/kokoro_tts_service.py
+app/services/llm_document_extractor.py
 app/services/llm_service.py
 app/services/new_streaming_service.py
 app/services/notification_service.py
@@ -109,6 +116,7 @@ app/services/plaid_service.py
 app/services/reranker_service.py
 app/services/stt_service.py
 app/services/task_logging_service.py
+app/services/yahoo_finance_enrichment.py
 app/tasks/__init__.py
 app/tasks/composio_indexer.py
 app/tasks/financegpt_docs_indexer.py

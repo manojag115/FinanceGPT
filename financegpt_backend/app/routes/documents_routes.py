@@ -796,6 +796,28 @@ async def delete_document(
             "You don't have permission to delete documents in this search space",
         )
 
+        # If this is a financial document with associated investment holdings, delete them too
+        try:
+            if document.document_metadata and document.document_metadata.get("is_financial_document"):
+                from app.db import InvestmentAccount
+                
+                # Find accounts created from this file (match by filename in account_name)
+                filename = document.document_metadata.get("FILE_NAME")
+                if filename:
+                    # Delete accounts with matching filename (cascade will delete holdings)
+                    result = await session.execute(
+                        select(InvestmentAccount).where(
+                            InvestmentAccount.user_id == user.id,
+                            InvestmentAccount.account_name == filename
+                        )
+                    )
+                    accounts = result.scalars().all()
+                    for account in accounts:
+                        await session.delete(account)
+        except Exception as e:
+            # Log but don't fail the whole delete if investment cleanup fails
+            print(f"Warning: Failed to clean up investment holdings: {e}")
+
         await session.delete(document)
         await session.commit()
         return {"message": "Document deleted successfully"}
