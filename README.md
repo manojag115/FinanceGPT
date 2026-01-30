@@ -217,62 +217,149 @@ FinanceGPT uses specialized AI tools to analyze your financial data and provide 
 
 ## �🚀 Quick Start
 
-### Prerequisites
+### Option 1: Quick Start (Recommended for Testing)
 
-- **Node.js** 18+ and **pnpm**
-- **Python** 3.11+
-- **Docker** and **Docker Compose**
-- **PostgreSQL** 15+
+The fastest way to try FinanceGPT:
 
-### Installation
+```bash
+# 1. Clone the repository
+git clone https://github.com/yourusername/FinanceGPT.git
+cd FinanceGPT
 
-1. **Clone the repository**
+# 2. Run the quick start script
+chmod +x start-financegpt.sh
+./start-financegpt.sh
+```
+
+This uses pre-built Docker images and requires minimal configuration. Access the app at **http://localhost:3000**
+
+### Option 2: Development Setup
+
+For development with full customization:
+
+#### Prerequisites
+
+- **Docker** and **Docker Compose** (required)
+- **Node.js** 18+ and **pnpm** (for frontend development)
+- **Python** 3.11+ (for backend development)
+
+#### Required Environment Variables
+
+Before starting, you **must** configure these essential variables:
+
+1. **Create backend environment file:**
    ```bash
-   git clone https://github.com/yourusername/FinanceGPT.git
-   cd FinanceGPT
-   ```
-
-2. **Set up environment variables**
-   ```bash
-   # Copy example env files
-   cp financegpt_web/.env.example financegpt_web/.env.local
    cp financegpt_backend/.env.example financegpt_backend/.env
    ```
 
-3. **Start the services with Docker**
-   ```bash
-   docker-compose up -d
+2. **Edit `financegpt_backend/.env` and set these required variables:**
+
+   ```env
+   # === REQUIRED: LLM API Key ===
+   # You MUST configure at least one LLM provider for FinanceGPT to work
+   # Get your API key from the respective provider:
+   
+   # OpenAI (recommended for best results)
+   OPENAI_API_KEY=sk-...
+   
+   # OR Anthropic Claude
+   ANTHROPIC_API_KEY=sk-ant-...
+   
+   # OR Google Gemini (free tier available)
+   GOOGLE_API_KEY=AIza...
+   
+   # === REQUIRED: Plaid (for bank account connections) ===
+   # Sign up at https://dashboard.plaid.com/team/keys
+   PLAID_CLIENT_ID=your_plaid_client_id
+   PLAID_SECRET=your_plaid_secret
+   PLAID_ENV=sandbox  # Use 'sandbox' for testing
+   
+   # === REQUIRED: Security ===
+   SECRET_KEY=your-random-secret-key-change-this-in-production
+   
+   # === Optional: Document Processing ===
+   # Only needed if you want to parse PDFs/documents
+   # Get free API key from https://unstructured.io/
+   # UNSTRUCTURED_API_KEY=your_key_here
    ```
 
-4. **Install frontend dependencies**
+3. **Create frontend environment file:**
+   ```bash
+   cp financegpt_web/.env.example financegpt_web/.env.local
+   ```
+
+   Edit `financegpt_web/.env.local`:
+   ```env
+   # Backend API URL
+   NEXT_PUBLIC_FASTAPI_BACKEND_URL=http://localhost:8000
+   
+   # Auth type (LOCAL or GOOGLE)
+   NEXT_PUBLIC_FASTAPI_BACKEND_AUTH_TYPE=LOCAL
+   
+   # Document parsing service
+   NEXT_PUBLIC_ETL_SERVICE=DOCLING
+   ```
+
+#### Installation Steps
+
+1. **Start infrastructure services (PostgreSQL, Redis, etc.)**
+   ```bash
+   docker-compose up -d db redis electric pgadmin
+   ```
+
+2. **Install and run backend**
+   ```bash
+   cd financegpt_backend
+   
+   # Create virtual environment
+   python -m venv .venv
+   source .venv/bin/activate  # On Windows: .venv\Scripts\activate
+   
+   # Install dependencies
+   pip install -e .
+   
+   # Run database migrations
+   alembic upgrade head
+   
+   # Start the backend server
+   uvicorn main:app --reload --host 0.0.0.0 --port 8000
+   ```
+
+3. **In a new terminal, install and run frontend**
    ```bash
    cd financegpt_web
+   
+   # Install dependencies
    pnpm install
+   
+   # Start development server
    pnpm dev
    ```
 
-5. **Install backend dependencies**
-   ```bash
-   cd ../financegpt_backend
-   python -m venv .venv
-   source .venv/bin/activate  # On Windows: .venv\Scripts\activate
-   pip install -r requirements.txt
-   ```
+4. **Access the application**
+   - 🌐 **Frontend**: http://localhost:3000
+   - 🔧 **Backend API**: http://localhost:8000
+   - 📚 **API Documentation**: http://localhost:8000/docs
+   - 🗄️ **pgAdmin** (Database UI): http://localhost:5050
+     - Email: `admin@financegpt.com`
+     - Password: `financegpt`
 
-6. **Run database migrations**
-   ```bash
-   alembic upgrade head
-   ```
+### Option 3: Full Docker Deployment
 
-7. **Start the backend**
-   ```bash
-   uvicorn main:app --reload
-   ```
+Build and run everything with Docker:
 
-8. **Access the application**
-   - Frontend: http://localhost:3000
-   - Backend API: http://localhost:8000
-   - API Docs: http://localhost:8000/docs
+```bash
+# Build and start all services
+docker-compose up -d
+
+# View logs
+docker-compose logs -f
+
+# Stop all services
+docker-compose down
+```
+
+Access at **http://localhost:3000**
 
 ---
 

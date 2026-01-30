@@ -11,9 +11,9 @@ from app.parsers.base_financial_parser import (
     InvestmentTransaction,
     TransactionType,
 )
-from app.parsers.chase_parser import ChaseBankParser, ChaseCreditParser, ChaseParser
-from app.parsers.discover_parser import DiscoverParser
-from app.parsers.fidelity_parser import FidelityParser
+# from app.parsers.chase_parser import ChaseBankParser, ChaseCreditParser, ChaseParser
+# from app.parsers.discover_parser import DiscoverParser
+# from app.parsers.fidelity_parser import FidelityParser
 from app.parsers.ofx_parser import OFXParser
 from app.parsers.parser_factory import ParserFactory
 
@@ -27,11 +27,11 @@ __all__ = [
     "TransactionType",
     "AccountType",
     # Parsers
-    "ChaseParser",
-    "ChaseBankParser",
-    "ChaseCreditParser",
-    "FidelityParser",
-    "DiscoverParser",
+    # "ChaseParser",
+    # "ChaseBankParser",
+    # "ChaseCreditParser",
+    # "FidelityParser",
+    # "DiscoverParser",
     "OFXParser",
     # Factory
     "ParserFactory",
