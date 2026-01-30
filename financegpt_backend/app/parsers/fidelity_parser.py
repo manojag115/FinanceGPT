@@ -33,7 +33,12 @@ class FidelityParser(BaseFinancialParser):
         super().__init__("Fidelity")
 
     async def parse_file(
-        self, file_content: bytes, filename: str
+        self,
+        file_content: bytes,
+        filename: str,
+        session=None,
+        user_id: str | None = None,
+        search_space_id: int | None = None,
     ) -> dict[str, Any]:
         """
         Parse Fidelity CSV file.
@@ -120,19 +125,22 @@ class FidelityParser(BaseFinancialParser):
         Returns:
             Value from matched column or empty string if not found
         """
-        columns_lower = {k.lower(): k for k in row.keys()}
+        # Filter out None keys and create lowercase mapping
+        columns_lower = {k.lower(): k for k in row.keys() if k is not None}
         
         # Try exact match first
         for name in possible_names:
             if name.lower() in columns_lower:
-                return row[columns_lower[name.lower()]]
+                value = row[columns_lower[name.lower()]]
+                return value if value is not None else ""
         
         # Try substring match
         for name in possible_names:
             name_lower = name.lower()
             for col_lower, col_original in columns_lower.items():
                 if name_lower in col_lower:
-                    return row[col_original]
+                    value = row[col_original]
+                    return value if value is not None else ""
         
         return ""
 
@@ -195,12 +203,13 @@ class FidelityParser(BaseFinancialParser):
                         gain_loss_percent = self._parse_amount(pct_cleaned)
 
                 # Determine account type from Account Name if available
-                account_name = self._fuzzy_match_column(row, ["Account Name", "Account"]).upper()
+                account_name_str = self._fuzzy_match_column(row, ["Account Name", "Account"])
+                account_name = account_name_str.upper() if account_name_str else ""
                 account_type = self._determine_account_type(account_name)
 
                 # Determine asset type
-                asset_type_str = self._fuzzy_match_column(row, ["Security Type", "Type", "Asset Type"]).lower()
-                asset_type = asset_type_str if asset_type_str else None
+                asset_type_str = self._fuzzy_match_column(row, ["Security Type", "Type", "Asset Type"])
+                asset_type = asset_type_str.lower() if asset_type_str else None
                 if not asset_type:
                     # Guess from symbol
                     if len(symbol) <= 5:

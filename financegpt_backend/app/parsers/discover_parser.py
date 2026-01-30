@@ -25,7 +25,12 @@ class DiscoverParser(BaseFinancialParser):
         super().__init__("Discover")
 
     async def parse_file(
-        self, file_content: bytes, filename: str
+        self,
+        file_content: bytes,
+        filename: str,
+        session=None,
+        user_id: str | None = None,
+        search_space_id: int | None = None,
     ) -> dict[str, Any]:
         """
         Parse Discover CSV file.

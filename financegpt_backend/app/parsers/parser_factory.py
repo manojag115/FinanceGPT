@@ -10,6 +10,7 @@ from app.parsers.base_financial_parser import BaseFinancialParser
 from app.parsers.chase_parser import ChaseBankParser, ChaseCreditParser, ChaseParser
 from app.parsers.discover_parser import DiscoverParser
 from app.parsers.fidelity_parser import FidelityParser
+from app.parsers.llm_csv_parser import LLMCSVParser
 from app.parsers.ofx_parser import OFXParser
 from app.parsers.pdf_statement_parser import PDFStatementParser
 
@@ -43,7 +44,7 @@ class ParserFactory:
             SearchSourceConnectorType.OFX_UPLOAD: OFXParser(),
             # Generic parsers
             SearchSourceConnectorType.GENERIC_BANK_CSV: ChaseParser(),  # Use Chase format as default
-            SearchSourceConnectorType.GENERIC_INVESTMENT_CSV: FidelityParser(),  # Use Fidelity format
+            SearchSourceConnectorType.GENERIC_INVESTMENT_CSV: LLMCSVParser(),  # Use LLM for unknown investment CSVs
         }
 
         parser = parser_map.get(connector_type)
@@ -108,12 +109,30 @@ class ParserFactory:
                 if "Discover" in text_preview or "Trans. Date,Post Date" in text_preview:
                     return SearchSourceConnectorType.DISCOVER_CREDIT
 
-                # Default to generic bank CSV
-                return SearchSourceConnectorType.GENERIC_BANK_CSV
+                # Check if it looks like investment holdings (has Symbol/Ticker + Quantity columns)
+                headers_lower = text_preview.lower()
+                has_symbol = any(word in headers_lower for word in ["symbol", "ticker"])
+                has_quantity = any(word in headers_lower for word in ["quantity", "shares", "qty"])
+                
+                if has_symbol and has_quantity:
+                    # Unknown investment CSV - use LLM parser
+                    return SearchSourceConnectorType.GENERIC_INVESTMENT_CSV
+                
+                # Check if it looks like transactions (has Date + Amount/Description)
+                has_date = any(word in headers_lower for word in ["date", "transaction date", "trans. date"])
+                has_amount = any(word in headers_lower for word in ["amount", "price", "$"])
+                
+                if has_date and has_amount:
+                    # Unknown transaction CSV - use generic bank parser
+                    return SearchSourceConnectorType.GENERIC_BANK_CSV
+
+                # Default: try LLM parser for any CSV
+                return SearchSourceConnectorType.GENERIC_INVESTMENT_CSV
 
             except Exception as e:
-                logger.warning(f"Error detecting CSV format: {e}")
-                return SearchSourceConnectorType.GENERIC_BANK_CSV
+                logger.warning("Error detecting CSV format: %s", e)
+                # Fallback to LLM parser
+                return SearchSourceConnectorType.GENERIC_INVESTMENT_CSV
 
         # Not a recognized financial file format
         return None

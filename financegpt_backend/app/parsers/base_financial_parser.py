@@ -189,7 +189,12 @@ class BaseFinancialParser(ABC):
 
     @abstractmethod
     async def parse_file(
-        self, file_content: bytes, filename: str
+        self,
+        file_content: bytes,
+        filename: str,
+        session=None,
+        user_id: str | None = None,
+        search_space_id: int | None = None,
     ) -> dict[str, Any]:
         """
         Parse a financial statement file.
@@ -197,6 +202,9 @@ class BaseFinancialParser(ABC):
         Args:
             file_content: Raw file bytes
             filename: Original filename (used to detect format)
+            session: Optional database session for LLM access
+            user_id: Optional user ID for user-specific LLM config
+            search_space_id: Optional search space ID for LLM config
 
         Returns:
             Dictionary containing:

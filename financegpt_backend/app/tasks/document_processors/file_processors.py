@@ -12,7 +12,6 @@ from logging import ERROR, getLogger
 import httpx
 from fastapi import HTTPException
 from langchain_core.documents import Document as LangChainDocument
-from litellm import atranscription
 from sqlalchemy.exc import SQLAlchemyError
 from sqlalchemy.ext.asyncio import AsyncSession
 
@@ -901,6 +900,10 @@ async def _process_financial_data(
             gain_loss = holding.gain_loss if hasattr(holding, 'gain_loss') else holding.get('gain_loss')
             gain_loss_pct = holding.gain_loss_percent if hasattr(holding, 'gain_loss_percent') else holding.get('gain_loss_percent')
             
+            # Handle None values for formatting
+            value = value if value is not None else 0
+            quantity = quantity if quantity is not None else 0
+            
             # Basic info
             markdown_parts.append(f"- **{symbol}**: {quantity} shares @ ${value:.2f}")
             
@@ -942,8 +945,8 @@ async def _process_financial_data(
         "holdings": [
             {
                 "symbol": h.symbol if hasattr(h, 'symbol') else h.get('symbol', ''),
-                "quantity": float(h.quantity) if hasattr(h, 'quantity') else float(h.get('quantity', 0)),
-                "value": float(h.value) if hasattr(h, 'value') else float(h.get('value', 0)),
+                "quantity": float(h.quantity) if (hasattr(h, 'quantity') and h.quantity is not None) else 0.0,
+                "value": float(h.value) if (hasattr(h, 'value') and h.value is not None) else 0.0,
                 "cost_basis": float(h.cost_basis) if (hasattr(h, 'cost_basis') and h.cost_basis is not None) else None,
                 "gain_loss": float(h.gain_loss) if (hasattr(h, 'gain_loss') and h.gain_loss is not None) else None,
                 "gain_loss_percent": float(h.gain_loss_percent) if (hasattr(h, 'gain_loss_percent') and h.gain_loss_percent is not None) else None,
@@ -1079,7 +1082,10 @@ async def process_file_in_background(
                 
                 try:
                     parser = ParserFactory.get_parser(detected_format)
-                    financial_data = await parser.parse_file(file_content, filename)
+                    # Pass session context to parser for LLM access
+                    financial_data = await parser.parse_file(
+                        file_content, filename, session, user_id, search_space_id
+                    )
                     
                     result = await _process_financial_data(
                         session, filename, financial_data, search_space_id, user_id, file_path, task_logger, log_entry
@@ -1173,148 +1179,6 @@ async def process_file_in_background(
                     log_entry,
                     f"Markdown file already exists (duplicate): {filename}",
                     {"duplicate_detected": True, "file_type": "markdown"},
-                )
-                return None
-
-        # Check if the file is an audio file
-        elif filename.lower().endswith(
-            (".mp3", ".mp4", ".mpeg", ".mpga", ".m4a", ".wav", ".webm")
-        ):
-            # Update notification: parsing stage (transcription)
-            if notification:
-                await (
-                    NotificationService.document_processing.notify_processing_progress(
-                        session,
-                        notification,
-                        stage="parsing",
-                        stage_message="Transcribing audio",
-                    )
-                )
-
-            await task_logger.log_task_progress(
-                log_entry,
-                f"Processing audio file for transcription: {filename}",
-                {"file_type": "audio", "processing_stage": "starting_transcription"},
-            )
-
-            # Determine STT service type
-            stt_service_type = (
-                "local"
-                if app_config.STT_SERVICE
-                and app_config.STT_SERVICE.startswith("local/")
-                else "external"
-            )
-
-            # Check if using local STT service
-            if stt_service_type == "local":
-                # Use local Faster-Whisper for transcription
-                from app.services.stt_service import stt_service
-
-                try:
-                    result = stt_service.transcribe_file(file_path)
-                    transcribed_text = result.get("text", "")
-
-                    if not transcribed_text:
-                        raise ValueError("Transcription returned empty text")
-
-                    # Add metadata about the transcription
-                    transcribed_text = (
-                        f"# Transcription of {filename}\n\n{transcribed_text}"
-                    )
-                except Exception as e:
-                    raise HTTPException(
-                        status_code=422,
-                        detail=f"Failed to transcribe audio file {filename}: {e!s}",
-                    ) from e
-
-                await task_logger.log_task_progress(
-                    log_entry,
-                    f"Local STT transcription completed: {filename}",
-                    {
-                        "processing_stage": "local_transcription_complete",
-                        "language": result.get("language"),
-                        "confidence": result.get("language_probability"),
-                        "duration": result.get("duration"),
-                    },
-                )
-            else:
-                # Use LiteLLM for audio transcription
-                with open(file_path, "rb") as audio_file:
-                    transcription_kwargs = {
-                        "model": app_config.STT_SERVICE,
-                        "file": audio_file,
-                        "api_key": app_config.STT_SERVICE_API_KEY,
-                    }
-                    if app_config.STT_SERVICE_API_BASE:
-                        transcription_kwargs["api_base"] = (
-                            app_config.STT_SERVICE_API_BASE
-                        )
-
-                    transcription_response = await atranscription(
-                        **transcription_kwargs
-                    )
-
-                    # Extract the transcribed text
-                    transcribed_text = transcription_response.get("text", "")
-
-                    if not transcribed_text:
-                        raise ValueError("Transcription returned empty text")
-
-                # Add metadata about the transcription
-                transcribed_text = (
-                    f"# Transcription of {filename}\n\n{transcribed_text}"
-                )
-
-            await task_logger.log_task_progress(
-                log_entry,
-                f"Transcription completed, creating document: {filename}",
-                {
-                    "processing_stage": "transcription_complete",
-                    "transcript_length": len(transcribed_text),
-                },
-            )
-
-            # Update notification: chunking stage
-            if notification:
-                await (
-                    NotificationService.document_processing.notify_processing_progress(
-                        session, notification, stage="chunking"
-                    )
-                )
-
-            # Clean up the temp file
-            try:
-                os.unlink(file_path)
-            except Exception as e:
-                print("Error deleting temp file", e)
-                pass
-
-            # Process transcription as markdown document
-            result = await add_received_markdown_file_document(
-                session, filename, transcribed_text, search_space_id, user_id, connector
-            )
-
-            if connector:
-                await _update_document_from_connector(result, connector, session)
-
-            if result:
-                await task_logger.log_task_success(
-                    log_entry,
-                    f"Successfully transcribed and processed audio file: {filename}",
-                    {
-                        "document_id": result.id,
-                        "content_hash": result.content_hash,
-                        "file_type": "audio",
-                        "transcript_length": len(transcribed_text),
-                        "stt_service": stt_service_type,
-                    },
-                )
-                return result
-            else:
-                await task_logger.log_task_success(
-                    log_entry,
-                    f"Audio file transcript already exists (duplicate): {filename}",
-                    {"duplicate_detected": True, "file_type": "audio"},
                 )
                 return None
 

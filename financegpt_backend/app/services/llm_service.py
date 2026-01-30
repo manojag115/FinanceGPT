@@ -351,3 +351,25 @@ async def get_user_long_context_llm(
     The user_id parameter is ignored as LLM preferences are now per-search-space.
     """
     return await get_document_summary_llm(session, search_space_id)
+
+
+async def get_system_llm() -> ChatLiteLLM:
+    """
+    Get a system LLM for background tasks that don't have a specific user/search space.
+    Uses the first global LLM config available.
+    
+    Returns:
+        ChatLiteLLM instance configured with system default LLM
+    """
+    # Use the first global LLM config
+    if not config.GLOBAL_LLM_CONFIGS:
+        raise RuntimeError("No global LLM configs available for system tasks")
+    
+    global_config = config.GLOBAL_LLM_CONFIGS[0]
+    
+    return ChatLiteLLM(
+        model=global_config["model"],
+        api_key=global_config.get("api_key"),
+        base_url=global_config.get("api_base"),
+        temperature=0.1,  # Low temperature for more consistent parsing
+    )
