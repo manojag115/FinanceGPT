@@ -29,19 +29,23 @@ WORKDIR /app
 # Install pnpm
 RUN corepack enable pnpm
 
-# Copy package files
+# Copy package files first for better caching
 COPY financegpt_web/package.json financegpt_web/pnpm-lock.yaml* ./
+
+# Install dependencies in a separate layer (most cacheable)
+# Use network timeout to prevent hanging on slow networks
+RUN pnpm config set network-timeout 300000 \
+    && pnpm install --frozen-lockfile --ignore-scripts
+
+# Copy config files needed for postinstall
 COPY financegpt_web/source.config.ts ./
 COPY financegpt_web/content ./content
 
-# Install dependencies (skip postinstall which requires all source files)
-RUN pnpm install --frozen-lockfile --ignore-scripts
-
-# Copy source
-COPY financegpt_web/ ./
-
-# Run fumadocs-mdx postinstall now that source files are available
+# Run fumadocs-mdx postinstall
 RUN pnpm fumadocs-mdx
+
+# Copy source (after dependencies are cached)
+COPY financegpt_web/ ./
 
 # Build with localhost URLs (all services run in same container)
 ENV NEXT_PUBLIC_FASTAPI_BACKEND_URL=http://localhost:8000
@@ -184,15 +188,17 @@ COPY --from=electric-builder /app /app/electric-release
 # ====================
 WORKDIR /app/backend
 
-# Copy backend dependency files
+# Copy backend dependency files first (for better caching)
 COPY financegpt_backend/pyproject.toml financegpt_backend/uv.lock ./
 
-# Install PyTorch CPU-only (Docling needs it but OCR is disabled, no GPU needed)
+# Install PyTorch CPU-only first (large layer, good to cache separately)
 RUN pip install --no-cache-dir torch torchvision --index-url https://download.pytorch.org/whl/cpu
 
-# Install python dependencies
-RUN pip install --no-cache-dir certifi pip-system-certs uv \
-    && uv pip install --system --no-cache-dir -e .
+# Install uv and base dependencies
+RUN pip install --no-cache-dir certifi pip-system-certs uv
+
+# Install python dependencies (separate layer for caching)
+RUN uv pip install --system --no-cache-dir -e .
 
 # Set SSL environment variables
 RUN CERTIFI_PATH=$(python -c "import certifi; print(certifi.where())") \
@@ -202,12 +208,12 @@ RUN CERTIFI_PATH=$(python -c "import certifi; print(certifi.where())") \
 # Note: EasyOCR models NOT downloaded - OCR is disabled in docling_service.py
 # GPU support will be added in a future :cuda tagged image
 
-# Install Playwright browsers
+# Install Playwright browsers (separate layer)
 RUN pip install --no-cache-dir playwright \
     && playwright install chromium \
     && rm -rf /root/.cache/ms-playwright/ffmpeg* 
 
-# Copy backend source
+# Copy backend source last (changes most frequently)
 COPY financegpt_backend/ ./
 
 # ====================
