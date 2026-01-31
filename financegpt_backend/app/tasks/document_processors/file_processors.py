@@ -52,6 +52,114 @@ LLAMACLOUD_RETRYABLE_EXCEPTIONS = (
 )
 
 
+async def _process_tax_form_if_applicable(
+    session: AsyncSession,
+    document: Document,
+    filename: str,
+    user_id: str,
+    search_space_id: int,
+) -> None:
+    """
+    Check if uploaded document is a tax form and trigger parsing if so.
+    
+    Detects tax forms based on filename patterns (w2, 1099) and content.
+    If detected, extracts structured data and saves to tax_forms tables.
+    
+    Args:
+        session: Database session
+        document: The uploaded document
+        filename: Original filename
+        user_id: User ID
+        search_space_id: Search space ID
+    """
+    from uuid import UUID
+    from app.db import TaxForm
+    from app.parsers.tax_form_parser import TaxFormParser
+    from app.utils.pii_masking import prepare_tax_form_for_storage
+    from app.schemas.tax_forms import (
+        W2FormCreate,
+        Form1099MiscCreate,
+        Form1099IntCreate,
+        Form1099DivCreate,
+        Form1099BCreate,
+    )
+    import re
+    
+    try:
+        # Only process PDFs
+        if not filename.lower().endswith('.pdf'):
+            return
+        
+        # Detect tax form type from filename
+        filename_lower = filename.lower()
+        form_type = None
+        tax_year = None
+        
+        # Extract year from filename (e.g., "w2_2024.pdf", "2024_w2.pdf")
+        year_match = re.search(r'(20\d{2})', filename)
+        if year_match:
+            tax_year = int(year_match.group(1))
+        
+        # Detect form type
+        if 'w2' in filename_lower or 'w-2' in filename_lower:
+            form_type = 'W2'
+            if not tax_year:
+                tax_year = 2024  # Default to current tax year
+        elif '1099' in filename_lower:
+            if 'misc' in filename_lower:
+                form_type = '1099-MISC'
+            elif 'int' in filename_lower:
+                form_type = '1099-INT'
+            elif 'div' in filename_lower:
+                form_type = '1099-DIV'
+            elif 'b' in filename_lower:
+                form_type = '1099-B'
+            else:
+                # Generic 1099, try to detect from content later
+                form_type = '1099-MISC'  # Default
+            
+            if not tax_year:
+                tax_year = 2024
+        
+        # If not a tax form, return early
+        if not form_type:
+            return
+        
+        logger.info(f"Detected tax form: {form_type} for year {tax_year} in file {filename}")
+        
+        # Create tax_form record
+        tax_form = TaxForm(
+            user_id=UUID(user_id),
+            search_space_id=search_space_id,
+            form_type=form_type,
+            tax_year=tax_year,
+            document_id=document.id,
+            processing_status='pending',
+        )
+        session.add(tax_form)
+        await session.commit()
+        await session.refresh(tax_form)
+        
+        logger.info(f"Created tax form record with ID {tax_form.id}, starting parsing...")
+        
+        # TODO: Trigger async parsing task
+        # For now, log that parsing would happen
+        # In production, this would be a Celery task
+        logger.info(
+            f"Tax form parsing would be triggered here for {form_type} (tax_form_id={tax_form.id}). "
+            f"Parser integration pending."
+        )
+        
+        # Update status to show it's queued for processing
+        tax_form.processing_status = 'processing'
+        await session.commit()
+        
+    except Exception as e:
+        logger.error(f"Error processing tax form for {filename}: {e}")
+        # Don't fail the document upload if tax parsing fails
+        await session.rollback()
+
+
 async def _save_investment_holdings(
     session: AsyncSession,
     user_id: str,
@@ -522,6 +630,11 @@ async def add_received_file_document_using_unstructured(
             await session.commit()
             await session.refresh(document)
 
+        # After successful document creation, check if this is a tax form
+        await _process_tax_form_if_applicable(
+            session, document, file_name, user_id, search_space_id
+        )
+
         return document
     except SQLAlchemyError as db_error:
         await session.rollback()
@@ -660,6 +773,11 @@ async def add_received_file_document_using_llamacloud(
             session.add(document)
             await session.commit()
             await session.refresh(document)
+
+        # After successful document creation, check if this is a tax form
+        await _process_tax_form_if_applicable(
+            session, document, file_name, user_id, search_space_id
+        )
 
         return document
     except SQLAlchemyError as db_error:

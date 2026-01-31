@@ -58,6 +58,7 @@ from .portfolio_analysis import create_portfolio_analysis_tool, create_tax_loss_
 from .portfolio_performance import create_portfolio_performance_tool
 from .search_financegpt_docs import create_search_financegpt_docs_tool
 from .search_transactions import create_search_transactions_tool
+from .tax_analysis import create_tax_analysis_tool
 from .user_memory import create_recall_memory_tool, create_save_memory_tool
 
 # =============================================================================
@@ -252,6 +253,20 @@ BUILTIN_TOOLS: list[ToolDefinition] = [
             connector_service=deps["connector_service"],
         ),
         requires=["search_space_id", "db_session", "connector_service"],
+    ),
+    # =========================================================================
+    # TAX ANALYSIS TOOLS - UPLOADED TAX FORMS
+    # =========================================================================
+    # Tax analysis tool - queries structured tax form data (W2, 1099s)
+    ToolDefinition(
+        name="analyze_tax_data",
+        description="Query uploaded and processed tax forms (W2, 1099s) to answer tax-related questions",
+        factory=lambda deps: create_tax_analysis_tool(
+            user_id=deps["user_id"],
+            search_space_id=deps["search_space_id"],
+            db_session=deps["db_session"],
+        ),
+        requires=["user_id", "search_space_id", "db_session"],
     ),
     # =========================================================================
     # ADD YOUR CUSTOM TOOLS BELOW
