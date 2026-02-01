@@ -291,6 +291,29 @@ Example for transactions:
         Returns:
             List of InvestmentHolding objects extracted locally
         """
+        
+        def safe_decimal(value: str | None, allow_negative: bool = False) -> Decimal | None:
+            """Safely convert a string to Decimal, handling common formats."""
+            if not value:
+                return None
+            # Clean the string
+            cleaned = str(value).strip()
+            # Remove currency symbols, commas, spaces
+            cleaned = cleaned.replace("$", "").replace(",", "").replace(" ", "")
+            # Handle parentheses for negative numbers: (123.45) -> -123.45
+            if cleaned.startswith("(") and cleaned.endswith(")"):
+                cleaned = "-" + cleaned[1:-1]
+            # Skip non-numeric values
+            if not cleaned or cleaned in ["", "-", "N/A", "n/a", "--", "NA", "null", "None"]:
+                return None
+            try:
+                result = Decimal(cleaned)
+                if not allow_negative and result < 0:
+                    return None
+                return result
+            except Exception:
+                return None
+        
         holdings = []
         
         for row in rows:
@@ -303,45 +326,37 @@ Example for transactions:
                 if not symbol or symbol in ["", "N/A", "Total", "TOTAL"]:
                     continue
                 
-                # Extract quantity
+                # Extract quantity using safe_decimal
                 quantity_col = schema.get("quantity", {}).get("column")
                 if not quantity_col or quantity_col not in row:
                     continue
-                quantity_str = str(row[quantity_col]).replace(",", "").strip()
-                if not quantity_str:
-                    continue
-                quantity = Decimal(quantity_str)
-                if quantity <= 0:
+                quantity = safe_decimal(row[quantity_col])
+                if not quantity or quantity <= 0:
                     continue
                 
-                # Extract optional fields
-                price = None
+                # Extract optional fields using safe_decimal
                 price_col = schema.get("price", {}).get("column")
-                if price_col and price_col in row and row[price_col]:
-                    price = Decimal(str(row[price_col]).replace("$", "").replace(",", "").strip())
+                price = safe_decimal(row.get(price_col)) if price_col else None
                 
-                market_value = None
                 mv_col = schema.get("market_value", {}).get("column")
-                if mv_col and mv_col in row and row[mv_col]:
-                    market_value = Decimal(str(row[mv_col]).replace("$", "").replace(",", "").strip())
+                market_value = safe_decimal(row.get(mv_col)) if mv_col else None
                 
                 # Handle cost_basis - might need calculation
                 cost_basis = None
                 cb_config = schema.get("cost_basis", {})
                 if "column" in cb_config:
                     cb_col = cb_config["column"]
-                    if cb_col in row and row[cb_col]:
-                        cost_basis = Decimal(str(row[cb_col]).replace("$", "").replace(",", "").strip())
+                    cost_basis = safe_decimal(row.get(cb_col))
                 elif "calculation" in cb_config:
                     # Handle calculated cost_basis (e.g., market_value - gain_loss)
                     calc = cb_config["calculation"]
                     if "market_value - gain_loss" in calc:
                         uses_cols = cb_config.get("uses_columns", [])
                         if len(uses_cols) >= 2 and all(c in row for c in uses_cols):
-                            mv = Decimal(str(row[uses_cols[0]]).replace("$", "").replace(",", "").strip())
-                            gl_str = str(row[uses_cols[1]]).replace("$", "").replace(",", "").replace("(", "-").replace(")", "").strip()
-                            gl = Decimal(gl_str)
-                            cost_basis = mv - gl
+                            mv = safe_decimal(row[uses_cols[0]])
+                            gl = safe_decimal(row[uses_cols[1]], allow_negative=True)
+                            if mv is not None and gl is not None:
+                                cost_basis = mv - gl
                 
                 holding = InvestmentHolding(
                     symbol=symbol,
