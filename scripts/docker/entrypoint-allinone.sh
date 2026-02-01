@@ -127,7 +127,7 @@ if [ ! -f /data/postgres/PG_VERSION ]; then
         DO \\\$\\\$
         BEGIN
             IF NOT EXISTS (SELECT FROM pg_publication WHERE pubname = 'electric_publication_default') THEN
-                CREATE PUBLICATION electric_publication_default;
+                CREATE PUBLICATION electric_publication_default FOR ALL TABLES;
             END IF;
         END
         \\\$\\\$;
