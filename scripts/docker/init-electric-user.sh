@@ -45,15 +45,19 @@ psql -v ON_ERROR_STOP=1 --username "$POSTGRES_USER" --dbname "$POSTGRES_DB" <<-E
     ALTER DEFAULT PRIVILEGES FOR ROLE postgres IN SCHEMA public GRANT SELECT ON TABLES TO $ELECTRIC_DB_USER;
     ALTER DEFAULT PRIVILEGES FOR ROLE postgres IN SCHEMA public GRANT SELECT ON SEQUENCES TO $ELECTRIC_DB_USER;
 
-    -- Create the publication for Electric SQL (if not exists)
-    -- FOR ALL TABLES ensures all current and future tables are included
+    -- Create EMPTY publication for Electric SQL (if not exists)
+    -- Do NOT use FOR ALL TABLES - Electric cannot manage such publications
+    -- Tables will be added automatically when Electric connects (since it owns the publication)
     DO \$\$
     BEGIN
         IF NOT EXISTS (SELECT FROM pg_publication WHERE pubname = 'electric_publication_default') THEN
-            CREATE PUBLICATION electric_publication_default FOR ALL TABLES;
+            CREATE PUBLICATION electric_publication_default;
         END IF;
     END
     \$\$;
+    
+    -- Grant ownership to Electric user so it can manage the publication
+    ALTER PUBLICATION electric_publication_default OWNER TO $ELECTRIC_DB_USER;
 EOSQL
 
 echo "Electric SQL user '$ELECTRIC_DB_USER' and publication created successfully"
