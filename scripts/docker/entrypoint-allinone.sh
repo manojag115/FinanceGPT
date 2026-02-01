@@ -181,6 +181,12 @@ run_migrations() {
     cd /app/backend
     alembic upgrade head || echo "⚠️ Migrations may have already been applied"
     
+    # Recreate Electric publication AFTER migrations so all tables are included
+    # FOR ALL TABLES only captures tables that exist at creation time
+    echo "📡 Refreshing Electric SQL publication..."
+    su - postgres -c "psql -d ${POSTGRES_DB:-financegpt} -c \"DROP PUBLICATION IF EXISTS electric_publication_default; CREATE PUBLICATION electric_publication_default FOR ALL TABLES;\""
+    echo "✅ Electric SQL publication refreshed with all tables"
+    
     # Stop temporary services
     redis-cli shutdown || true
     su - postgres -c "/usr/lib/postgresql/14/bin/pg_ctl -D /data/postgres stop"
