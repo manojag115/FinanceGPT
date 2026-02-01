@@ -121,15 +121,19 @@ if [ ! -f /data/postgres/PG_VERSION ]; then
         ALTER DEFAULT PRIVILEGES IN SCHEMA public GRANT SELECT ON TABLES TO ${ELECTRIC_DB_USER};
         ALTER DEFAULT PRIVILEGES IN SCHEMA public GRANT SELECT ON SEQUENCES TO ${ELECTRIC_DB_USER};
 
-        -- Create the publication for Electric SQL (if not exists)
-        -- Must use FOR ALL TABLES so Electric can sync all tables
+        -- Create EMPTY publication for Electric SQL (if not exists)
+        -- Do NOT use FOR ALL TABLES - Electric cannot manage such publications
+        -- Tables will be added explicitly after migrations complete
         DO \\\$\\\$
         BEGIN
             IF NOT EXISTS (SELECT FROM pg_publication WHERE pubname = 'electric_publication_default') THEN
-                CREATE PUBLICATION electric_publication_default FOR ALL TABLES;
+                CREATE PUBLICATION electric_publication_default;
             END IF;
         END
         \\\$\\\$;
+        
+        -- Grant ownership to Electric user so it can manage the publication
+        ALTER PUBLICATION electric_publication_default OWNER TO ${ELECTRIC_DB_USER};
 EOSQL"
     echo "✅ Electric SQL user '${ELECTRIC_DB_USER}' created"
     
@@ -181,11 +185,22 @@ run_migrations() {
     cd /app/backend
     alembic upgrade head || echo "⚠️ Migrations may have already been applied"
     
-    # Recreate Electric publication AFTER migrations so all tables are included
-    # FOR ALL TABLES only captures tables that exist at creation time
-    echo "📡 Refreshing Electric SQL publication..."
-    su - postgres -c "psql -d ${POSTGRES_DB:-financegpt} -c \"DROP PUBLICATION IF EXISTS electric_publication_default; CREATE PUBLICATION electric_publication_default FOR ALL TABLES;\""
-    echo "✅ Electric SQL publication refreshed with all tables"
+    # Configure Electric SQL publication with all tables
+    # Add tables explicitly (not FOR ALL TABLES) so Electric can manage them
+    echo "📡 Configuring Electric SQL publication..."
+    
+    # Drop and recreate publication to ensure clean state
+    su - postgres -c "psql -d ${POSTGRES_DB:-financegpt} -c 'DROP PUBLICATION IF EXISTS electric_publication_default; CREATE PUBLICATION electric_publication_default;'"
+    
+    # Add all tables and set REPLICA IDENTITY FULL
+    su - postgres -c "psql -d ${POSTGRES_DB:-financegpt} -tAc \"SELECT 'ALTER PUBLICATION electric_publication_default ADD TABLE public.' || tablename || '; ALTER TABLE public.' || tablename || ' REPLICA IDENTITY FULL;' FROM pg_tables WHERE schemaname = 'public';\"" | su - postgres -c "psql -d ${POSTGRES_DB:-financegpt}"
+    
+    # Grant ownership to electric user and full table access
+    su - postgres -c "psql -d ${POSTGRES_DB:-financegpt} -c 'ALTER PUBLICATION electric_publication_default OWNER TO electric;'"
+    su - postgres -c "psql -d ${POSTGRES_DB:-financegpt} -c 'GRANT SELECT ON ALL TABLES IN SCHEMA public TO electric;'"
+    su - postgres -c "psql -d ${POSTGRES_DB:-financegpt} -c 'GRANT SELECT ON ALL SEQUENCES IN SCHEMA public TO electric;'"
+    
+    echo "✅ Electric SQL publication configured with all tables"
     
     # Stop temporary services
     redis-cli shutdown || true
