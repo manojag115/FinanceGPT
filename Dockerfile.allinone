@@ -232,6 +232,10 @@ RUN dos2unix /app/entrypoint.sh && chmod +x /app/entrypoint.sh
 COPY scripts/docker/init-postgres.sh /app/init-postgres.sh
 RUN dos2unix /app/init-postgres.sh && chmod +x /app/init-postgres.sh
 
+# Electric SQL initialization script (same as used in local docker-compose)
+COPY scripts/docker/init-electric-user.sh /app/init-electric-user.sh
+RUN dos2unix /app/init-electric-user.sh && chmod +x /app/init-electric-user.sh
+
 # Clean up build dependencies to reduce image size
 RUN apt-get purge -y build-essential postgresql-server-dev-14 git \
     && apt-get autoremove -y \
