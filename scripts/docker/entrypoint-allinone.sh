@@ -122,10 +122,11 @@ if [ ! -f /data/postgres/PG_VERSION ]; then
         ALTER DEFAULT PRIVILEGES IN SCHEMA public GRANT SELECT ON SEQUENCES TO ${ELECTRIC_DB_USER};
 
         -- Create the publication for Electric SQL (if not exists)
+        -- Must use FOR ALL TABLES so Electric can sync all tables
         DO \\\$\\\$
         BEGIN
             IF NOT EXISTS (SELECT FROM pg_publication WHERE pubname = 'electric_publication_default') THEN
-                CREATE PUBLICATION electric_publication_default;
+                CREATE PUBLICATION electric_publication_default FOR ALL TABLES;
             END IF;
         END
         \\\$\\\$;
