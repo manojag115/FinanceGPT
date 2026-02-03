@@ -32,6 +32,80 @@ class LLMCSVParser(BaseFinancialParser):
         """Initialize LLM CSV parser."""
         super().__init__("LLM CSV Parser")
 
+    def _skip_preamble_rows(self, text_content: str) -> str:
+        """
+        Skip preamble/header rows that appear before actual CSV data.
+        
+        Many brokerage CSV exports include metadata rows before the actual CSV headers.
+        Examples:
+        - Schwab: "Positions for account ****9247 as of 01/29/2026 04:00 PM ET"
+        - Fidelity: "Brokerage" or account name rows
+        - E*TRADE: Account summary rows
+        
+        Detection strategy:
+        1. Find the first line that looks like a proper CSV header row
+        2. A header row has multiple comma-separated fields (>=3)
+        3. Subsequent data rows should have the same number of fields
+        4. Preamble rows typically have fewer fields or are single values
+        
+        Args:
+            text_content: Raw CSV text content
+            
+        Returns:
+            CSV text with preamble rows removed
+        """
+        lines = text_content.strip().split('\n')
+        if not lines:
+            return text_content
+        
+        def count_csv_fields(line: str) -> int:
+            """Count fields in a CSV line, handling quoted values with commas."""
+            try:
+                # Use csv module to properly parse the line
+                reader = csv.reader(io.StringIO(line))
+                fields = next(reader, [])
+                return len(fields)
+            except Exception:
+                # Fallback: simple comma count (less accurate but safe)
+                return line.count(',') + 1
+        
+        def is_likely_header_row(line: str, next_lines: list[str]) -> bool:
+            """Check if this line looks like a CSV header row."""
+            if not line.strip():
+                return False
+            
+            field_count = count_csv_fields(line)
+            
+            # Headers should have at least 3 fields
+            if field_count < 3:
+                return False
+            
+            # Check if the next few non-empty lines have the same field count
+            # This indicates we found the actual CSV structure
+            matching_lines = 0
+            for next_line in next_lines[:5]:  # Check up to 5 subsequent lines
+                if not next_line.strip():
+                    continue
+                if count_csv_fields(next_line) == field_count:
+                    matching_lines += 1
+            
+            # If at least 2 subsequent lines match, this is likely the header
+            return matching_lines >= 2
+        
+        # Find the first line that looks like a CSV header
+        for i, line in enumerate(lines):
+            if not line.strip():
+                continue
+            
+            remaining_lines = lines[i+1:]
+            if is_likely_header_row(line, remaining_lines):
+                if i > 0:
+                    logger.info(f"Skipped {i} preamble row(s) before CSV headers")
+                return '\n'.join(lines[i:])
+        
+        # No preamble detected, return original content
+        return text_content
+
     async def parse_file(
         self,
         file_content: bytes,
@@ -56,6 +130,11 @@ class LLMCSVParser(BaseFinancialParser):
         try:
             # Decode CSV
             text_content = file_content.decode("utf-8-sig")
+            
+            # Handle CSV files with preamble/header rows before actual CSV data
+            # (e.g., Schwab files start with "Positions for account ****XXXX as of...")
+            text_content = self._skip_preamble_rows(text_content)
+            
             csv_reader = csv.DictReader(io.StringIO(text_content))
             
             # Get headers and first few rows for LLM analysis
@@ -316,14 +395,18 @@ Example for transactions:
         
         holdings = []
         
+        # Log schema for debugging
+        logger.debug(f"Applying holdings schema: {schema}")
+        
         for row in rows:
             try:
                 # Extract symbol
                 symbol_col = schema.get("symbol", {}).get("column")
                 if not symbol_col or symbol_col not in row:
+                    logger.debug(f"Symbol column '{symbol_col}' not found in row keys: {list(row.keys())}")
                     continue
                 symbol = str(row[symbol_col]).strip().upper()
-                if not symbol or symbol in ["", "N/A", "Total", "TOTAL"]:
+                if not symbol or symbol in ["", "N/A", "Total", "TOTAL", "ACCOUNT TOTAL", "CASH & CASH INVESTMENTS"]:
                     continue
                 
                 # Extract quantity using safe_decimal

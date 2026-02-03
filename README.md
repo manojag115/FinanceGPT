@@ -2,9 +2,11 @@
 
 <div align="center">
 
-**Your AI-Powered Personal Finance Assistant**
+<img src="financegpt.png" alt="FinanceGPT Logo" width="180" />
 
-An intelligent financial management platform that helps you track spending, optimize rewards, analyze investments, and make smarter money decisions using AI.
+### Your AI-Powered Personal CPA
+
+**Connect bank accounts • Upload tax forms • Get instant insights**
 
 [![License](https://img.shields.io/badge/License-Apache%202.0-blue.svg)](LICENSE)
 [![TypeScript](https://img.shields.io/badge/TypeScript-007ACC?logo=typescript&logoColor=white)](https://www.typescriptlang.org/)
@@ -12,354 +14,179 @@ An intelligent financial management platform that helps you track spending, opti
 [![FastAPI](https://img.shields.io/badge/FastAPI-009688?logo=fastapi&logoColor=white)](https://fastapi.tiangolo.com/)
 [![Python](https://img.shields.io/badge/Python-3776AB?logo=python&logoColor=white)](https://www.python.org/)
 
-[Features](#features) • [Quick Start](#quick-start) • [Architecture](#architecture) • [Documentation](#documentation) • [Contributing](#contributing)
+[Quick Start](#-quick-start) • [Features](#-features) • [Example Prompts](#-example-prompts) • [Privacy](#-privacy-first-design) • [Contributing](#-contributing)
 
 </div>
+
+---
+
+## 🚀 Quick Start
+
+Choose your preferred setup method:
+
+### Option 1: All-in-One Docker (Easiest)
+
+```bash
+# Clone and run with a single container
+git clone https://github.com/yourusername/FinanceGPT.git
+cd FinanceGPT
+
+# Copy environment file and add your API keys
+cp .env.example .env
+# Edit .env with your OPENAI_API_KEY, PLAID_CLIENT_ID, PLAID_SECRET
+
+# Start FinanceGPT
+docker compose -f docker-compose.quickstart.yml up -d
+```
+
+🎉 **Open http://localhost:3000** — You're done!
+
+---
+
+### Option 2: Local Development (macOS)
+
+```bash
+# Clone the repository
+git clone https://github.com/yourusername/FinanceGPT.git
+cd FinanceGPT
+
+# Start infrastructure (PostgreSQL, Redis)
+docker compose up -d db redis electric
+
+# Run the dev script (opens 3 terminal tabs automatically)
+chmod +x dev.sh
+./dev.sh
+```
+
+This starts:
+- 🔧 **Backend API** on http://localhost:8000
+- 🔄 **Celery Worker** for background tasks
+- 🌐 **Frontend** on http://localhost:3000
+
+---
+
+### Option 3: Full Docker Stack
+
+```bash
+# Clone the repository
+git clone https://github.com/yourusername/FinanceGPT.git
+cd FinanceGPT
+
+# Configure environment
+cp financegpt_backend/.env.example financegpt_backend/.env
+# Edit .env with your API keys
+
+# Build and run all services
+docker compose up -d --build
+
+# View logs
+docker compose logs -f
+```
+
+---
+
+## 🔐 Privacy-First Design
+
+Your financial data is sensitive. FinanceGPT is built with privacy as a core principle:
+
+| Feature | How It Protects You |
+|---------|---------------------|
+| **🔒 PII Masking** | SSN and EIN are **masked before any LLM call** (`123-45-6789` → `XXX-XX-XXXX`). Your tax forms never expose sensitive IDs. |
+| **🏠 Self-Hostable** | Run entirely on your own hardware. Your data never leaves your machine. |
+| **🤖 BYO Model** | Use your own LLM (OpenAI, Anthropic, or **local Ollama**). No vendor lock-in. |
+| **🔐 Local Processing** | Sensitive field extraction (SSN, EIN) happens locally—not via cloud APIs. |
+| **🗄️ Your Database** | All data stored in your PostgreSQL instance. Export or delete anytime. |
+| **🚫 No Telemetry** | Zero tracking, zero analytics, zero data collection. |
+
+```python
+# Example: How we handle your W2
+raw_text = "SSN: 123-45-6789, Wages: $183,000"
+masked_text = mask_pii_in_text(raw_text)  
+# → "SSN: XXX-XX-XXXX, Wages: $183,000"
+# Only masked_text is sent to the LLM
+```
+
+---
+
+## 💬 Example Prompts
+
+Just ask questions in plain English. FinanceGPT understands context.
+
+### 💰 Income & Tax Questions
+```
+"How much did I earn in 2024?"
+"What was my total federal tax withheld?"
+"Will I get a tax refund this year?"
+"Show me my W2 summary"
+"What state taxes did I pay?"
+```
+
+### 📊 Spending Analysis
+```
+"How much did I spend on restaurants last month?"
+"What are my recurring subscriptions?"
+"Find all Amazon purchases over $100"
+"What's my biggest expense category?"
+"Show spending trends for the last 3 months"
+```
+
+### 💳 Credit Card Optimization
+```
+"Which card should I use for groceries?"
+"Am I using the right credit card for travel?"
+"How much rewards am I missing out on?"
+"Optimize my credit card usage"
+```
+
+### 📈 Investment Portfolio
+```
+"How are my stocks performing today?"
+"What's my portfolio return this year?"
+"Is my allocation correct for my age?"
+"Should I rebalance according to Bogleheads?"
+"Can I harvest any tax losses?"
+```
+
+### 🏦 Account Overview
+```
+"What's my net worth?"
+"Show all my account balances"
+"How much do I have in savings?"
+"What's my monthly cash flow?"
+```
 
 ---
 
 ## 🌟 Features
 
 ### 🤖 AI-Powered Financial Advisor
-- **Smart Transaction Search**: Search your financial history using natural language queries
-  - "How much did I spend on restaurants last year?"
-  - "Show me all charges from United Airlines"
-  - "Find my recurring subscriptions"
-- **Personalized Recommendations**: Get AI-driven suggestions for saving money and optimizing rewards
 - **Natural Language Queries**: Ask questions about your finances in plain English
-- **Predictive Analytics**: Forecast future spending and identify potential savings
+- **Smart Transaction Search**: "How much did I spend on restaurants last year?"
+- **Personalized Recommendations**: AI-driven suggestions for saving money
+- **Tax Form Analysis**: Upload W2s, 1099s and get instant summaries
 
 ### 💳 Smart Credit Card Optimization
-- **Rewards Analysis**: Analyze your spending patterns to find the best credit cards
-  - "Which credit card should I use for restaurant purchases?"
-  - "Am I using the right credit card for my spending?"
-- **Category-Based Optimization**: Get recommendations based on merchants and categories
-- **Multi-Card Strategy**: Optimize rewards across multiple credit cards
+- **Rewards Maximization**: Get the best card for each purchase category
+- **Spending Pattern Analysis**: Identify where you're leaving money on the table
+- **Multi-Card Strategy**: Optimize rewards across all your cards
 
 ### 📈 Investment Portfolio Management
-- **Real-Time Performance Tracking**: Monitor your investment returns with live market data
-  - "How are my stocks performing today?"
-  - "What's my portfolio return over the last year?"
-  - "Show my month-over-month performance"
-- **Yahoo Finance Integration**: Fetches real-time and historical stock prices
-- **Cost Basis Tracking**: Calculate unrealized gains/losses across all holdings
-- **Time-Based Analysis**: Week-over-week, month-over-month, quarterly, and yearly performance
+- **Real-Time Performance**: Track returns with live Yahoo Finance data
+- **Time-Based Analysis**: WoW, MoM, QoQ, YoY performance tracking
+- **Tax Loss Harvesting**: Find opportunities to reduce your tax bill
+- **Rebalancing Recommendations**: Compare to Bogleheads, Three-Fund Portfolio
 
-### 🎯 Portfolio Allocation & Rebalancing
-- **Asset Allocation Analysis**: Understand your portfolio composition (stocks/bonds/cash)
-  - "Is my portfolio allocation correct?"
-  - "How should I rebalance according to Bogleheads philosophy?"
-- **Geographic Diversification**: Track US vs international exposure
-- **Investment Philosophy Comparison**: Compare against established strategies
-  - Bogleheads Conservative (40/50/10)
-  - Bogleheads Moderate (60/35/5)
-  - Bogleheads Aggressive (90/10/0)
-  - Three-Fund Portfolio
-- **Specific Rebalancing Recommendations**: Get dollar amounts for buying/selling
-- **Alignment Score**: See how well your portfolio matches your target allocation (0-100)
+### 📋 Tax Document Processing
+- **Supported Forms**: W2, 1099-INT, 1099-DIV, 1099-B, 1099-MISC, 1095-C
+- **LLM-Powered Extraction**: Accurate parsing with structured output
+- **Tax Estimate**: Calculate potential refund or amount owed
+- **State Tax Support**: Extracts state wages and withholdings
 
-### 💰 Tax Optimization
-- **Tax Loss Harvesting**: Identify opportunities to reduce your tax liability
-  - "Can I harvest any tax losses?"
-  - "What positions should I sell for tax savings?"
-- **Loss Identification**: Finds holdings with unrealized losses
-- **Tax Savings Calculator**: Estimates tax benefits based on your tax bracket
-- **Replacement Suggestions**: Recommends similar securities to avoid wash sales
-- **Wash Sale Warnings**: Alerts about IRS rules and compliance
-
-### 💳 Transaction & Spending Analysis
-- **Multi-Account Aggregation**: Connect bank accounts, credit cards, and investment platforms via Plaid
-- **Real-Time Tracking**: Monitor balances, transactions, and net worth in real-time
-- **Subscription Detection**: Identify and track recurring payments automatically
-  - "Check if I have any recurring subscriptions"
-  - "What am I paying monthly?"
-- **Category-Based Search**: Find transactions by category (restaurants, travel, etc.)
-- **Merchant Search**: Search by merchant name with fuzzy matching
-
-### 📊 Analytics & Reporting
-- **Interactive Dashboards**: Visualize spending trends, income, and investments
-- **Custom Reports**: Generate detailed financial reports and summaries
-- **Budget Management**: Set and monitor budgets with smart alerts
-- **Historical Comparisons**: Compare spending and performance across time periods
-
-### 🔒 Security & Privacy
-- **Bank-Level Encryption**: 256-bit SSL encryption for all data
-- **Secure Authentication**: OAuth 2.0 and Google Sign-In support
-- **Data Privacy**: Your financial data stays private and secure
-
-### 🔗 Integrations
-- **100+ Financial Institutions**: Banks, credit cards, investment platforms, crypto exchanges
-- **Plaid Integration**: Secure connection to financial accounts
-- **Yahoo Finance**: Real-time stock prices and historical market data
-- **Real-Time Sync**: Automatic transaction updates
-- **Manual Uploads**: Support for CSV files (bank statements, Fidelity positions, etc.)
-- **Export Options**: Download your data anytime
-
----
-
-## 💬 Example Prompts
-
-### Transaction Search & Analysis
-```
-"How much did I spend on restaurants last year?"
-"Show me all United Airlines charges"
-"Find transactions over $100 in the last month"
-"What did I spend on groceries this week?"
-"Show my Amazon purchases"
-```
-
-### Credit Card Optimization
-```
-"Which credit card should I use for restaurants?"
-"Am I using the right credit card for gas purchases?"
-"What's the best card for my travel spending?"
-"Optimize my credit card usage"
-```
-
-### Investment Performance
-```
-"How are my stocks performing today?"
-"What's my portfolio return over the last year?"
-"Show my month-over-month investment performance"
-"How much have my investments grown this quarter?"
-"What's my total portfolio value?"
-```
-
-### Portfolio Allocation & Rebalancing
-```
-"Is my portfolio allocation correct?"
-"How should I rebalance according to Bogleheads philosophy?"
-"What's my exposure to international stocks?"
-"Am I too heavily invested in US stocks?"
-"Should I buy more bonds or stocks?"
-"Compare my portfolio to a three-fund strategy"
-```
-
-### Tax Loss Harvesting
-```
-"Can I harvest any tax losses?"
-"What stocks should I sell for tax losses?"
-"How much can I save in taxes by tax loss harvesting?"
-"Are there any positions with unrealized losses?"
-"Show me tax optimization opportunities"
-```
-
-### Subscriptions & Recurring Payments
-```
-"Check if I have any recurring subscriptions"
-"What subscriptions am I paying for?"
-"Find all my monthly recurring charges"
-"Which services am I subscribed to?"
-```
-
-### Financial Planning
-```
-"What's my net worth?"
-"How much am I saving each month?"
-"Show my spending trends over the last 3 months"
-"What's my biggest expense category?"
-```
-
----
-
-## �️ AI Tools & Capabilities
-
-FinanceGPT uses specialized AI tools to analyze your financial data and provide actionable insights:
-
-### 1. **Transaction Search** (`search_transactions`)
-- Searches through all your financial transactions using keywords and categories
-- Supports both Plaid-connected accounts and manual CSV uploads
-- Fuzzy merchant name matching for accurate results
-- Date range filtering and category-based filtering
-- Returns transaction summaries with totals and breakdowns
-
-### 2. **Credit Card Optimizer** (`optimize_credit_card_usage`)
-- Analyzes spending patterns to recommend optimal credit cards
-- Matches merchant categories to card rewards programs
-- Compares rewards rates across multiple cards
-- Provides specific recommendations per spending category
-- Supports both manual uploads and Plaid data
-
-### 3. **Portfolio Performance** (`calculate_portfolio_performance`)
-- Fetches real-time stock prices from Yahoo Finance
-- Calculates returns over custom time periods (day, week, month, quarter, year)
-- Compares current prices to historical prices for accurate performance
-- Shows individual holding performance and total portfolio returns
-- Supports both snapshot comparisons and live price lookups
-
-### 4. **Portfolio Allocation Analyzer** (`analyze_portfolio_allocation`)
-- Analyzes asset class distribution (stocks/bonds/cash)
-- Calculates geographic exposure (US vs international)
-- Compares portfolio to investment philosophies (Bogleheads, Three-Fund)
-- Provides specific rebalancing recommendations with dollar amounts
-- Gives alignment score (0-100) showing how close you are to target
-
-### 5. **Tax Loss Harvesting** (`analyze_tax_loss_harvesting`)
-- Identifies positions with unrealized losses
-- Calculates potential tax savings based on your tax bracket
-- Suggests replacement securities to avoid wash sales
-- Provides sell/buy recommendations for tax optimization
-- Warns about wash sale rules and compliance
-
-### 6. **Subscription Finder** (`find_subscriptions`)
-- Automatically detects recurring charges in your transaction history
-- Identifies monthly, quarterly, and annual subscriptions
-- Calculates total subscription costs
-- Helps you find forgotten or unused subscriptions
-
-### 7. **Knowledge Base Search** (`search_knowledge_base`)
-- Searches across all your uploaded financial documents
-- Vector-based semantic search for accurate results
-- Supports PDFs, CSVs, bank statements, and investment reports
-- Context-aware retrieval for answering complex questions
-
----
-
-## �🚀 Quick Start
-
-### Option 1: Quick Start (Recommended for Testing)
-
-The fastest way to try FinanceGPT:
-
-```bash
-# 1. Clone the repository
-git clone https://github.com/yourusername/FinanceGPT.git
-cd FinanceGPT
-
-# 2. Run the quick start script
-chmod +x start-financegpt.sh
-./start-financegpt.sh
-```
-
-This uses pre-built Docker images and requires minimal configuration. Access the app at **http://localhost:3000**
-
-### Option 2: Development Setup
-
-For development with full customization:
-
-#### Prerequisites
-
-- **Docker** and **Docker Compose** (required)
-- **Node.js** 18+ and **pnpm** (for frontend development)
-- **Python** 3.11+ (for backend development)
-
-#### Required Environment Variables
-
-Before starting, you **must** configure these essential variables:
-
-1. **Create backend environment file:**
-   ```bash
-   cp financegpt_backend/.env.example financegpt_backend/.env
-   ```
-
-2. **Edit `financegpt_backend/.env` and set these required variables:**
-
-   ```env
-   # === REQUIRED: LLM API Key ===
-   # You MUST configure at least one LLM provider for FinanceGPT to work
-   # Get your API key from the respective provider:
-   
-   # OpenAI (recommended for best results)
-   OPENAI_API_KEY=sk-...
-   
-   # OR Anthropic Claude
-   ANTHROPIC_API_KEY=sk-ant-...
-   
-   # OR Google Gemini (free tier available)
-   GOOGLE_API_KEY=AIza...
-   
-   # === REQUIRED: Plaid (for bank account connections) ===
-   # Sign up at https://dashboard.plaid.com/team/keys
-   PLAID_CLIENT_ID=your_plaid_client_id
-   PLAID_SECRET=your_plaid_secret
-   PLAID_ENV=sandbox  # Use 'sandbox' for testing
-   
-   # === REQUIRED: Security ===
-   SECRET_KEY=your-random-secret-key-change-this-in-production
-   
-   # === Optional: Document Processing ===
-   # Only needed if you want to parse PDFs/documents
-   # Get free API key from https://unstructured.io/
-   # UNSTRUCTURED_API_KEY=your_key_here
-   ```
-
-3. **Create frontend environment file:**
-   ```bash
-   cp financegpt_web/.env.example financegpt_web/.env.local
-   ```
-
-   Edit `financegpt_web/.env.local`:
-   ```env
-   # Backend API URL
-   NEXT_PUBLIC_FASTAPI_BACKEND_URL=http://localhost:8000
-   
-   # Auth type (LOCAL or GOOGLE)
-   NEXT_PUBLIC_FASTAPI_BACKEND_AUTH_TYPE=LOCAL
-   
-   # Document parsing service
-   NEXT_PUBLIC_ETL_SERVICE=DOCLING
-   ```
-
-#### Installation Steps
-
-1. **Start infrastructure services (PostgreSQL, Redis, etc.)**
-   ```bash
-   docker-compose up -d db redis electric pgadmin
-   ```
-
-2. **Install and run backend**
-   ```bash
-   cd financegpt_backend
-   
-   # Create virtual environment
-   python -m venv .venv
-   source .venv/bin/activate  # On Windows: .venv\Scripts\activate
-   
-   # Install dependencies
-   pip install -e .
-   
-   # Run database migrations
-   alembic upgrade head
-   
-   # Start the backend server
-   uvicorn main:app --reload --host 0.0.0.0 --port 8000
-   ```
-
-3. **In a new terminal, install and run frontend**
-   ```bash
-   cd financegpt_web
-   
-   # Install dependencies
-   pnpm install
-   
-   # Start development server
-   pnpm dev
-   ```
-
-4. **Access the application**
-   - 🌐 **Frontend**: http://localhost:3000
-   - 🔧 **Backend API**: http://localhost:8000
-   - 📚 **API Documentation**: http://localhost:8000/docs
-   - 🗄️ **pgAdmin** (Database UI): http://localhost:5050
-     - Email: `admin@financegpt.com`
-     - Password: `financegpt`
-
-### Option 3: Full Docker Deployment
-
-Build and run everything with Docker:
-
-```bash
-# Build and start all services
-docker-compose up -d
-
-# View logs
-docker-compose logs -f
-
-# Stop all services
-docker-compose down
-```
-
-Access at **http://localhost:3000**
+### 💰 Transaction & Spending Analysis
+- **100+ Financial Institutions**: Connect via Plaid
+- **Subscription Detection**: Find forgotten recurring charges
+- **Category Analysis**: Understand where your money goes
+- **Historical Comparisons**: Compare spending across time periods
 
 ---
 
@@ -367,93 +194,68 @@ Access at **http://localhost:3000**
 
 ### Tech Stack
 
-#### Frontend (`financegpt_web/`)
-- **Framework**: Next.js 15 with App Router
-- **Language**: TypeScript
-- **Styling**: Tailwind CSS
-- **UI Components**: Shadcn/ui, Radix UI
-- **State Management**: Jotai
-- **Animations**: Framer Motion
-- **Real-Time**: ElectricSQL
-
-#### Backend (`financegpt_backend/`)
-- **Framework**: FastAPI
-- **Language**: Python 3.11+
-- **AI/ML**: LangChain, OpenAI GPT-4
-- **Database**: PostgreSQL with SQLAlchemy
-- **Task Queue**: Celery with Redis
-- **Financial Data**: Plaid API
-- **Authentication**: OAuth 2.0
-
-#### Infrastructure
-- **Database**: PostgreSQL 15
-- **Cache**: Redis
-- **Message Broker**: Redis (for Celery)
-- **Container**: Docker & Docker Compose
+| Layer | Technology | Purpose |
+|-------|------------|---------|
+| **Frontend** | Next.js 15, TypeScript, Tailwind | Modern web UI with server components |
+| **Backend** | FastAPI, Python 3.11+ | Async API with auto-generated docs |
+| **Database** | PostgreSQL + pgvector | Relational + vector search |
+| **Task Queue** | Celery + Redis | Background document processing |
+| **AI** | LiteLLM | Provider-agnostic (OpenAI, Anthropic, Ollama) |
+| **Banking** | Plaid API | 100+ financial institution connections |
+| **Auth** | Better Auth | OAuth 2.0, Google Sign-In |
 
 ### Project Structure
 
 ```
 FinanceGPT/
-├── financegpt_web/          # Next.js frontend application
+├── financegpt_web/          # Next.js frontend
 │   ├── app/                 # App router pages
 │   ├── components/          # React components
-│   ├── lib/                 # Utilities and helpers
-│   └── public/              # Static assets
-├── financegpt_backend/      # FastAPI backend application
+│   └── lib/                 # Utilities
+├── financegpt_backend/      # FastAPI backend
 │   ├── app/
 │   │   ├── agents/          # AI agents and tools
+│   │   ├── parsers/         # Tax form parsers
 │   │   ├── routes/          # API endpoints
-│   │   ├── services/        # Business logic
-│   │   ├── tasks/           # Celery tasks
-│   │   └── utils/           # Utilities
+│   │   └── tasks/           # Celery tasks
 │   └── alembic/             # Database migrations
-├── financegpt_browser_extension/  # Browser extension
-├── docker-compose.yml       # Docker services configuration
-└── README.md               # This file
+├── docker-compose.yml       # Full stack deployment
+├── docker-compose.quickstart.yml  # All-in-one container
+└── dev.sh                   # Local development script
 ```
 
 ---
 
-## 📖 Documentation
+## 📖 Configuration
 
-### Configuration
+### Required Environment Variables
 
-#### Plaid API Setup
-1. Sign up for a [Plaid account](https://plaid.com/)
-2. Get your API keys (Client ID and Secret)
-3. Add to `financegpt_backend/.env`:
-   ```env
-   PLAID_CLIENT_ID=your_client_id
-   PLAID_SECRET=your_secret
-   PLAID_ENV=sandbox  # or development/production
-   ```
-
-#### OpenAI API Setup
-1. Get your API key from [OpenAI](https://platform.openai.com/)
-2. Add to `financegpt_backend/.env`:
-   ```env
-   OPENAI_API_KEY=your_api_key
-   ```
-
-#### Database Configuration
 ```env
-DATABASE_URL=postgresql://user:password@localhost:5432/financegpt
+# LLM Provider (choose one)
+OPENAI_API_KEY=sk-...
+# or ANTHROPIC_API_KEY=sk-ant-...
+# or GOOGLE_API_KEY=AIza...
+
+# Plaid (for bank connections)
+PLAID_CLIENT_ID=your_client_id
+PLAID_SECRET=your_secret
+PLAID_ENV=sandbox
+
+# Security
+SECRET_KEY=your-random-secret-key
 ```
 
-### API Endpoints
+### Optional Configuration
 
-#### Financial Data
-- `GET /api/accounts` - List all connected accounts
-- `GET /api/transactions` - Get transactions
-- `POST /api/plaid/link-token` - Create Plaid Link token
-- `POST /api/plaid/exchange-token` - Exchange public token
+```env
+# Document Processing
+UNSTRUCTURED_API_KEY=...     # For PDF parsing
+ETL_SERVICE=DOCLING          # Or UNSTRUCTURED
 
-#### AI Features
-- `POST /api/chat` - Chat with AI assistant
-- `POST /api/analyze/spending` - Analyze spending patterns
-- `POST /api/optimize/credit-card` - Get credit card recommendations
-- `GET /api/insights` - Get personalized insights
+# Voice Features
+TTS_SERVICE=local/kokoro
+STT_SERVICE=local/base
+```
 
 ---
 
@@ -461,42 +263,19 @@ DATABASE_URL=postgresql://user:password@localhost:5432/financegpt
 
 ### Running Tests
 
-**Frontend:**
 ```bash
-cd financegpt_web
-pnpm test
-```
+# Backend
+cd financegpt_backend && pytest
 
-**Backend:**
-```bash
-cd financegpt_backend
-pytest
-```
-
-### Code Quality
-
-**Frontend:**
-```bash
-pnpm lint
-pnpm type-check
-```
-
-**Backend:**
-```bash
-ruff check .
-mypy .
+# Frontend  
+cd financegpt_web && pnpm test
 ```
 
 ### Database Migrations
 
-**Create a new migration:**
 ```bash
 cd financegpt_backend
 alembic revision --autogenerate -m "Description"
-```
-
-**Apply migrations:**
-```bash
 alembic upgrade head
 ```
 
@@ -504,7 +283,7 @@ alembic upgrade head
 
 ## 🤝 Contributing
 
-We welcome contributions! Please see our [Contributing Guide](CONTRIBUTING.md) for details.
+We welcome contributions! Please see our [Contributing Guide](CONTRIBUTING.md).
 
 1. Fork the repository
 2. Create your feature branch (`git checkout -b feature/amazing-feature`)
@@ -522,18 +301,16 @@ This project is licensed under the Apache License 2.0 - see the [LICENSE](LICENS
 
 ## 🙏 Acknowledgments
 
-- Built with [Next.js](https://nextjs.org/), [FastAPI](https://fastapi.tiangolo.com/), and [LangChain](https://langchain.com/)
+- Built on [SurfSense](https://github.com/MODSetter/SurfSense), an open-source NotebookLM alternative
 - Financial data powered by [Plaid](https://plaid.com/)
-- AI capabilities powered by [OpenAI](https://openai.com/)
-
----
-
-## 📧 Contact
-
-For questions or support, please open an issue or contact us at support@financegpt.com
+- AI capabilities via [LiteLLM](https://github.com/BerriAI/litellm)
 
 ---
 
 <div align="center">
-Made with ❤️ by the FinanceGPT Team
+
+Made with ❤️ for anyone who's ever stared at a W2 wondering what it all means.
+
+**[⬆ Back to Top](#financegpt-)**
+
 </div>

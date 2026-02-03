@@ -285,3 +285,100 @@ def validate_confidence_threshold(
     
     all_passed = len(failed_fields) == 0
     return all_passed, failed_fields
+
+
+def mask_pii_in_text(text: str) -> tuple[str, dict[str, str]]:
+    """Mask PII in raw text before sending to LLM.
+    
+    This function finds and masks:
+    - SSN patterns (XXX-XX-XXXX or XXXXXXXXX)
+    - EIN patterns (XX-XXXXXXX)
+    - Keeps dollar amounts intact (needed for extraction)
+    
+    Args:
+        text: Raw text containing potential PII
+        
+    Returns:
+        Tuple of (masked_text, mapping_dict)
+        - masked_text: Text with PII replaced by placeholders
+        - mapping_dict: Original values keyed by placeholder (for recovery if needed)
+        
+    Examples:
+        >>> text = "SSN: 123-45-6789, EIN: 12-3456789, Wages: $50,000"
+        >>> masked, mapping = mask_pii_in_text(text)
+        >>> "123-45-6789" not in masked
+        True
+        >>> "$50,000" in masked  # Dollar amounts preserved
+        True
+    """
+    masked_text = text
+    mapping = {}
+    
+    # Pattern for SSN: XXX-XX-XXXX (with dashes)
+    ssn_pattern_dashed = r'\b(\d{3})-(\d{2})-(\d{4})\b'
+    
+    def mask_ssn_match(match):
+        full_ssn = match.group(0)
+        last_four = match.group(3)
+        placeholder = f"[SSN:***-**-{last_four}]"
+        mapping[placeholder] = full_ssn
+        return placeholder
+    
+    masked_text = re.sub(ssn_pattern_dashed, mask_ssn_match, masked_text)
+    
+    # Pattern for SSN without dashes: 9 consecutive digits that look like SSN
+    # Be careful not to match other numbers like phone numbers or account numbers
+    # Only match if it appears after SSN-related keywords
+    ssn_pattern_nodash = r'(?i)(?:ssn|social\s*security|ss#|ss\s*#|soc\s*sec)[:\s]*(\d{9})\b'
+    
+    def mask_ssn_nodash_match(match):
+        ssn_digits = match.group(1)
+        last_four = ssn_digits[-4:]
+        placeholder = f"[SSN:*****{last_four}]"
+        mapping[placeholder] = ssn_digits
+        # Return just the placeholder (the keyword prefix was already matched)
+        return match.group(0).replace(ssn_digits, placeholder)
+    
+    masked_text = re.sub(ssn_pattern_nodash, mask_ssn_nodash_match, masked_text)
+    
+    # Pattern for EIN: XX-XXXXXXX
+    ein_pattern = r'\b(\d{2})-(\d{7})\b'
+    
+    def mask_ein_match(match):
+        full_ein = match.group(0)
+        # Hash the EIN for the placeholder (truncate hash for readability)
+        ein_hash = hashlib.sha256(full_ein.replace('-', '').encode()).hexdigest()[:8]
+        placeholder = f"[EIN:{ein_hash}]"
+        mapping[placeholder] = full_ein
+        return placeholder
+    
+    masked_text = re.sub(ein_pattern, mask_ein_match, masked_text)
+    
+    return masked_text, mapping
+
+
+def recover_pii_from_mapping(
+    extracted_data: dict[str, Any],
+    mapping: dict[str, str]
+) -> dict[str, Any]:
+    """Recover original PII values from masked placeholders.
+    
+    Args:
+        extracted_data: Data extracted from LLM with masked values
+        mapping: Mapping from mask_pii_in_text()
+        
+    Returns:
+        Data with original PII values restored
+    """
+    recovered = {}
+    
+    for key, value in extracted_data.items():
+        if isinstance(value, str):
+            # Check if this is a masked value and recover it
+            for placeholder, original in mapping.items():
+                if placeholder in value:
+                    value = original
+                    break
+        recovered[key] = value
+    
+    return recovered

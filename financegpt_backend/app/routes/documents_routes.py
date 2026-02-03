@@ -828,3 +828,143 @@ async def delete_document(
         raise HTTPException(
             status_code=500, detail=f"Failed to delete document: {e!s}"
         ) from e
+
+
+@router.get("/tax-forms")
+async def get_tax_forms(
+    search_space_id: int,
+    session: AsyncSession = Depends(get_async_session),
+    user: User = Depends(current_active_user),
+):
+    """
+    Get all tax forms for the current user in a search space.
+    """
+    from app.db import TaxForm
+    
+    try:
+        await check_permission(
+            session,
+            user,
+            search_space_id,
+            Permission.DOCUMENTS_READ.value,
+            "You don't have permission to read documents in this search space",
+        )
+        
+        result = await session.execute(
+            select(TaxForm).where(
+                TaxForm.user_id == user.id,
+                TaxForm.search_space_id == search_space_id
+            ).order_by(TaxForm.tax_year.desc(), TaxForm.uploaded_at.desc())
+        )
+        tax_forms = result.scalars().all()
+        
+        return {
+            "tax_forms": [
+                {
+                    "id": str(form.id),
+                    "form_type": form.form_type,
+                    "tax_year": form.tax_year,
+                    "document_id": form.document_id,
+                    "processing_status": form.processing_status,
+                    "extraction_method": form.extraction_method,
+                    "needs_review": form.needs_review,
+                    "uploaded_at": form.uploaded_at.isoformat() if form.uploaded_at else None,
+                    "processed_at": form.processed_at.isoformat() if form.processed_at else None,
+                }
+                for form in tax_forms
+            ]
+        }
+    except HTTPException:
+        raise
+    except Exception as e:
+        raise HTTPException(
+            status_code=500, detail=f"Failed to get tax forms: {e!s}"
+        ) from e
+
+
+@router.post("/tax-forms/{tax_form_id}/reprocess")
+async def reprocess_tax_form(
+    tax_form_id: str,
+    session: AsyncSession = Depends(get_async_session),
+    user: User = Depends(current_active_user),
+):
+    """
+    Re-process a stuck or failed tax form.
+    
+    This will re-trigger the parsing task for a tax form that is stuck in 'processing'
+    or failed status.
+    """
+    from uuid import UUID
+    from app.db import TaxForm, Document
+    
+    try:
+        # Get the tax form
+        result = await session.execute(
+            select(TaxForm).where(TaxForm.id == UUID(tax_form_id))
+        )
+        tax_form = result.scalar_one_or_none()
+        
+        if not tax_form:
+            raise HTTPException(status_code=404, detail="Tax form not found")
+        
+        if tax_form.user_id != user.id:
+            raise HTTPException(status_code=403, detail="Not authorized to reprocess this tax form")
+        
+        # Check permission
+        await check_permission(
+            session,
+            user,
+            tax_form.search_space_id,
+            Permission.DOCUMENTS_CREATE.value,
+            "You don't have permission to reprocess documents in this search space",
+        )
+        
+        # Get the associated document for the content
+        extracted_text = None
+        if tax_form.document_id:
+            doc_result = await session.execute(
+                select(Document).where(Document.id == tax_form.document_id)
+            )
+            document = doc_result.scalar_one_or_none()
+            if document and document.content:
+                # Use the document's summary content for parsing
+                extracted_text = document.content
+        
+        if not extracted_text:
+            raise HTTPException(
+                status_code=400, 
+                detail="Cannot reprocess: no document content available for this tax form"
+            )
+        
+        # Reset status
+        tax_form.processing_status = 'processing'
+        tax_form.extraction_method = None
+        tax_form.needs_review = False
+        await session.commit()
+        
+        # Trigger the parsing task
+        from app.tasks.celery_tasks.tax_form_tasks import parse_tax_form_task
+        
+        parse_tax_form_task.delay(
+            tax_form_id=str(tax_form.id),
+            file_path=None,  # No file path available
+            form_type=tax_form.form_type,
+            tax_year=tax_form.tax_year,
+            user_id=str(tax_form.user_id),
+            search_space_id=tax_form.search_space_id,
+            extracted_text=extracted_text,
+        )
+        
+        return {
+            "message": "Tax form reprocessing started",
+            "tax_form_id": str(tax_form.id),
+            "form_type": tax_form.form_type,
+            "tax_year": tax_form.tax_year,
+        }
+    except HTTPException:
+        raise
+    except Exception as e:
+        await session.rollback()
+        raise HTTPException(
+            status_code=500, detail=f"Failed to reprocess tax form: {e!s}"
+        ) from e

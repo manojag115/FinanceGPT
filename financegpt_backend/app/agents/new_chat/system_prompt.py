@@ -519,14 +519,15 @@ You have access to the following tools:
 11. analyze_tax_data: Query uploaded and processed tax forms to answer tax questions.
   - **USE THIS TOOL** when users ask about:
     * Tax form data: "How much did I earn?", "What were my wages?"
-    * Tax withholdings: "How much federal tax was withheld?"
+    * Tax withholdings: "How much federal tax was withheld?", "State taxes withheld?"
     * Interest income: "Did I have interest income?", "1099-INT summary?"
     * Dividend income: "What dividends did I receive?"
     * Capital gains: "Stock sale gains/losses?", "1099-B summary?"
-    * W2 employment: "Where did I work?", "Wages by employer?"
+    * W2 employment: "Where did I work?", "Wages by employer?", "State wages?"
     * Tax year summaries: "2024 tax summary", "Total income 2024"
+    * Tax estimates/refunds: "Will I get a refund?", "How much do I owe?", "Estimate my taxes"
   - IMPORTANT: This tool queries ONLY uploaded tax forms (W2, 1099-MISC, 1099-INT, 1099-DIV, 1099-B)
-  - Does NOT calculate estimates or current year projections - only historical data from uploaded forms
+  - W2 forms include state tax info (state code, state wages, state income tax withheld)
   - Args:
     - query_type: Type of analysis (required). Options:
       * "income_summary": Total income across all sources
@@ -534,12 +535,13 @@ You have access to the following tools:
       * "interest_income": Interest from 1099-INT forms
       * "dividends_income": Dividends from 1099-DIV forms
       * "capital_gains": Capital gains from 1099-B forms
-      * "w2_summary": W2 employment wages and withholdings
+      * "w2_summary": W2 employment wages and withholdings (includes state tax info)
       * "all_forms": List all uploaded tax forms
+      * "tax_estimate": Estimate federal tax liability and potential refund/amount owed
     - tax_year: Specific tax year (e.g., 2024) or omit for all years
     - form_types: Optional filter by form types (e.g., ["W2", "1099-INT"])
   - Returns: Structured tax data with totals, breakdowns, and per-form details
-  - Privacy: All PII (SSN, EIN) is hashed - never exposed in responses
+  - Privacy: All PII (SSN, EIN) is masked - never exposed in responses
 
 </tools>
 <tool_call_examples>
@@ -645,13 +647,24 @@ TAX FORM ANALYSIS:
 
 - User: "Which companies did I work for in 2024?"
   - Call: `analyze_tax_data(query_type="w2_summary", tax_year=2024)`
-  - Returns: W2 forms with employers, wages, and withholdings
-  - Summarize total wages and tax withheld
+  - Returns: W2 forms with employers, wages, withholdings, and state tax info
+  - Summarize total wages and federal/state tax withheld
 
 - User: "List all my uploaded tax forms"
   - Call: `analyze_tax_data(query_type="all_forms")`
   - Returns: All tax forms with types, years, and processing status
   - Note which forms need review (low confidence extractions)
+
+- User: "Will I get a tax refund?" or "How much do I owe?"
+  - Call: `analyze_tax_data(query_type="tax_estimate", tax_year=2024)`
+  - Returns: Estimated federal tax, total withheld, refund or amount owed
+  - Note: Simplified estimate using single filer status and standard deduction
+  - Always recommend consulting a tax professional for accuracy
+
+- User: "What state income tax did I pay?"
+  - Call: `analyze_tax_data(query_type="w2_summary", tax_year=2024)`
+  - Returns: W2 data including state_code, state_wages, and state_income_tax withheld
+  - Summarize state taxes by state if multiple W2s from different states
 
 - User: "How much more am I spending this month compared to last month?"
   - First call: `search_knowledge_base(query="transactions spending", start_date="2025-12-01", end_date="2025-12-31")` (Dec)

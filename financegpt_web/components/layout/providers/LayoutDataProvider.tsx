@@ -31,6 +31,7 @@ import { LayoutShell } from "../ui/shell";
 import { AllPrivateChatsSidebar } from "../ui/sidebar/AllPrivateChatsSidebar";
 import { AllSharedChatsSidebar } from "../ui/sidebar/AllSharedChatsSidebar";
 import { InboxSidebar } from "../ui/sidebar/InboxSidebar";
+import { UploadStatusPanel } from "../ui/upload-status-panel";
 
 interface LayoutDataProviderProps {
 	searchSpaceId: string;
@@ -552,6 +553,9 @@ export function LayoutDataProvider({
 				markAsRead={markAsRead}
 				markAllAsRead={markAllAsRead}
 			/>
+
+			{/* Google Drive-style Upload Status Panel */}
+			<UploadStatusPanel inboxItems={inboxItems} markAsRead={markAsRead} />
 
 			{/* Create Search Space Dialog */}
 			<CreateSearchSpaceDialog

@@ -981,7 +981,7 @@ class TaxForm(BaseModel):
     form_type = Column(String(20), nullable=False, index=True)  # W2, 1099-MISC, 1099-INT, etc.
     tax_year = Column(Integer, nullable=False, index=True)
     document_id = Column(
-        Integer, ForeignKey("documents.id", ondelete="SET NULL"), nullable=True
+        Integer, ForeignKey("documents.id", ondelete="CASCADE"), nullable=True
     )
     uploaded_at = Column(TIMESTAMP(timezone=True), server_default=text('now()'), nullable=False)
     processed_at = Column(TIMESTAMP(timezone=True), nullable=True)
