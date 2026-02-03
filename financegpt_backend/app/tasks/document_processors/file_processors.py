@@ -58,6 +58,8 @@ async def _process_tax_form_if_applicable(
     filename: str,
     user_id: str,
     search_space_id: int,
+    file_path: str | None = None,
+    extracted_text: str | None = None,
 ) -> None:
     """
     Check if uploaded document is a tax form and trigger parsing if so.
@@ -71,18 +73,11 @@ async def _process_tax_form_if_applicable(
         filename: Original filename
         user_id: User ID
         search_space_id: Search space ID
+        file_path: Path to the uploaded file (optional, for parsing)
+        extracted_text: Already extracted text from the document (used if file_path not available)
     """
     from uuid import UUID
     from app.db import TaxForm
-    from app.parsers.tax_form_parser import TaxFormParser
-    from app.utils.pii_masking import prepare_tax_form_for_storage
-    from app.schemas.tax_forms import (
-        W2FormCreate,
-        Form1099MiscCreate,
-        Form1099IntCreate,
-        Form1099DivCreate,
-        Form1099BCreate,
-    )
     import re
     
     try:
@@ -100,11 +95,21 @@ async def _process_tax_form_if_applicable(
         if year_match:
             tax_year = int(year_match.group(1))
         
+        # If no year in filename, try to extract from document content
+        if not tax_year and extracted_text:
+            # Look for tax year patterns in content (e.g., "2025 W-2", "Tax Year 2025", "for the 2025 tax year")
+            content_year_match = re.search(r'(?:tax\s+year|for\s+(?:the\s+)?)\s*(20\d{2})|(?:20\d{2})\s+W-?2', extracted_text, re.IGNORECASE)
+            if content_year_match:
+                year_str = content_year_match.group(1) or re.search(r'(20\d{2})', content_year_match.group(0)).group(1)
+                tax_year = int(year_str)
+        
         # Detect form type
         if 'w2' in filename_lower or 'w-2' in filename_lower:
             form_type = 'W2'
             if not tax_year:
-                tax_year = 2024  # Default to current tax year
+                # Default to previous year (tax forms are usually for prior year)
+                from datetime import datetime
+                tax_year = datetime.now().year - 1
         elif '1099' in filename_lower:
             if 'misc' in filename_lower:
                 form_type = '1099-MISC'
@@ -119,7 +124,18 @@ async def _process_tax_form_if_applicable(
                 form_type = '1099-MISC'  # Default
             
             if not tax_year:
-                tax_year = 2024
+                # Default to previous year (tax forms are usually for prior year)
+                from datetime import datetime
+                tax_year = datetime.now().year - 1
+        elif '1095' in filename_lower:
+            if 'c' in filename_lower or '-c' in filename_lower:
+                form_type = '1095-C'
+            else:
+                form_type = '1095-C'  # Default to 1095-C (most common employer form)
+            
+            if not tax_year:
+                from datetime import datetime
+                tax_year = datetime.now().year - 1
         
         # If not a tax form, return early
         if not form_type:
@@ -142,22 +158,87 @@ async def _process_tax_form_if_applicable(
         
         logger.info(f"Created tax form record with ID {tax_form.id}, starting parsing...")
         
-        # TODO: Trigger async parsing task
-        # For now, log that parsing would happen
-        # In production, this would be a Celery task
-        logger.info(
-            f"Tax form parsing would be triggered here for {form_type} (tax_form_id={tax_form.id}). "
-            f"Parser integration pending."
-        )
+        # Prefer file_path if available, otherwise use extracted_text
+        actual_file_path = file_path
+        actual_extracted_text = extracted_text
+        
+        if not actual_file_path and not actual_extracted_text:
+            logger.warning(
+                f"No file path or extracted text provided for tax form {tax_form.id}, parsing will be skipped"
+            )
+            tax_form.processing_status = 'failed'
+            tax_form.extraction_method = 'error: no file path or text available'
+            await session.commit()
+            return
         
         # Update status to show it's queued for processing
         tax_form.processing_status = 'processing'
         await session.commit()
         
+        # Trigger async parsing task
+        from app.tasks.celery_tasks.tax_form_tasks import parse_tax_form_task
+        
+        parse_tax_form_task.delay(
+            tax_form_id=str(tax_form.id),
+            file_path=actual_file_path,
+            form_type=form_type,
+            tax_year=tax_year,
+            user_id=user_id,
+            search_space_id=search_space_id,
+            extracted_text=actual_extracted_text,
+        )
+        
+        logger.info(f"Queued tax form parsing task for {form_type} (tax_form_id={tax_form.id})")
+        
     except Exception as e:
         logger.error(f"Error processing tax form for {filename}: {e}")
         # Don't fail the document upload if tax parsing fails
         await session.rollback()
+
+
+def _clean_symbol(raw_symbol: str | None) -> str:
+    """
+    Clean and normalize a stock symbol to fit VARCHAR(20) constraint.
+    
+    Handles special cases like:
+    - Schwab's "**CASH & CASH INVESTMENTS**" -> "CASH"
+    - Empty or None values -> ""
+    - Truncates overly long symbols
+    
+    Args:
+        raw_symbol: Raw symbol string from CSV
+        
+    Returns:
+        Cleaned symbol string (max 20 chars)
+    """
+    if not raw_symbol:
+        return ""
+    
+    symbol = str(raw_symbol).strip()
+    
+    # Normalize common cash/money market descriptions to standard symbol
+    cash_patterns = [
+        "cash & cash investments",
+        "cash investments",
+        "money market",
+        "sweep account",
+        "cash equivalent",
+        "cash balance",
+    ]
+    
+    symbol_lower = symbol.lower().replace("*", "").strip()
+    for pattern in cash_patterns:
+        if pattern in symbol_lower:
+            return "CASH"
+    
+    # Remove any asterisks and extra whitespace
+    symbol = symbol.replace("*", "").strip()
+    
+    # Truncate to 20 chars (VARCHAR(20) limit)
+    if len(symbol) > 20:
+        symbol = symbol[:20]
+    
+    return symbol
 
 
 async def _save_investment_holdings(
@@ -199,7 +280,11 @@ async def _save_investment_holdings(
         # Process each holding
         total_value = 0.0
         for holding_data in holdings_data:
-            symbol = holding_data.symbol if hasattr(holding_data, 'symbol') else holding_data.get('symbol', '')
+            raw_symbol = holding_data.symbol if hasattr(holding_data, 'symbol') else holding_data.get('symbol', '')
+            
+            # Clean and normalize symbol (VARCHAR(20) limit in DB)
+            # Handle special cases like Schwab's "**CASH & CASH INVESTMENTS**"
+            symbol = _clean_symbol(raw_symbol)
             
             # Handle None values from CSV parsing
             quantity_raw = holding_data.quantity if hasattr(holding_data, 'quantity') else holding_data.get('quantity')
@@ -631,8 +716,10 @@ async def add_received_file_document_using_unstructured(
             await session.refresh(document)
 
         # After successful document creation, check if this is a tax form
+        # Pass the extracted markdown content for parsing
         await _process_tax_form_if_applicable(
-            session, document, file_name, user_id, search_space_id
+            session, document, file_name, user_id, search_space_id,
+            extracted_text=file_in_markdown
         )
 
         return document
@@ -775,8 +862,10 @@ async def add_received_file_document_using_llamacloud(
             await session.refresh(document)
 
         # After successful document creation, check if this is a tax form
+        # Pass the extracted markdown content for parsing
         await _process_tax_form_if_applicable(
-            session, document, file_name, user_id, search_space_id
+            session, document, file_name, user_id, search_space_id,
+            extracted_text=file_in_markdown
         )
 
         return document
@@ -942,6 +1031,13 @@ async def add_received_file_document_using_docling(
             session.add(document)
             await session.commit()
             await session.refresh(document)
+
+        # After successful document creation, check if this is a tax form
+        # Pass the extracted markdown content for parsing
+        await _process_tax_form_if_applicable(
+            session, document, file_name, user_id, search_space_id,
+            extracted_text=file_in_markdown
+        )
 
         return document
     except SQLAlchemyError as db_error:

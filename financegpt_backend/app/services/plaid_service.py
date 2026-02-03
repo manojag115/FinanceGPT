@@ -13,6 +13,12 @@ from plaid.api import plaid_api
 from plaid.exceptions import ApiException
 from plaid.model.accounts_get_request import AccountsGetRequest
 from plaid.model.country_code import CountryCode
+from plaid.model.investments_holdings_get_request import (
+    InvestmentsHoldingsGetRequest,
+)
+from plaid.model.investments_transactions_get_request import (
+    InvestmentsTransactionsGetRequest,
+)
 from plaid.model.item_public_token_exchange_request import (
     ItemPublicTokenExchangeRequest,
 )
@@ -22,12 +28,6 @@ from plaid.model.products import Products
 from plaid.model.transactions_get_request import TransactionsGetRequest
 from plaid.model.transactions_get_request_options import (
     TransactionsGetRequestOptions,
-)
-from plaid.model.investments_holdings_get_request import (
-    InvestmentsHoldingsGetRequest,
-)
-from plaid.model.investments_transactions_get_request import (
-    InvestmentsTransactionsGetRequest,
 )
 
 from app.config import config
