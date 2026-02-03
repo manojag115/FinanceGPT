@@ -147,11 +147,15 @@ def upgrade() -> None:
         # Payer Information
         sa.Column('payer_name', sa.String(255), nullable=True),
         sa.Column('payer_tin_hash', sa.String(64), nullable=True),
+        sa.Column('payer_address', sa.Text, nullable=True),
+        
+        # Recipient (masked)
+        sa.Column('recipient_tin_hash', sa.String(64), nullable=True),
         
         # Interest Income
         sa.Column('interest_income', sa.Numeric(12, 2), nullable=True),  # Box 1
         sa.Column('early_withdrawal_penalty', sa.Numeric(12, 2), nullable=True),  # Box 2
-        sa.Column('interest_us_savings_bonds', sa.Numeric(12, 2), nullable=True),  # Box 3
+        sa.Column('interest_on_us_savings_bonds', sa.Numeric(12, 2), nullable=True),  # Box 3
         sa.Column('federal_income_tax_withheld', sa.Numeric(12, 2), nullable=True),  # Box 4
         sa.Column('investment_expenses', sa.Numeric(12, 2), nullable=True),  # Box 5
         sa.Column('foreign_tax_paid', sa.Numeric(12, 2), nullable=True),  # Box 6
@@ -160,8 +164,11 @@ def upgrade() -> None:
         sa.Column('specified_private_activity_bond_interest', sa.Numeric(12, 2), nullable=True),  # Box 9
         sa.Column('market_discount', sa.Numeric(12, 2), nullable=True),  # Box 10
         sa.Column('bond_premium', sa.Numeric(12, 2), nullable=True),  # Box 11
-        sa.Column('bond_premium_treasury', sa.Numeric(12, 2), nullable=True),  # Box 12
-        sa.Column('tax_exempt_bond_premium', sa.Numeric(12, 2), nullable=True),  # Box 13
+        sa.Column('bond_premium_on_treasury', sa.Numeric(12, 2), nullable=True),  # Box 12
+        sa.Column('bond_premium_on_tax_exempt', sa.Numeric(12, 2), nullable=True),  # Box 13
+        sa.Column('state_code', sa.String(2), nullable=True),  # Box 15
+        sa.Column('state_id', sa.String(50), nullable=True),  # Box 16
+        sa.Column('state_tax_withheld', sa.Numeric(12, 2), nullable=True),  # Box 17
         
         sa.Column('field_confidence_scores', JSONB, nullable=True),
         sa.Column('raw_extraction_data', JSONB, nullable=True),
