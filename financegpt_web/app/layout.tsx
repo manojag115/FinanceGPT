@@ -46,40 +46,7 @@ export const metadata: Metadata = {
 		"AI knowledge base",
 		"AI document assistant tools",
 		"AI-powered search assistant",
-	],
-	openGraph: {
-		title: "FinanceGPT – AI Research & Knowledge Management Assistant",
-		description:
-			"Connect your documents and tools like Notion, Slack, GitHub, and more to your private AI assistant. FinanceGPT offers powerful search, document chat, podcast generation, and RAG APIs to enhance your workflow.",
-		url: "https://financegpt.com",
-		siteName: "FinanceGPT",
-		type: "website",
-		images: [
-			{
-				url: "https://financegpt.com/og-image.png",
-				width: 1200,
-				height: 630,
-				alt: "FinanceGPT AI Research Assistant",
-			},
-		],
-		locale: "en_US",
-	},
-	twitter: {
-		card: "summary_large_image",
-		title: "FinanceGPT – AI Assistant for Research & Knowledge Management",
-		description:
-			"Have your own NotebookLM or Perplexity, but better. FinanceGPT connects external tools, allows chat with your documents, and generates fast, high-quality podcasts.",
-		creator: "https://financegpt.com",
-		site: "https://financegpt.com",
-		images: [
-			{
-				url: "https://financegpt.com/og-image-twitter.png",
-				width: 1200,
-				height: 630,
-				alt: "FinanceGPT AI Assistant Preview",
-			},
-		],
-	},
+	]
 };
 
 export default function RootLayout({

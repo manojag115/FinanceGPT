@@ -180,6 +180,10 @@ def upgrade() -> None:
         # Payer Information
         sa.Column('payer_name', sa.String(255), nullable=True),
         sa.Column('payer_tin_hash', sa.String(64), nullable=True),
+        sa.Column('payer_address', sa.Text, nullable=True),
+        
+        # Recipient (masked)
+        sa.Column('recipient_tin_hash', sa.String(64), nullable=True),
         
         # Dividend Income
         sa.Column('total_ordinary_dividends', sa.Numeric(12, 2), nullable=True),  # Box 1a
@@ -187,7 +191,9 @@ def upgrade() -> None:
         sa.Column('total_capital_gain_distributions', sa.Numeric(12, 2), nullable=True),  # Box 2a
         sa.Column('unrecaptured_section_1250_gain', sa.Numeric(12, 2), nullable=True),  # Box 2b
         sa.Column('section_1202_gain', sa.Numeric(12, 2), nullable=True),  # Box 2c
-        sa.Column('collectibles_gain', sa.Numeric(12, 2), nullable=True),  # Box 2d
+        sa.Column('collectibles_28_gain', sa.Numeric(12, 2), nullable=True),  # Box 2d
+        sa.Column('section_897_ordinary_dividends', sa.Numeric(12, 2), nullable=True),  # Box 2e
+        sa.Column('section_897_capital_gain', sa.Numeric(12, 2), nullable=True),  # Box 2f
         sa.Column('nondividend_distributions', sa.Numeric(12, 2), nullable=True),  # Box 3
         sa.Column('federal_income_tax_withheld', sa.Numeric(12, 2), nullable=True),  # Box 4
         sa.Column('section_199a_dividends', sa.Numeric(12, 2), nullable=True),  # Box 5
@@ -196,6 +202,11 @@ def upgrade() -> None:
         sa.Column('foreign_country', sa.String(100), nullable=True),  # Box 8
         sa.Column('cash_liquidation_distributions', sa.Numeric(12, 2), nullable=True),  # Box 9
         sa.Column('noncash_liquidation_distributions', sa.Numeric(12, 2), nullable=True),  # Box 10
+        sa.Column('exempt_interest_dividends', sa.Numeric(12, 2), nullable=True),  # Box 11
+        sa.Column('specified_private_activity_bond_interest_dividends', sa.Numeric(12, 2), nullable=True),  # Box 12
+        sa.Column('state_code', sa.String(2), nullable=True),  # Box 14
+        sa.Column('state_id', sa.String(50), nullable=True),  # Box 15
+        sa.Column('state_tax_withheld', sa.Numeric(12, 2), nullable=True),  # Box 16
         
         sa.Column('field_confidence_scores', JSONB, nullable=True),
         sa.Column('raw_extraction_data', JSONB, nullable=True),
@@ -211,26 +222,41 @@ def upgrade() -> None:
         sa.Column('id', UUID(as_uuid=True), primary_key=True, server_default=sa.text('gen_random_uuid()')),
         sa.Column('tax_form_id', UUID(as_uuid=True), sa.ForeignKey('tax_forms.id', ondelete='CASCADE'), nullable=False, unique=True),
         
-        # Payer Information
+        # Payer/Broker Information
         sa.Column('payer_name', sa.String(255), nullable=True),
         sa.Column('payer_tin_hash', sa.String(64), nullable=True),
+        sa.Column('payer_address', sa.Text, nullable=True),
+        
+        # Recipient (masked)
+        sa.Column('recipient_tin_hash', sa.String(64), nullable=True),
         
         # Transaction Details
         sa.Column('description_of_property', sa.Text, nullable=True),  # Box 1a (stock name, quantity)
-        sa.Column('date_acquired', sa.Date, nullable=True),  # Box 1b
-        sa.Column('date_sold', sa.Date, nullable=True),  # Box 1c
+        sa.Column('date_acquired', sa.String(50), nullable=True),  # Box 1b (can be "VARIOUS")
+        sa.Column('date_sold', sa.String(50), nullable=True),  # Box 1c
         sa.Column('proceeds', sa.Numeric(12, 2), nullable=True),  # Box 1d
         sa.Column('cost_basis', sa.Numeric(12, 2), nullable=True),  # Box 1e
-        sa.Column('adjustments_to_basis', sa.Numeric(12, 2), nullable=True),  # Box 1f
-        sa.Column('realized_gain_loss', sa.Numeric(12, 2), nullable=True),  # Box 1g (calculated)
-        
+        sa.Column('accrued_market_discount', sa.Numeric(12, 2), nullable=True),  # Box 1f
+        sa.Column('wash_sale_loss_disallowed', sa.Numeric(12, 2), nullable=True),  # Box 1g
         sa.Column('federal_income_tax_withheld', sa.Numeric(12, 2), nullable=True),  # Box 4
         
-        # Form Characteristics
-        sa.Column('short_term', sa.Boolean, nullable=True),  # Box 2
-        sa.Column('long_term', sa.Boolean, nullable=True),
-        sa.Column('basis_reported_to_irs', sa.Boolean, nullable=True),  # Box 3
-        sa.Column('noncovered_security', sa.Boolean, nullable=True),  # Box 5
+        # Form 8949 checkboxes
+        sa.Column('short_term_box_a', sa.Boolean, server_default='false', nullable=False),
+        sa.Column('short_term_box_b', sa.Boolean, server_default='false', nullable=False),
+        sa.Column('short_term_box_c', sa.Boolean, server_default='false', nullable=False),
+        sa.Column('long_term_box_d', sa.Boolean, server_default='false', nullable=False),
+        sa.Column('long_term_box_e', sa.Boolean, server_default='false', nullable=False),
+        sa.Column('long_term_box_f', sa.Boolean, server_default='false', nullable=False),
+        
+        # Applicable checkbox
+        sa.Column('loss_not_allowed', sa.Boolean, server_default='false', nullable=False),
+        sa.Column('noncovered_security', sa.Boolean, server_default='false', nullable=False),
+        sa.Column('basis_reported_to_irs', sa.Boolean, server_default='false', nullable=False),
+        
+        # State tax information
+        sa.Column('state_code', sa.String(2), nullable=True),
+        sa.Column('state_id', sa.String(50), nullable=True),
+        sa.Column('state_tax_withheld', sa.Numeric(12, 2), nullable=True),
         
         sa.Column('field_confidence_scores', JSONB, nullable=True),
         sa.Column('raw_extraction_data', JSONB, nullable=True),
